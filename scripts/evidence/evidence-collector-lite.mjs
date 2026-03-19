@@ -17,7 +17,7 @@ export function collectBasicEvidence(toolName, output) {
   const lower = output.toLowerCase();
 
   // Test results
-  if (lower.includes('test') && (lower.includes('pass') || lower.includes('fail'))) {
+  if ((lower.includes('test') || lower.includes('pass') || lower.includes('fail')) && (lower.includes('pass') || lower.includes('fail'))) {
     const passed = (lower.match(/(\d+)\s*pass/i) || [])[1];
     const failed = (lower.match(/(\d+)\s*fail/i) || [])[1];
     return {
