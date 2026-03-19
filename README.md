@@ -1,227 +1,296 @@
-# sw-kit — Harness Engineering Agent
+<p align="center">
+  <img src="images/sam.svg" width="48" alt="sw-kit">
+</p>
 
-> **For developers: the ultimate assistant. For everyone: the ultimate magician.**
+<h1 align="center">sw-kit</h1>
+<p align="center"><strong>Harness Engineering Agent</strong> v1.3.2</p>
 
-Structured workflows, intelligent context, self-learning agents for AI-native development.
+<p align="center">
+  <em>For developers, the ultimate assistant.<br>For everyone, the ultimate magician.</em>
+</p>
 
-```
-44 modules | 160KB | 5,100+ LOC | 33/33 tests | 5ms hook response | 0 dependencies
-```
+<p align="center">
+  <code>44 modules</code> · <code>160KB</code> · <code>5,100+ LOC</code> · <code>33/33 tests</code> · <code>5ms hook</code> · <code>0 deps</code>
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> · <a href="#team">Team</a> · <a href="#innovations">Innovations</a> · <a href="#commands">Commands</a> · <a href="#architecture">Architecture</a>
+</p>
 
 ---
 
 ## Install
 
-Claude Code session:
 ```
 /plugin marketplace add sangwookp9591/sw-kit-claude
 /plugin install sw-kit
 ```
 
-Terminal:
-```bash
-claude plugin marketplace add sangwookp9591/sw-kit-claude && claude plugin install sw-kit
-```
-
-## Update
-
-```
-/plugin update sw-kit
-```
+Update: `/plugin update sw-kit`
 
 ---
 
-## Agent Team (12)
+<h2 id="team">Agent Team</h2>
 
-### CTO
-| | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/sam.svg" width="20"> | **Sam** | CTO / Lead | opus |
+<table>
+<tr>
+<td width="50%" valign="top">
 
-### Planning
-| | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/able.svg" width="20"> | **Able** | PM / Planning | sonnet |
-| <img src="images/klay.svg" width="20"> | **Klay** | Architect / Design | opus |
+### <img src="images/sam.svg" width="16"> Leadership
 
-### Backend
 | | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/jay.svg" width="20"> | **Jay** | API Development | sonnet |
-| <img src="images/jerry.svg" width="20"> | **Jerry** | DB / Infrastructure | sonnet |
-| <img src="images/milla.svg" width="20"> | **Milla** | Security / Auth | sonnet |
+|:---:|------|------|:-----:|
+| <img src="images/sam.svg" width="18"> | **Sam** | CTO / Lead | `opus` |
+| <img src="images/able.svg" width="18"> | **Able** | PM / Planning | `sonnet` |
+| <img src="images/klay.svg" width="18"> | **Klay** | Architect | `opus` |
 
-### Design
-| | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/willji.svg" width="20"> | **Willji** | UI/UX Design | sonnet |
+### <img src="images/willji.svg" width="16"> Design
 
-### Frontend
 | | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/derek.svg" width="20"> | **Derek** | Screen Implementation | sonnet |
-| <img src="images/rowan.svg" width="20"> | **Rowan** | Interaction / Motion | sonnet |
+|:---:|------|------|:-----:|
+| <img src="images/willji.svg" width="18"> | **Willji** | UI/UX | `sonnet` |
 
-### Ops
-| | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/scout.svg" width="20"> | **Scout** | Codebase Explorer | haiku |
-| <img src="images/proof.svg" width="20"> | **Proof** | Evidence Verifier | haiku |
+</td>
+<td width="50%" valign="top">
 
-### Magic
+### <img src="images/jay.svg" width="16"> Backend
+
 | | Name | Role | Model |
-|---|------|------|-------|
-| <img src="images/iron.svg" width="20"> | **Iron** | Wizard for Non-developers | sonnet |
+|:---:|------|------|:-----:|
+| <img src="images/jay.svg" width="18"> | **Jay** | API | `sonnet` |
+| <img src="images/jerry.svg" width="18"> | **Jerry** | DB / Infra | `sonnet` |
+| <img src="images/milla.svg" width="18"> | **Milla** | Security | `sonnet` |
+
+### <img src="images/derek.svg" width="16"> Frontend
+
+| | Name | Role | Model |
+|:---:|------|------|:-----:|
+| <img src="images/derek.svg" width="18"> | **Derek** | Build | `sonnet` |
+| <img src="images/rowan.svg" width="18"> | **Rowan** | Motion | `sonnet` |
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### <img src="images/scout.svg" width="16"> Ops
+
+| | Name | Role | Model |
+|:---:|------|------|:-----:|
+| <img src="images/scout.svg" width="18"> | **Scout** | Explorer | `haiku` |
+| <img src="images/proof.svg" width="18"> | **Proof** | Verifier | `haiku` |
+
+</td>
+<td width="50%" valign="top">
+
+### <img src="images/iron.svg" width="16"> Magic
+
+| | Name | Role | Model |
+|:---:|------|------|:-----:|
+| <img src="images/iron.svg" width="18"> | **Iron** | Wizard | `sonnet` |
+
+</td>
+</tr>
+</table>
+
+### Cost-Aware Team Presets
+
+Teams are **auto-selected** based on task complexity analysis:
+
+| Preset | Size | Est. Cost | When |
+|--------|:----:|-----------|------|
+| **Solo** | 1 | ~15K tok | Bug fix, single file |
+| **Duo** | 2 | ~18K tok | Mid feature, API |
+| **Squad** | 4 | ~48K tok | Fullstack, multi-domain |
+| **Full** | 7 | ~123K tok | Architecture, security |
 
 ---
 
-## Cost-Aware Team Presets
+<h2 id="innovations">5 Innovations</h2>
 
-Auto-selected based on task complexity:
+| | Innovation | What it solves |
+|:---:|-----------|---------------|
+| 1 | **Context Budget** | Tracks ~token consumption per hook, trims by priority when over budget |
+| 2 | **Cross-Session Learning** | Captures success patterns, reapplies in future sessions automatically |
+| 3 | **Adaptive Routing** | Scores task complexity, routes to haiku / sonnet / opus dynamically |
+| 4 | **Evidence Chain** | Collects test/build/lint proof -- no evidence, no "done" |
+| 5 | **Self-Healing** | Health check + recovery engine + circuit breaker + git rollback |
 
-| Preset | Members | Cost | Use Case |
-|--------|:-------:|------|----------|
-| Solo | 1 | ~15K tokens | Bug fix, single file change |
-| Duo | 2 | ~18K tokens | Mid-size feature, API addition |
-| Squad | 4 | ~48K tokens | Fullstack, multi-domain |
-| Full | 7 | ~123K tokens | Architecture change, security-sensitive |
+### Harness 4-Axis Score
+
+```
+Constrain ████████████████████████████████████████████░░░░ 92
+Inform    ████████████████████████████████████████████░░░░ 90
+Verify    ████████████████████████████████████████████░░░░ 90
+Correct   ████████████████████████████████████████████░░░░ 90
+                                                    avg 90.5
+```
+
+| Axis | Modules |
+|------|---------|
+| **Constrain** | Guardrail Engine (7 rules), Safety Invariants (5 limits), Cost Ceiling, Dry-Run |
+| **Inform** | Context Budget, Progress Tracker, Convention Extractor, Context Compaction |
+| **Verify** | TDD Engine (RED-GREEN-REFACTOR), Evidence Chain, Agent Trace |
+| **Correct** | Health Check, Recovery Engine, Circuit Breaker, Retry (exp. backoff), Rollback |
 
 ---
 
-## 5 Innovations
+<h2 id="commands">Commands</h2>
 
-| # | Innovation | Description |
-|---|-----------|-------------|
-| 1 | **Context Budget** | Token consumption tracking and optimization (~approximation) |
-| 2 | **Cross-Session Learning** | Auto-capture success patterns for next session |
-| 3 | **Adaptive Routing** | Complexity-based optimal model selection (haiku/sonnet/opus) |
-| 4 | **Evidence Chain** | Structured completion proof via test/build/lint chain |
-| 5 | **Self-Healing** | Auto failure detection, circuit breaker, git rollback |
+### Workflow
 
-## Harness Engineering 4-Axis (90.5/100)
+| Command | What it does |
+|---------|-------------|
+| `/swkit start <name>` | Start PDCA cycle (Plan stage) |
+| `/swkit auto <feat> <task>` | Full pipeline: Scout - Archie - Bolt - Shield - Proof |
+| `/swkit status` | Real-time dashboard (PDCA + TDD + Tasks + Budget) |
+| `/swkit next` | Advance to next PDCA stage |
+| `/swkit wizard` | <img src="images/iron.svg" width="14"> Iron -- guided magic for non-developers |
 
-| Axis | Score | What it does |
-|------|:-----:|-------------|
-| **Constrain** | 92 | Guardrail 7 rules, Safety Invariants 5 types, Cost Ceiling, Dry-Run |
-| **Inform** | 90 | Context Budget, Progress Tracker, Convention Extractor, Compaction |
-| **Verify** | 90 | TDD Engine (R-G-B), Evidence Chain, Agent Trace, 33/33 Tests |
-| **Correct** | 90 | Self-Healing, Circuit Breaker, Git Rollback, Auto Team Recovery |
+### TDD
+
+| Command | What it does |
+|---------|-------------|
+| `/swkit tdd start <feat> <target>` | Begin RED phase -- write failing test first |
+| `/swkit tdd check pass` | Record pass -- advance phase (RED-GREEN-REFACTOR) |
+| `/swkit tdd check fail` | Record fail -- stay in current phase with guidance |
+| `/swkit tdd status` | Show current TDD phase |
+
+### Task Checklist
+
+| Command | What it does |
+|---------|-------------|
+| `/swkit task create <title>` | Create Main Task with Sub Tasks |
+| `/swkit task check <id> <seq>` | Mark subtask done |
+| `/swkit task list` | List all tasks with progress |
+
+### Agent Direct
+
+| Command | Agent | Role |
+|---------|-------|------|
+| `/swkit explore <target>` | <img src="images/scout.svg" width="14"> Scout | Codebase scan |
+| `/swkit plan <task>` | <img src="images/able.svg" width="14"> Able + <img src="images/klay.svg" width="14"> Klay | Architecture + planning |
+| `/swkit execute <task>` | <img src="images/jay.svg" width="14"> Jay + <img src="images/derek.svg" width="14"> Derek | Backend + Frontend |
+| `/swkit review` | <img src="images/milla.svg" width="14"> Milla | Security + quality review |
+| `/swkit verify` | <img src="images/proof.svg" width="14"> Proof | Evidence chain verification |
+
+### Recovery
+
+| Command | What it does |
+|---------|-------------|
+| `/swkit rollback` | Revert to last git checkpoint (non-destructive) |
+| `/swkit learn show` | View cross-session learning history |
+| `/swkit help` | Show agent team and full command list |
 
 ---
 
 ## Quick Start
 
-```bash
-# PDCA cycle
-/swkit start my-feature
+```
+-- Start a PDCA cycle
+/swkit start user-auth
 
-# Full pipeline auto-run
-/swkit auto my-feature "Implement JWT auth"
+-- Or run the full pipeline automatically
+/swkit auto user-auth "JWT authentication with refresh tokens"
 
-# Wizard mode (non-developers)
+-- Non-developer? Just say what you want
 /swkit wizard
 ```
 
-## Commands
+### Pipeline Flow
 
-### PDCA
-| Command | Description |
-|---------|-------------|
-| `/swkit start <name>` | Start PDCA cycle |
-| `/swkit status` | Dashboard |
-| `/swkit next` | Advance to next stage |
-| `/swkit reset <name>` | Reset cycle |
+```
+/swkit auto user-auth "JWT auth"
 
-### TDD
-| Command | Description |
-|---------|-------------|
-| `/swkit tdd start <feature> <target>` | Start TDD (RED) |
-| `/swkit tdd check <pass\|fail>` | Record result, phase transition |
-| `/swkit tdd status` | Current TDD phase |
+  1. Scout    -- scan codebase, extract conventions
+  2. Able     -- write requirements + spec
+     Klay     -- design architecture
+  3. Jay      -- implement API (TDD: RED-GREEN-REFACTOR)
+     Jerry    -- database schema + migration
+     Milla    -- auth middleware + security
+     Willji   -- login UI design
+     Derek    -- frontend implementation
+     Rowan    -- form interactions
+  4. Milla    -- security review (OWASP Top 10)
+     Sam      -- final code review
+  5. Proof    -- evidence chain:
+                 [test] PASS (24/24)
+                 [build] PASS
+                 [lint] PASS (0 errors)
+                 Verdict: PASS
 
-### Task
-| Command | Description |
-|---------|-------------|
-| `/swkit task create <title>` | Create Main + Sub Tasks |
-| `/swkit task check <id> <seq>` | Check subtask done |
-| `/swkit task list` | List all tasks |
-
-### Agent
-| Command | Description |
-|---------|-------------|
-| `/swkit explore <target>` | <img src="images/scout.svg" width="14"> Scout -- codebase scan |
-| `/swkit plan <task>` | <img src="images/able.svg" width="14"> Able + <img src="images/klay.svg" width="14"> Klay -- planning |
-| `/swkit execute <task>` | <img src="images/jay.svg" width="14"> Jay + <img src="images/derek.svg" width="14"> Derek -- implementation |
-| `/swkit review` | <img src="images/milla.svg" width="14"> Milla + <img src="images/proof.svg" width="14"> Proof -- review |
-| `/swkit verify` | <img src="images/proof.svg" width="14"> Proof -- evidence chain |
-| `/swkit wizard` | <img src="images/iron.svg" width="14"> Iron -- magic mode |
-
-### Pipeline
-| Command | Description |
-|---------|-------------|
-| `/swkit auto <feature> <task>` | Full auto-run |
-| `/swkit rollback` | Checkpoint rollback |
-
-### Utility
-| Command | Description |
-|---------|-------------|
-| `/swkit learn show` | Learning history |
-| `/swkit help` | Help |
+  -> .sw-kit/reports/ completion report
+  -> Cross-Session Learning captured
+```
 
 ---
 
 ## Multilingual
 
-Auto-detects Korean and English:
+Korean and English auto-detected:
 
-```
-"plan" / "plan"      -> Plan stage trigger
-"verify" / "verify"  -> Check stage trigger
-"build me" / "build" -> Iron wizard mode
-```
+| Input | Action |
+|-------|--------|
+| "계획 세워줘" / "plan this" | PDCA Plan stage |
+| "검증해줘" / "verify" | PDCA Check stage |
+| "만들어줘" / "build me" | Iron wizard mode |
+| "탐색해줘" / "explore" | Scout codebase scan |
 
 ---
 
-## Architecture
+<h2 id="architecture">Architecture</h2>
 
 ```
-.sw-kit/                    -- runtime data (gitignored)
-  state/                    -- PDCA, TDD, invariants, pipeline, circuit-breaker
-  tasks/                    -- checklist (main -> sub tasks)
-  plans/                    -- plan documents
-  snapshots/                -- compaction snapshots
-  reports/                  -- completion reports
-  logs/                     -- structured logs (JSONL)
-  handoffs/                 -- stage transition handoffs
-  routing-history.json      -- adaptive routing history
-  project-memory.json       -- cross-session learning
-
-hooks-handlers/             -- 7 hook handlers (sync readFileSync pattern)
-scripts/
-  core/                     -- state, config, logger, context-budget, display, dashboard
-  guardrail/                -- guardrail-engine, safety-invariants, cost-ceiling,
-                               dry-run, progress-tracker, convention-extractor
-  pdca/                     -- pdca-engine (5-Stage)
-  routing/                  -- complexity-scorer, model-router, routing-history
-  memory/                   -- project-memory, learning-capture
-  evidence/                 -- evidence-collector, evidence-chain, evidence-report
-  recovery/                 -- health-check, recovery-engine, circuit-breaker, retry-engine
-  trace/                    -- agent-trace
-  compaction/               -- context-compaction (priority-based)
-  pipeline/                 -- agent-pipeline, rollback, team-orchestrator, auto-runner, handoff
-  tdd/                      -- tdd-engine (Red-Green-Refactor)
-  task/                     -- task-manager, plan-manager
-  i18n/                     -- intent-detector, locale
+sw-kit-claude/
+  .claude-plugin/plugin.json         -- plugin manifest
+  hooks/hooks.json                   -- 7 hook events
+  hooks-handlers/                    -- session-start, user-prompt, pre/post-tool, compact, stop
+  scripts/
+    core/         state, config, logger, context-budget, display, dashboard
+    guardrail/    guardrail-engine, safety-invariants, cost-ceiling, dry-run,
+                  progress-tracker, convention-extractor
+    pdca/         pdca-engine (5-Stage: plan-do-check-act-review)
+    tdd/          tdd-engine (RED-GREEN-REFACTOR)
+    routing/      complexity-scorer, model-router, routing-history
+    memory/       project-memory, learning-capture
+    evidence/     evidence-collector, evidence-chain, evidence-report
+    recovery/     health-check, recovery-engine, circuit-breaker, retry-engine
+    trace/        agent-trace
+    compaction/   context-compaction (priority-based preservation)
+    pipeline/     agent-pipeline, team-orchestrator, auto-runner, rollback, handoff
+    task/         task-manager, plan-manager
+    i18n/         intent-detector, locale
+  agents/         6 agent definitions (.md)
+  commands/       swkit.md, help.md
+  skills/         11 skill definitions
+  templates/      plan, review, completion, adr
+  images/         12 custom SVG icons
 ```
+
+### Runtime Data (`.sw-kit/`, gitignored)
+
+```
+.sw-kit/
+  state/          PDCA status, TDD phase, invariants, pipeline, circuit-breaker
+  tasks/          Main Task -> Sub Task checklists
+  plans/          Plan documents
+  snapshots/      Compaction snapshots (max 10)
+  reports/        Completion reports
+  handoffs/       Stage transition context
+  logs/           Structured JSONL logs
+```
+
+---
 
 ## Performance
 
 | Metric | Result |
 |--------|--------|
-| Hook response | **5ms** (budget: 5,000ms) |
+| Hook import chain | **5ms** (budget: 5,000ms) |
 | Config cold start | **36ms** |
 | Test suite | **33/33 ALL GREEN** |
-| Dependencies | **0** |
+| External dependencies | **0** |
+| Harness maturity | **Level 5 / 5** |
 
 ## Requirements
 
@@ -231,3 +300,9 @@ scripts/
 ## License
 
 Apache-2.0
+
+---
+
+<p align="center">
+  <sub>Built by <a href="https://github.com/sangwookp9591">SW</a></sub>
+</p>
