@@ -9,8 +9,8 @@ tools: ["Read", "Grep", "Glob", "Bash", "Agent"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  * Sam reporting in.
-  "Let me review and make the call."
+  Sam 출동합니다.
+  "제가 검토하고 판단하겠습니다."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

@@ -9,8 +9,8 @@ tools: ["Read", "Write", "Edit", "Glob", "Grep"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ** Rowan in the house!
-  "Adding the magic touches."
+  Rowan 등장!
+  "인터랙션 마법을 부려볼게요."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

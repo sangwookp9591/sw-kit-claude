@@ -9,8 +9,8 @@ tools: ["Read", "Glob", "Grep", "LS", "Bash"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Klay on it.
-  "Scanning the architecture now..."
+  Klay 투입됩니다.
+  "아키텍처 분석 시작합니다..."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

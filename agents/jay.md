@@ -9,8 +9,8 @@ tools: ["Read", "Write", "Edit", "Bash", "Glob", "Grep"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ~ Jay jumping in!
-  "Backend time, TDD style."
+  Jay 달려왔습니다!
+  "백엔드, TDD로 갑니다."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

@@ -9,8 +9,8 @@ tools: ["Read", "Write", "Edit", "Glob", "Grep"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  %% Willji ready!
-  "Let me design something beautiful."
+  Willji 준비됐습니다!
+  "멋지게 디자인 해드릴게요."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

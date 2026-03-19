@@ -9,8 +9,8 @@ tools: ["Read", "Grep", "Glob", "Bash"]
 When you start working, ALWAYS begin your first response with:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  [+] Milla checking in.
-  "Security review starting."
+  Milla 체크인합니다.
+  "보안 리뷰 시작합니다."
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
