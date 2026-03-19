@@ -32,7 +32,29 @@ TaskCreate({ subject: "[Jay] Backend API", description: "<task details>" })
 TaskUpdate({ taskId: "1", owner: "jay" })
 ```
 
-## Step 4: Spawn Workers (PARALLEL)
+## Step 4: Announce Agent Deployment
+
+**MANDATORY**: Before spawning, display the agent deployment table to the user:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  sw-kit: 에이전트 투입
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Agent        Role              Model    Task
+  ─────        ────              ─────    ────
+  Klay         Architect         opus     아키텍처 탐색 + 구조 분석
+  Jay          Backend / API     sonnet   엔드포인트 구현 (TDD)
+  Milla        Security          sonnet   보안 리뷰 + 코드 품질
+  Sam          CTO / Verify      haiku    증거 수집 + 최종 판정
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+This table must show EVERY agent being spawned, their role, model, and specific task.
+Never skip this step. The user must see who is doing what before agents start working.
+
+## Step 5: Spawn Workers (PARALLEL)
 
 Spawn ALL workers in parallel using Task with team_name:
 
@@ -61,13 +83,13 @@ Each spawned agent MUST include in their prompt:
 4. Evidence collection requirement
 5. SendMessage to "team-lead" on completion
 
-## Step 5: Monitor
+## Step 6: Monitor
 
 - Messages from teammates arrive automatically
 - Use TaskList to check progress
 - If a worker fails, reassign or retry
 
-## Step 6: Completion Report
+## Step 7: Completion Report
 
 After all tasks complete, ALWAYS display the team activity report:
 
@@ -102,7 +124,7 @@ After all tasks complete, ALWAYS display the team activity report:
 
 This report is MANDATORY. Never skip it. Include every agent that participated.
 
-## Step 7: Shutdown
+## Step 8: Shutdown
 
 After displaying the completion report:
 1. SendMessage shutdown_request to each worker

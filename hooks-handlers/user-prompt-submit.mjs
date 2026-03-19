@@ -36,19 +36,36 @@ try {
   const team = selectTeam(signals);
   const cost = estimateTeamCost(team.preset);
 
-  // Always show team recommendation
+  // Always show team recommendation with agent deployment table
   parts.push(`[sw-kit Team] ${team.team.name} (${team.team.workers.length}명, ${cost.estimated})`);
-  parts.push(`Members: ${team.team.workers.map(w => w.name).join(', ')}`);
+  parts.push('');
+  parts.push('  Agent        Role                    Model    Task');
+  parts.push('  ─────        ────                    ─────    ────');
+  for (const w of team.team.workers) {
+    const name = w.name.charAt(0).toUpperCase() + w.name.slice(1);
+    const padName = name.padEnd(12);
+    const padRole = w.role.replace(/^[^\s]+\s/, '').padEnd(23); // strip emoji prefix
+    const padModel = w.model.padEnd(8);
+    const taskHint = {
+      planner: '작업 분해 + 계획 수립',
+      executor: '코드 구현 (TDD)',
+      reviewer: '보안/품질 리뷰',
+      sam: '증거 수집 + 최종 판정',
+    }[w.agent] || w.agent;
+    parts.push(`  ${padName} ${padRole} ${padModel} ${taskHint}`);
+  }
+  parts.push('');
 
   // Intent-specific guidance
   if (intent.isWizardMode) {
-    parts.push('Iron wizard mode -- guide step by step.');
+    parts.push('Iron(Wizard) 마법사 모드 — 질문-응답으로 단계별 진행합니다.');
   } else if (intent.pdcaStage === 'plan') {
-    parts.push('Klay scans -> Able plans -> .sw-kit/plans/ -> "/swkit auto" to execute.');
+    parts.push('Klay(Architect)가 코드 탐색 → Able(PM)이 계획 수립 → .sw-kit/plans/ 저장 → "/swkit auto"로 실행.');
   } else if (intent.pdcaStage === 'do') {
-    parts.push(`Executing with ${team.team.workers.map(w => w.name).join(' + ')}. TDD enforced.`);
+    const agents = team.team.workers.map(w => `${w.name.charAt(0).toUpperCase() + w.name.slice(1)}(${w.role.replace(/^[^\s]+\s/, '').split(' ')[0]})`).join(' + ');
+    parts.push(`${agents} 투입하여 TDD 기반 구현 진행.`);
   } else if (intent.pdcaStage === 'check') {
-    parts.push('Milla security review + Sam evidence chain verification.');
+    parts.push('Milla(Security)가 보안 리뷰 + Sam(CTO)이 증거 체인 검증.');
   }
 
   process.stdout.write(JSON.stringify({

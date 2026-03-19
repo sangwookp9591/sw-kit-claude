@@ -194,13 +194,27 @@ export function formatTeamSelection(selection) {
     `[sw-kit Team] Auto-selected: ${team.name}`,
     `  ${reason}`,
     '',
-    `  Team Members:`
+    '  ┌──────────────┬─────────────────────────┬─────────┬──────────────────────┐',
+    '  │ Agent        │ Role                    │ Model   │ Task                 │',
+    '  ├──────────────┼─────────────────────────┼─────────┼──────────────────────┤',
   ];
 
+  const AGENT_TASKS = {
+    planner: '작업 분해 + 계획 수립',
+    executor: '코드 구현 (TDD)',
+    reviewer: '보안/품질 리뷰',
+    sam: '증거 수집 + 최종 판정',
+  };
+
   for (const w of team.workers) {
-    lines.push(`    ${w.role} [${w.model}]`);
+    const name = (w.name.charAt(0).toUpperCase() + w.name.slice(1)).padEnd(12);
+    const role = w.role.replace(/^[^\s]+\s/, '').padEnd(23);
+    const model = w.model.padEnd(7);
+    const task = (AGENT_TASKS[w.agent] || w.agent).padEnd(20);
+    lines.push(`  │ ${name} │ ${role} │ ${model} │ ${task} │`);
   }
 
+  lines.push('  └──────────────┴─────────────────────────┴─────────┴──────────────────────┘');
   lines.push('');
   lines.push(`  Estimated cost: ${cost.estimated}`);
   lines.push(`  Description: ${team.description}`);

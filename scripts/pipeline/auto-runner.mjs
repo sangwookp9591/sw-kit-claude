@@ -182,7 +182,7 @@ export function generateAutoRun(params, projectDir) {
  */
 export function formatAutoRun(runPlan) {
   const lines = [
-    `[sw-kit Auto] 🚀 ${runPlan.feature}`,
+    `[sw-kit Auto] ${runPlan.feature}`,
     '',
     runPlan.selection,
     '',
@@ -199,6 +199,17 @@ export function formatAutoRun(runPlan) {
     }[phase.phase] || '📌';
 
     lines.push(`  ${icon} ${phase.description} (${phase.toolCalls.length} calls)`);
+
+    // Show agent deployment details for spawn-workers phase
+    if (phase.phase === 'spawn-workers') {
+      for (const call of phase.toolCalls) {
+        const p = call.params;
+        const name = (p.name || '').charAt(0).toUpperCase() + (p.name || '').slice(1);
+        const agent = (p.subagent_type || '').replace('sw-kit:', '');
+        const model = p.model || 'sonnet';
+        lines.push(`     → ${name}(${agent}/${model}) 투입`);
+      }
+    }
   }
 
   const totalCalls = runPlan.phases.reduce((s, p) => s + p.toolCalls.length, 0);

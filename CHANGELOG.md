@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.8.1] - 2026-03-19
+
+### Added
+- **Status Line HUD** — 터미널 하단에 활성 에이전트를 깜빡이는 컬러 점으로 실시간 표시
+  - `scripts/hud/statusline.mjs`: ANSI 컬러 깜빡이는 점 + 에이전트명(역할) + 컨텍스트% + PDCA 상태
+  - `~/.claude/hud/swkit-hud.mjs`: 래퍼 스크립트 (dev/cache/marketplace 경로 자동 탐색)
+  - 에이전트별 고유 색상: Sam(보라), Able(파랑), Klay(노랑), Jay(초록), Jerry(시안), Milla(빨강), Derek(밝은노랑), Rowan(흰색), Willji(마젠타), Iron(파랑)
+  - 시간 기반 ●/○ 토글로 깜빡이는 효과
+- **초기 설치 시 Status Line 설정 프롬프트** — 첫 세션에서 HUD 활성화 여부 안내
+- **Agent Deployment Announcement** — 에이전트 투입 시 누가(이름) + 뭘(역할) + 어떻게(작업) 명시적 표출
+  - `session-start.mjs`: Rule 2에 Agent Deployment Announcement 추가 (single/multi 에이전트 모두)
+  - `user-prompt-submit.mjs`: 팀 추천 시 Agent/Role/Model/Task 테이블 표시
+  - `team-orchestrator.mjs`: `formatTeamSelection()` 테이블 형식으로 개선
+  - `auto-runner.mjs`: `formatAutoRun()` spawn-workers 단계에 에이전트별 투입 라인 추가
+  - `skills/auto/SKILL.md`: Step 4 "Announce Agent Deployment" 단계 신설 (총 8 Step)
+  - `skills/explore/SKILL.md`: Agent Deployment 공지 섹션 추가
+  - `skills/plan-task/SKILL.md`: Agent Deployment 공지 섹션 추가
+  - `skills/review-code/SKILL.md`: Agent Deployment 공지 섹션 추가
+
 ## [1.3.2] - 2026-03-19
 
 ### Fixed

@@ -13,4 +13,12 @@ triggers: ["explore", "탐색", "찾아", "구조", "분석"]
 /swkit explore "auth 모듈"
 ```
 
+## Agent Deployment
+
+Before spawning the agent, ALWAYS announce:
+
+```
+[sw-kit] Klay(Architect/haiku) 투입 — 코드베이스 탐색
+```
+
 🔍 Klay (haiku) 에이전트가 빠르게 코드베이스를 스캔합니다.

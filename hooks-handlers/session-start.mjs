@@ -9,6 +9,8 @@ import { resetBudget, trackInjection, trimToTokenBudget } from '../scripts/core/
 import { getProgressSummary } from '../scripts/guardrail/progress-tracker.mjs';
 import { resetTrackers } from '../scripts/guardrail/safety-invariants.mjs';
 import { join } from 'node:path';
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 
 const log = createLogger('session-start');
 
@@ -25,7 +27,7 @@ try {
   const ctx = [];
 
   // === Header ===
-  ctx.push(`# sw-kit v1.7.0 Harness Engineering Agent`);
+  ctx.push(`# sw-kit v1.8.1 Harness Engineering Agent`);
   ctx.push(`For developers: the ultimate assistant. For everyone: the ultimate magician.`);
   ctx.push('');
 
@@ -71,8 +73,23 @@ try {
   ctx.push(`- Squad(4): fullstack, multi-domain -> Able + Jay + Derek + Sam`);
   ctx.push(`- Full(7): architecture, security -> Able + Klay + Jay + Jerry + Milla + Derek + Sam`);
   ctx.push('');
-  ctx.push(`### Rule 2: Agent Entrance (Required when agent is invoked)`);
-  ctx.push(`When calling a named agent, show their entrance banner:`);
+  ctx.push(`### Rule 2: Agent Deployment Announcement (MANDATORY)`);
+  ctx.push(`Before spawning ANY agent, ALWAYS announce who is being deployed:`);
+  ctx.push(`- Single agent: "[sw-kit] {Name}({Role}/{Model}) 투입 — {task summary}"`);
+  ctx.push(`- Multi agent: Show deployment table with Agent/Role/Model/Task columns`);
+  ctx.push(`Example single: "[sw-kit] Klay(Architect/haiku) 투입 — 코드베이스 탐색"`);
+  ctx.push(`Example multi:`);
+  ctx.push('```');
+  ctx.push(`[sw-kit] 에이전트 투입`);
+  ctx.push(`  Agent        Role              Model    Task`);
+  ctx.push(`  ─────        ────              ─────    ────`);
+  ctx.push(`  Jay          Backend / API     sonnet   엔드포인트 구현 (TDD)`);
+  ctx.push(`  Milla        Security          sonnet   보안 리뷰 + 코드 품질`);
+  ctx.push('```');
+  ctx.push(`Never spawn agents silently. The user must ALWAYS see who is doing what.`);
+  ctx.push('');
+  ctx.push(`### Rule 3: Agent Entrance (Required when agent starts working)`);
+  ctx.push(`Each agent shows their entrance banner when they start:`);
   ctx.push('```');
   ctx.push(`Sam: "Sam 출동합니다. 제가 검토하고 판단하겠습니다."`);
   ctx.push(`Able: "Able 왔습니다! 깔끔하게 계획 짜드릴게요."`);
@@ -86,7 +103,7 @@ try {
   ctx.push(`Iron: "Iron 가동합니다. 오늘 무엇을 만들어볼까요?"`);
   ctx.push('```');
   ctx.push('');
-  ctx.push(`### Rule 3: Completion Report (Required at task end)`);
+  ctx.push(`### Rule 4: Completion Report (Required at task end)`);
   ctx.push(`At the end of every completed task, show this report:`);
   ctx.push('```');
   ctx.push(`sw-kit Report`);
@@ -98,12 +115,48 @@ try {
   ctx.push(`---`);
   ctx.push('```');
   ctx.push('');
-  ctx.push(`### Rule 4: TDD Enforcement`);
+  ctx.push(`### Rule 5: TDD Enforcement`);
   ctx.push(`All code implementation MUST follow TDD: write test first (RED), implement (GREEN), refactor (REFACTOR).`);
   ctx.push('');
-  ctx.push(`### Rule 5: Evidence Required`);
+  ctx.push(`### Rule 6: Evidence Required`);
   ctx.push(`Never claim "done" without evidence. Run tests, build, or lint to prove completion.`);
   ctx.push('');
+
+  // === Status Line Setup ===
+  const home = homedir();
+  const settingsPath = join(home, '.claude', 'settings.json');
+  const hudSetupFlag = join(projectDir, '.sw-kit', 'state', 'hud-setup-done');
+
+  if (!existsSync(hudSetupFlag)) {
+    try {
+      let needsSetup = true;
+      if (existsSync(settingsPath)) {
+        const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+        if (settings?.statusLine?.command?.includes('swkit-hud')) {
+          needsSetup = false;
+        }
+      }
+      if (needsSetup) {
+        ctx.push('');
+        ctx.push(`## Status Line Setup`);
+        ctx.push(`sw-kit은 터미널 하단에 활성 에이전트를 깜빡이는 컬러 점으로 표시하는 Status Line을 제공합니다.`);
+        ctx.push(`설정하려면 사용자에게 물어보세요:`);
+        ctx.push(`"sw-kit Status Line을 활성화하시겠습니까? 터미널 하단에 활성 에이전트(예: ● Jay(Backend) ● Milla(Security))가 실시간 표시됩니다."`);
+        ctx.push(`승인 시: settings.json의 statusLine을 다음으로 설정:`);
+        ctx.push('```json');
+        ctx.push(`"statusLine": { "type": "command", "command": "node $HOME/.claude/hud/swkit-hud.mjs" }`);
+        ctx.push('```');
+        ctx.push(`그리고 래퍼 스크립트가 없으면 $HOME/.claude/hud/swkit-hud.mjs를 생성해주세요.`);
+        ctx.push(`설정 완료 후 .sw-kit/state/hud-setup-done 파일을 생성하여 다시 물어보지 않도록 합니다.`);
+      }
+      // Mark as prompted (even if already configured)
+      const stateDir = join(projectDir, '.sw-kit', 'state');
+      if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
+      writeFileSync(hudSetupFlag, new Date().toISOString());
+    } catch {
+      // Silent failure
+    }
+  }
 
   // === Commands ===
   ctx.push(`## Commands`);
