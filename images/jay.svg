@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16 16">
+<!-- Jay: Laughing guy center-parted hair pixel art -->
+<rect x="4" y="0" width="3" height="1" fill="#1e1b4b"/>
+<rect x="9" y="0" width="3" height="1" fill="#1e1b4b"/>
+<rect x="3" y="1" width="4" height="1" fill="#1e1b4b"/>
+<rect x="9" y="1" width="4" height="1" fill="#1e1b4b"/>
+<rect x="7" y="0" width="2" height="2" fill="#fcd9b6"/>
+<rect x="3" y="2" width="10" height="1" fill="#fcd9b6"/>
+<rect x="3" y="3" width="10" height="1" fill="#fcd9b6"/>
+<rect x="4" y="3" width="2" height="1" fill="#fff"/>
+<rect x="5" y="3" width="1" height="1" fill="#ea580c"/>
+<rect x="10" y="3" width="2" height="1" fill="#fff"/>
+<rect x="10" y="3" width="1" height="1" fill="#ea580c"/>
+<rect x="3" y="4" width="10" height="1" fill="#fcd9b6"/>
+<rect x="4" y="4" width="1" height="1" fill="#fca5a5"/>
+<rect x="11" y="4" width="1" height="1" fill="#fca5a5"/>
+<rect x="3" y="5" width="10" height="1" fill="#fcd9b6"/>
+<rect x="5" y="5" width="6" height="1" fill="#fff"/>
+<rect x="4" y="6" width="8" height="1" fill="#fcd9b6"/>
+<rect x="5" y="7" width="6" height="1" fill="#fcd9b6"/>
+<rect x="3" y="8" width="10" height="1" fill="#fb923c"/>
+<rect x="3" y="9" width="10" height="2" fill="#ea580c"/>
+<rect x="7" y="8" width="2" height="1" fill="#c2410c"/>
+<rect x="4" y="11" width="3" height="2" fill="#1e3a5f"/>
+<rect x="9" y="11" width="3" height="2" fill="#1e3a5f"/>
+</svg>

@@ -1,1 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f0abfc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16 16">
+<!-- Willji: Shiba Inu / Doge pixel art - such wow -->
+<rect x="3" y="0" width="2" height="2" fill="#d97706"/>
+<rect x="11" y="0" width="2" height="2" fill="#d97706"/>
+<rect x="4" y="2" width="8" height="1" fill="#f59e0b"/>
+<rect x="3" y="3" width="10" height="1" fill="#fbbf24"/>
+<rect x="2" y="4" width="12" height="1" fill="#fbbf24"/>
+<rect x="2" y="5" width="12" height="1" fill="#fbbf24"/>
+<rect x="5" y="5" width="1" height="1" fill="#1e1b4b"/>
+<rect x="10" y="5" width="1" height="1" fill="#1e1b4b"/>
+<rect x="2" y="6" width="12" height="1" fill="#fde68a"/>
+<rect x="7" y="6" width="2" height="1" fill="#1e1b4b"/>
+<rect x="2" y="7" width="12" height="1" fill="#fde68a"/>
+<rect x="5" y="7" width="6" height="1" fill="#fef3c7"/>
+<rect x="3" y="8" width="10" height="1" fill="#fbbf24"/>
+<rect x="6" y="8" width="1" height="1" fill="#fca5a5"/>
+<rect x="9" y="8" width="1" height="1" fill="#fca5a5"/>
+<rect x="4" y="9" width="8" height="1" fill="#f59e0b"/>
+<rect x="5" y="10" width="6" height="1" fill="#f59e0b"/>
+<rect x="4" y="11" width="8" height="2" fill="#fbbf24"/>
+<rect x="4" y="13" width="3" height="1" fill="#d97706"/>
+<rect x="9" y="13" width="3" height="1" fill="#d97706"/>
+</svg>
