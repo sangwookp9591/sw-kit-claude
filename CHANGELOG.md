@@ -1,34 +1,92 @@
 # Changelog
 
+## [1.2.0] - 2026-03-19
+
+### Added
+- **Cost-Aware Team Orchestrator** — 작업 복잡도 자동 분석 → 최적 팀 구성
+  - 4개 프리셋: Solo(1명/~15K), Duo(2명/~18K), Squad(4명/~48K), Full(7명/~123K)
+  - 보안 작업 자동 감지 → Milla 자동 포함
+  - 워커 프롬프트에 TDD + Evidence Chain 강제
+  - 토큰 비용 추정 기능
+- **12명 에이전트 팀** — 역할별 전문 에이전트
+  - 👑 Sam (CTO), 🎯 Able (PM), 📐 Klay (Architect)
+  - ⚙️ Jay (API), 🗄️ Jerry (DB), 🔒 Milla (Security)
+  - 🎨 Willji (UI/UX), 🖥️ Derek (Frontend), ✨ Rowan (Interaction)
+  - 🔍 Scout (Explorer), ✅ Proof (Verifier), 🪄 Iron (Wizard)
+
+### Performance
+- Hook import chain: **5ms** (5,000ms budget의 0.1%)
+- Config cold start: **36ms**
+- Test suite: **30/30 ALL GREEN**
+- Harness 4-Axis: **90.5/100**
+
+## [1.1.0] - 2026-03-19
+
+### Added
+- **TDD Engine** — Red→Green→Refactor 사이클 강제
+  - 테스트 작성 → 실패 확인 → 최소 구현 → 리팩토링
+  - PDCA Check 단계와 통합
+- **Task Manager** — Main Task → Sub Tasks 계층 체크리스트
+  - `createTask()`, `checkSubtask()`, `formatTaskChecklist()`
+  - ☐/☑ 체크리스트 추적, 자동 완료 판정
+- **Plan Manager** — .sw-kit/plans/ 문서 자동 생성
+  - Plan 문서 + Task 체크리스트 동시 생성
+- **9개 스킬 자동완성** — /sw-kit: 입력 시 11개 스킬 표시
+  - tdd, task, auto, rollback, explore, plan-task, review-code, verify-evidence, wizard-mode
+
+## [1.0.0] - 2026-03-19
+
+### Added
+- **Multi-Agent Pipeline** — Scout→Archie→Bolt→Shield→Proof 자동 체인
+  - 5단계 순차 파이프라인 with 상태 관리
+  - Pipeline 상태 표시 + Progress Tracker 연동
+- **Rollback System** — Git 체크포인트 기반 롤백
+  - `execFileSync` 사용 (shell injection 방지)
+  - 비파괴적 롤백: 새 브랜치 생성 + stash 보존
+
+### Test Suite
+- 21/21 → 27/27 → **30/30 ALL GREEN**
+
+## [0.5.0] - 2026-03-19
+
+### Added
+- **Cost Ceiling** — 토큰/API/세션 시간 예산 관리
+  - 80% 경고 임계값, 세션별 추적
+- **Convention Extractor** — 코드베이스 규칙 자동 감지
+  - JS/TS/Java/Python/Go/Flutter 프로젝트 지원
+  - 언어, 프레임워크, 모듈 시스템, 패키지 매니저, 린터, 테스트 프레임워크
+
+## [0.4.0] - 2026-03-19
+
+### Added
+- **Progress Tracker** — sw-kit-progress.md 생성, 세션 간 연속성
+- **Agent Trace** — 에이전트별 실행 트레이스 기록/분석
+- **Context Compaction** — 우선순위 기반 지능형 컨텍스트 보존
+  - PDCA State > Progress > Safety > Evidence > Memory 우선순위
+
+## [0.3.0] - 2026-03-19
+
+### Added
+- **Guardrail Engine** — 7개 선언적 규칙 (rm -rf, force-push, .env 보호 등)
+- **Safety Invariants** — 5종 하드 리밋 (maxSteps, maxFileChanges, forbiddenPaths 등)
+- **Dry-Run Mode** — 변경사항 대기열 + 미리보기 + 승인/거부
+- PreToolUse 훅이 Bash+Write+Edit 가드레일 체크
+
 ## [0.2.0] - 2026-03-19
 
 ### Added
-- `/swkit help` — 컬러풀한 에이전트 팀 시각화 with ANSI colors
-- Agent Team cute names: 🔍 Scout, 📋 Archie, ⚡ Bolt, 🛡️ Shield, ✅ Proof, 🪄 Iron
-- `scripts/core/display.mjs` — 재사용 가능한 터미널 UI 모듈
-- `/help` command definition
-- 5 Innovations color-coded display
-- PDCA flow visualization with active stage indicator
-- Full commands reference with emoji icons
-
-### Changed
-- Version bump to 0.2.0 (plugin.json, marketplace.json, package.json)
+- `/swkit help` — 컬러풀한 에이전트 팀 시각화
+- `scripts/core/display.mjs` — ANSI 컬러 터미널 UI
+- Agent 이름: Scout, Archie, Bolt, Shield, Proof, Iron
 
 ## [0.1.0] - 2026-03-19
 
 ### Added — Initial Release
-- **PDCA-Lite 5-Stage Engine** (Plan → Do → Check → Act → Review)
-- **5 Innovations**:
-  1. Context Budget — 토큰 소비 추적/최적화 (~근사치)
-  2. Cross-Session Learning — 성공 패턴 자동 캡처/재적용
-  3. Adaptive Routing — 복잡도 기반 동적 모델 선택 (haiku/sonnet/opus)
-  4. Evidence Chain — 구조화된 완료 증명 (test/build/lint)
-  5. Self-Healing Engine — 장애 자동 감지/복구, 서킷 브레이커
+- **PDCA-Lite 5-Stage** (Plan→Do→Check→Act→Review)
+- **5 Innovations**: Context Budget, Cross-Session Learning, Adaptive Routing, Evidence Chain, Self-Healing
 - **6 Agents**: Explorer, Planner, Executor, Reviewer, Verifier, Wizard
 - **7 Hook Handlers**: SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, Stop, StopFailure
 - **Multilingual** intent detection (한국어/English)
-- **Wizard Mode** — 비개발자를 위한 가이디드 워크플로우
-- **Atomic State Management** — temp+rename 패턴으로 상태 파일 손상 방지
+- **Atomic State** — temp+rename 패턴
 - **4 Document Templates** — plan, review, completion, ADR
-- **2 Skills** — pdca-workflow, evidence-verification
-- Zero external dependencies, ~60KB JS, Claude Code v2.1.69+
+- Zero external dependencies
