@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.8.2] - 2026-03-19
+
+### Added
+- **`/swkit start` Interactive Setup Wizard** — omc 벤치마킹 4-Phase 셋업
+  - Phase 1: 스코프 선택 (Local — 이 프로젝트만 / Global — 모든 프로젝트)
+  - Phase 2: Status Line HUD 활성화 여부
+  - Phase 3: 기본 실행 모드 선택 (auto / pdca / wizard)
+  - Phase 4: 웰컴 + GitHub star 옵션
+  - `--local`, `--global`, `--force`, `--help` 플래그 지원
+  - 중단 시 resume 가능 (24h 만료)
+- **`scripts/setup/setup-progress.mjs`** — 셋업 진행 상태 관리
+  - save/resume/clear/complete/check CLI + ESM 모듈 이중 인터페이스
+  - `~/.claude/.swkit-config.json`에 영구 설정 완료 마커 저장
+  - `.sw-kit/state/setup-state.json`에 임시 진행 상태 (24h 자동 만료)
+- **First Run Detection** — session-start에서 셋업 미완료 자동 감지
+  - 미설정: "`/swkit start`를 실행하세요" 안내
+  - 설정 완료: `Setup: global | HUD: on | Mode: auto` 컴팩트 표시
+  - 이전 PDCA 작업 존재: "Resume Available" 온보딩 표시
+
+### Changed
+- `hooks-handlers/session-start.mjs` → v1.9.0: `isSetupComplete()` 연동, 온보딩 플로우 추가
+- HUD 인라인 프롬프트 제거 → `/swkit start` 위자드에서 통합 처리
+- `skills/start/SKILL.md`: 신규 스킬 (triggers: start, setup, 초기설정, 셋업)
+
 ## [1.8.1] - 2026-03-19
 
 ### Added

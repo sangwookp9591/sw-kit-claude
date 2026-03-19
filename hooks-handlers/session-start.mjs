@@ -1,6 +1,7 @@
 /**
- * sw-kit SessionStart Hook v1.7.0
+ * sw-kit SessionStart Hook v1.9.0
  * Injects harness rules so sw-kit is ALWAYS active without explicit invocation.
+ * Detects first-run and prompts for setup via /swkit start.
  */
 import { readStateOrDefault } from '../scripts/core/state.mjs';
 import { loadConfig } from '../scripts/core/config.mjs';
@@ -8,6 +9,7 @@ import { createLogger } from '../scripts/core/logger.mjs';
 import { resetBudget, trackInjection, trimToTokenBudget } from '../scripts/core/context-budget.mjs';
 import { getProgressSummary } from '../scripts/guardrail/progress-tracker.mjs';
 import { resetTrackers } from '../scripts/guardrail/safety-invariants.mjs';
+import { isSetupComplete } from '../scripts/setup/setup-progress.mjs';
 import { join } from 'node:path';
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -21,18 +23,48 @@ try {
   resetBudget();
   resetTrackers(projectDir);
 
+  const setupStatus = isSetupComplete();
   const pdcaState = readStateOrDefault(join(projectDir, '.sw-kit', 'state', 'pdca-status.json'), null);
   const memory = readStateOrDefault(join(projectDir, '.sw-kit', 'project-memory.json'), null);
 
   const ctx = [];
 
   // === Header ===
-  ctx.push(`# sw-kit v1.8.1 Harness Engineering Agent`);
+  ctx.push(`# sw-kit v1.8.2 Harness Engineering Agent`);
   ctx.push(`For developers: the ultimate assistant. For everyone: the ultimate magician.`);
   ctx.push('');
 
-  // === Active PDCA ===
-  if (pdcaState?.activeFeature) {
+  // === Setup Check: First Run Detection ===
+  if (!setupStatus.completed) {
+    ctx.push(`## First Run — Setup Required`);
+    ctx.push(`sw-kit이 아직 초기 설정되지 않았습니다.`);
+    ctx.push(`\`/swkit start\`를 실행하여 셋업 위자드를 시작하세요.`);
+    ctx.push('');
+    ctx.push(`셋업에서 설정하는 것:`);
+    ctx.push(`- 스코프 선택 (이 프로젝트만 vs 모든 프로젝트)`);
+    ctx.push(`- Status Line HUD (터미널에 활성 에이전트 표시)`);
+    ctx.push(`- 기본 실행 모드 (auto / pdca / wizard)`);
+    ctx.push('');
+    ctx.push(`셋업 없이도 sw-kit 기능은 사용 가능하지만, 셋업하면 더 나은 경험을 제공합니다.`);
+    ctx.push('');
+  } else {
+    // Show setup info compactly
+    ctx.push(`Setup: ${setupStatus.configTarget || 'configured'} | HUD: ${setupStatus.hudEnabled ? 'on' : 'off'} | Mode: ${setupStatus.defaultMode || 'auto'}`);
+    ctx.push('');
+  }
+
+  // === Onboarding: Resume vs New (only when setup is done) ===
+  if (setupStatus.completed && pdcaState?.activeFeature) {
+    const feat = pdcaState.features?.[pdcaState.activeFeature];
+    if (feat) {
+      ctx.push(`## Active Work — Resume Available`);
+      ctx.push(`Feature: ${pdcaState.activeFeature} | Stage: ${feat.currentStage || 'plan'} | Iteration: ${feat.iteration || 0}/${config.pdca.maxIterations}`);
+      ctx.push(`이전 작업을 이어서 진행하려면 \`/swkit next\`를 실행하세요.`);
+      ctx.push(`새 작업을 시작하려면 \`/swkit auto <feature> <task>\`를 실행하세요.`);
+      ctx.push('');
+    }
+  } else if (!setupStatus.completed && pdcaState?.activeFeature) {
+    // Setup not done but has active work — show active work anyway
     const feat = pdcaState.features?.[pdcaState.activeFeature];
     if (feat) {
       ctx.push(`## Active Work`);
@@ -122,39 +154,31 @@ try {
   ctx.push(`Never claim "done" without evidence. Run tests, build, or lint to prove completion.`);
   ctx.push('');
 
-  // === Status Line Setup ===
-  const home = homedir();
-  const settingsPath = join(home, '.claude', 'settings.json');
-  const hudSetupFlag = join(projectDir, '.sw-kit', 'state', 'hud-setup-done');
+  // === Status Line Setup (now handled by /swkit start wizard) ===
+  // Only show inline HUD prompt if setup was NOT completed (legacy fallback).
+  // Once setup is done, HUD config is managed by setup-progress.
+  if (!setupStatus.completed) {
+    const home = homedir();
+    const settingsPath = join(home, '.claude', 'settings.json');
+    const hudSetupFlag = join(projectDir, '.sw-kit', 'state', 'hud-setup-done');
 
-  if (!existsSync(hudSetupFlag)) {
-    try {
-      let needsSetup = true;
-      if (existsSync(settingsPath)) {
-        const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
-        if (settings?.statusLine?.command?.includes('swkit-hud')) {
-          needsSetup = false;
+    if (!existsSync(hudSetupFlag)) {
+      try {
+        let needsSetup = true;
+        if (existsSync(settingsPath)) {
+          const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+          if (settings?.statusLine?.command?.includes('swkit-hud')) {
+            needsSetup = false;
+          }
         }
+        // Don't show inline HUD prompt — /swkit start handles it
+        // Just mark as checked so we don't re-check every session
+        const stateDir = join(projectDir, '.sw-kit', 'state');
+        if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
+        writeFileSync(hudSetupFlag, new Date().toISOString());
+      } catch {
+        // Silent failure
       }
-      if (needsSetup) {
-        ctx.push('');
-        ctx.push(`## Status Line Setup`);
-        ctx.push(`sw-kit은 터미널 하단에 활성 에이전트를 깜빡이는 컬러 점으로 표시하는 Status Line을 제공합니다.`);
-        ctx.push(`설정하려면 사용자에게 물어보세요:`);
-        ctx.push(`"sw-kit Status Line을 활성화하시겠습니까? 터미널 하단에 활성 에이전트(예: ● Jay(Backend) ● Milla(Security))가 실시간 표시됩니다."`);
-        ctx.push(`승인 시: settings.json의 statusLine을 다음으로 설정:`);
-        ctx.push('```json');
-        ctx.push(`"statusLine": { "type": "command", "command": "node $HOME/.claude/hud/swkit-hud.mjs" }`);
-        ctx.push('```');
-        ctx.push(`그리고 래퍼 스크립트가 없으면 $HOME/.claude/hud/swkit-hud.mjs를 생성해주세요.`);
-        ctx.push(`설정 완료 후 .sw-kit/state/hud-setup-done 파일을 생성하여 다시 물어보지 않도록 합니다.`);
-      }
-      // Mark as prompted (even if already configured)
-      const stateDir = join(projectDir, '.sw-kit', 'state');
-      if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
-      writeFileSync(hudSetupFlag, new Date().toISOString());
-    } catch {
-      // Silent failure
     }
   }
 
