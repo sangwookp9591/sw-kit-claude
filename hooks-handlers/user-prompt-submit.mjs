@@ -1,21 +1,18 @@
 /**
- * sw-kit UserPromptSubmit Hook v1.4.0
- * Auto-detects intent and provides actionable next-step guidance.
- * Like OMC's keyword-detector + skill-injector combined.
+ * sw-kit UserPromptSubmit Hook v1.5.0
  */
 import { readStdinJSON } from '../scripts/core/stdin.mjs';
 import { detectIntent } from '../scripts/i18n/intent-detector.mjs';
 
-const parsed = await readStdinJSON();
-const prompt = parsed.prompt || parsed.user_prompt || parsed.content || '';
-
-if (!prompt) { process.stdout.write('{}'); process.exit(0); }
-
 try {
+  const parsed = await readStdinJSON();
+  const prompt = parsed.prompt || parsed.user_prompt || parsed.content || '';
+
+  if (!prompt) { process.stdout.write('{}'); process.exit(0); }
+
   const intent = detectIntent(prompt);
   const parts = [];
 
-  // Strong intent: provide actionable guidance (not just hints)
   if (intent.isWizardMode) {
     parts.push('[sw-kit] Iron wizard mode activated. Guide the non-developer step by step.');
     parts.push('Use the wizard agent (agents/wizard.md) to run the full pipeline with simple language.');
@@ -35,13 +32,9 @@ try {
     parts.push('[sw-kit] Codebase exploration detected. Klay (Architect) will scan and map the structure.');
   }
 
-  if (parts.length > 0) {
-    process.stdout.write(JSON.stringify({
-      hookSpecificOutput: { additionalContext: parts.join('\n') }
-    }));
-  } else {
-    process.stdout.write('{}');
-  }
+  process.stdout.write(parts.length > 0
+    ? JSON.stringify({ hookSpecificOutput: { additionalContext: parts.join('\n') } })
+    : '{}');
 } catch (err) {
   process.stderr.write(`[sw-kit:user-prompt] ${err.message}\n`);
   process.stdout.write('{}');
