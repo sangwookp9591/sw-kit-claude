@@ -1,16 +1,5 @@
 <p align="center">
-  <img src="images/sam.svg" width="48" alt="sw-kit">
-</p>
-
-<h1 align="center">sw-kit</h1>
-<p align="center"><strong>Harness Engineering Agent</strong> v1.4.0</p>
-
-<p align="center">
-  <em>For developers, the ultimate assistant.<br>For everyone, the ultimate magician.</em>
-</p>
-
-<p align="center">
-  <code>44 modules</code> · <code>160KB</code> · <code>5,100+ LOC</code> · <code>33/33 tests</code> · <code>5ms hook</code> · <code>0 deps</code>
+  <img src="images/banner.svg" width="600" alt="sw-kit Harness Engineering Agent">
 </p>
 
 <p align="center">
@@ -188,6 +177,10 @@ Correct    ███████████████████████
 ```
 
 ### Pipeline Flow
+
+<p align="center">
+  <img src="images/pipeline-flow.svg" width="600" alt="sw-kit pipeline flow">
+</p>
 
 ```
 /swkit auto user-auth "JWT auth"
