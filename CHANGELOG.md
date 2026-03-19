@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.3.2] - 2026-03-19
+
+### Fixed
+- **All hooks synced to bkit `readFileSync(0)` pattern** -- no more async stdin, eliminates UserPromptSubmit hook errors
+- **pre-tool-use.mjs, post-tool-use.mjs, stop-failure.mjs** rewritten with sync stdin
+
+### Changed
+- **README.md** -- full rewrite with SVG agent icons (no emoji), v1.3.2 aligned
+- 12 custom SVG icons in `images/` used in agent team table
+- Command table shows agent icons inline
+- `.omc/` removed from repo, added to `.gitignore`
+- Version bumped across plugin.json, marketplace.json, package.json
+
+### Added
+- **12 SVG agent icons** -- sam (star), able (crosshair), klay (triangle), jay (sun-gear), jerry (cylinder-db), milla (lock), willji (pen-nib), derek (monitor), rowan (bolt), scout (magnifier), proof (check-circle), iron (wand)
+
 ## [1.3.1] - 2026-03-19
 
 ### Fixed
