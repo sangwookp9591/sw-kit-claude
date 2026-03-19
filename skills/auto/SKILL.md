@@ -67,12 +67,49 @@ Each spawned agent MUST include in their prompt:
 - Use TaskList to check progress
 - If a worker fails, reassign or retry
 
-## Step 6: Shutdown
+## Step 6: Completion Report
 
-After all tasks complete:
+After all tasks complete, ALWAYS display the team activity report:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  sw-kit auto complete: {feature}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Team: {preset} ({N}명)
+
+  Agent        Role              Status   Summary
+  ─────        ────              ──────   ───────
+  Klay         Architect         done     Scanned 42 files, 3 modules
+  Able         PM / Planning     done     Created plan with 5 tasks
+  Jay          Backend / API     done     3 endpoints, TDD 12/12 pass
+  Derek        Frontend          done     2 pages, 4 components
+  Milla        Security          done     0 critical, 2 minor
+  Sam          CTO / Verify      PASS     Evidence chain: all green
+
+  Evidence Chain:
+  [test]  PASS (24/24)
+  [build] PASS
+  [lint]  PASS (0 errors)
+  Verdict: PASS
+
+  Files changed: 12
+  Duration: ~8 min
+  Learning: saved to .sw-kit/project-memory.json
+  Report: .sw-kit/reports/{date}-{feature}.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+This report is MANDATORY. Never skip it. Include every agent that participated.
+
+## Step 7: Shutdown
+
+After displaying the completion report:
 1. SendMessage shutdown_request to each worker
 2. Wait for shutdown_response
 3. TeamDelete({ team_name: "<feature-slug>" })
+4. Save learning to project-memory
+5. Generate .sw-kit/reports/{date}-{feature}.md
 
 ## Team Presets
 
