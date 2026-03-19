@@ -19,6 +19,12 @@ Claude Code 세션에서:
 claude plugin marketplace add sangwookp9591/sw-kit-claude && claude plugin install sw-kit
 ```
 
+## Update
+
+```
+/plugin update sw-kit
+```
+
 ## Quick Start
 
 ```bash
