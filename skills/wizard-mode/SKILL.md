@@ -11,7 +11,7 @@ triggers: ["wizard", "마술사", "만들어줘", "도와줘", "guide me", "help
 
 ## Pipeline (auto와 동일)
 ```
-🔍 Scout (탐색) → 📋 Archie (계획) → ⚡ Bolt (구현+TDD) → 🛡️ Shield (리뷰) → ✅ Proof (검증)
+🔍 Klay (탐색) → 📋 Able (계획) → ⚡ Jay (구현+TDD) → 🛡️ Milla (리뷰) → ✅ Sam (검증)
 ```
 
 ## Iron의 역할 — 번역 레이어
@@ -26,10 +26,10 @@ triggers: ["wizard", "마술사", "만들어줘", "도와줘", "guide me", "help
 
 ## How it works
 1. 🪄 "어떤 것을 만들고 싶으세요?"
-2. 답변 → Archie가 계획 수립 (Iron이 쉽게 설명)
-3. Bolt가 TDD로 구현 (진행률 이모지로 표시)
-4. Shield 리뷰 → Critical 시 Iron이 "수정이 필요해요" 안내
-5. Proof 검증 → "완성! 🎉" + 사용법 안내
+2. 답변 → Able가 계획 수립 (Iron이 쉽게 설명)
+3. Jay가 TDD로 구현 (진행률 이모지로 표시)
+4. Milla 리뷰 → Critical 시 Iron이 "수정이 필요해요" 안내
+5. Sam 검증 → "완성! 🎉" + 사용법 안내
 
 ## Communication Rules
 - 기술 용어 사용 금지 (쓸 경우 즉시 비유로 설명)

@@ -1,6 +1,6 @@
 /**
  * sw-kit Multi-Agent Pipeline v1.0.0
- * Automated agent chain: Scout → Archie → Bolt → Shield → Proof
+ * Automated agent chain: Klay → Able → Jay → Milla → Sam
  * Harness Engineering: Orchestrate axis — full automation.
  * @module scripts/pipeline/agent-pipeline
  */
@@ -20,8 +20,8 @@ const log = createLogger('pipeline');
 const PIPELINE_STAGES = [
   {
     id: 'explore',
-    agent: 'explorer',
-    name: 'Scout',
+    agent: 'klay',
+    name: 'Klay',
     emoji: '🔍',
     description: '코드베이스 탐색 및 구조 파악',
     pdcaStage: 'plan',
@@ -30,7 +30,7 @@ const PIPELINE_STAGES = [
   {
     id: 'plan',
     agent: 'planner',
-    name: 'Archie',
+    name: 'Able',
     emoji: '📋',
     description: '작업 계획 수립 및 분해',
     pdcaStage: 'plan',
@@ -39,7 +39,7 @@ const PIPELINE_STAGES = [
   {
     id: 'execute',
     agent: 'executor',
-    name: 'Bolt',
+    name: 'Jay',
     emoji: '⚡',
     description: '코드 구현 및 수정',
     pdcaStage: 'do',
@@ -48,7 +48,7 @@ const PIPELINE_STAGES = [
   {
     id: 'review',
     agent: 'reviewer',
-    name: 'Shield',
+    name: 'Milla',
     emoji: '🛡️',
     description: '코드 리뷰 및 품질 검증',
     pdcaStage: 'check',
@@ -56,8 +56,8 @@ const PIPELINE_STAGES = [
   },
   {
     id: 'verify',
-    agent: 'verifier',
-    name: 'Proof',
+    agent: 'sam',
+    name: 'Sam',
     emoji: '✅',
     description: '증거 체인으로 완료 증명',
     pdcaStage: 'review',
@@ -145,7 +145,7 @@ export function advancePipeline(result, data, projectDir) {
   currentStage.completedAt = new Date().toISOString();
   currentStage.result = { outcome: result, data };
 
-  // If review (Shield) fails with critical issues → trigger rollback
+  // If review (Milla) fails with critical issues → trigger rollback
   if (currentStage.id === 'review' && result === 'fail') {
     pipeline.status = 'rollback-needed';
     writeState(pipelinePath, pipeline);

@@ -30,7 +30,7 @@ const TEAM_PRESETS = {
     name: 'Solo',
     cost: 'low',
     workers: [
-      { name: 'bolt', agent: 'executor', model: 'sonnet', role: 'Bolt — 구현+검증 올인원' }
+      { name: 'jay', agent: 'executor', model: 'sonnet', role: 'Jay — 구현+검증 올인원' }
     ],
     when: 'fileCount <= 3 && complexity.level === "low"',
     description: '간단한 버그 수정, 단일 파일 변경'
@@ -41,8 +41,8 @@ const TEAM_PRESETS = {
     name: 'Duo',
     cost: 'medium',
     workers: [
-      { name: 'bolt', agent: 'executor', model: 'sonnet', role: '⚡ Bolt — 코드 구현 (TDD)' },
-      { name: 'shield', agent: 'reviewer', model: 'haiku', role: '🛡️ Shield — 리뷰+검증' }
+      { name: 'jay', agent: 'executor', model: 'sonnet', role: '⚡ Jay — 코드 구현 (TDD)' },
+      { name: 'milla', agent: 'reviewer', model: 'haiku', role: '🛡️ Milla — 리뷰+검증' }
     ],
     when: 'fileCount <= 8 && complexity.level === "mid"',
     description: '중간 규모 기능 구현, API 추가'
@@ -53,10 +53,10 @@ const TEAM_PRESETS = {
     name: 'Squad',
     cost: 'medium-high',
     workers: [
-      { name: 'archie', agent: 'planner', model: 'sonnet', role: '📋 Archie — 작업 분해' },
+      { name: 'able', agent: 'planner', model: 'sonnet', role: '📋 Able — 작업 분해' },
       { name: 'jay', agent: 'executor', model: 'sonnet', role: '⚙️ Jay — Backend 구현' },
       { name: 'derek', agent: 'executor', model: 'sonnet', role: '🖥️ Derek — Frontend 구현' },
-      { name: 'proof', agent: 'verifier', model: 'haiku', role: '✅ Proof — 증거 수집' }
+      { name: 'sam', agent: 'sam', model: 'haiku', role: '✅ Sam — 증거 수집' }
     ],
     when: 'fileCount <= 15 && complexity.level === "mid"',
     description: '풀스택 기능 구현, 여러 도메인 변경'
@@ -73,7 +73,7 @@ const TEAM_PRESETS = {
       { name: 'jerry', agent: 'executor', model: 'sonnet', role: '🗄️ Jerry — DB+인프라' },
       { name: 'milla', agent: 'reviewer', model: 'sonnet', role: '🔒 Milla — 보안 검증' },
       { name: 'derek', agent: 'executor', model: 'sonnet', role: '🖥️ Derek — Frontend' },
-      { name: 'proof', agent: 'verifier', model: 'haiku', role: '✅ Proof — 최종 검증' }
+      { name: 'sam', agent: 'sam', model: 'haiku', role: '✅ Sam — 최종 검증' }
     ],
     when: 'complexity.level === "high"',
     description: '대규모 기능, 아키텍처 변경, 보안 민감 작업'

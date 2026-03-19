@@ -49,8 +49,7 @@ const AGENTS = {
   rowan:   { emoji: '✨', color: C.lime, name: 'Rowan', role: 'Frontend / 인터랙션', desc: '애니메이션과 사용자 인터랙션을 담당합니다', model: 'sonnet' },
 
   // 🔍 탐색 & 검증
-  scout:   { emoji: '🔍', color: C.cyan, name: 'Scout', role: 'Explorer', desc: '코드베이스를 탐색하고 구조를 파악합니다', model: 'haiku' },
-  proof:   { emoji: '✅', color: C.lime, name: 'Proof', role: 'Verifier', desc: '증거 체인으로 완료를 증명합니다', model: 'haiku' },
+  // klay and sam already defined above in their primary roles
 
   // 🪄 마법사
   iron:    { emoji: '🪄', color: C.magenta, name: 'Iron', role: 'Wizard', desc: '비개발자를 마법처럼 안내합니다', model: 'sonnet' },
@@ -87,7 +86,7 @@ export function teamDisplay() {
     { label: '⚙️ Backend', members: ['jay', 'jerry', 'milla'] },
     { label: '🎨 Design', members: ['willji'] },
     { label: '🖥️ Frontend', members: ['derek', 'rowan'] },
-    { label: '🔧 Ops', members: ['scout', 'proof'] },
+    { label: '🔧 Ops', members: ['klay', 'sam'] },
     { label: '🪄 Magic', members: ['iron'] },
   ];
 
@@ -165,11 +164,11 @@ export function commandsHelp() {
     { cmd: '/swkit tdd check <p|f>', desc: 'TDD 결과 기록/전환', emoji: '🟢' },
     { cmd: '/swkit task create', desc: 'Task 체크리스트 생성', emoji: '📋' },
     { cmd: '/swkit task check', desc: '서브태스크 완료 체크', emoji: '☑️' },
-    { cmd: '/swkit explore <target>', desc: 'Scout로 코드 탐색', emoji: '🔍' },
+    { cmd: '/swkit explore <target>', desc: 'Klay로 코드 탐색', emoji: '🔍' },
     { cmd: '/swkit plan <task>', desc: 'Able+Klay로 계획 수립', emoji: '📐' },
     { cmd: '/swkit execute <task>', desc: 'Jay+Derek으로 구현', emoji: '⚡' },
-    { cmd: '/swkit review', desc: 'Milla+Shield로 리뷰', emoji: '🛡️' },
-    { cmd: '/swkit verify', desc: 'Proof로 증거 검증', emoji: '✅' },
+    { cmd: '/swkit review', desc: 'Milla 보안 리뷰', emoji: '🛡️' },
+    { cmd: '/swkit verify', desc: 'Sam 최종 검증', emoji: '✅' },
     { cmd: '/swkit wizard', desc: 'Iron 마술사 모드', emoji: '🪄' },
     { cmd: '/swkit rollback', desc: '체크포인트 롤백', emoji: '📌' },
     { cmd: '/swkit learn show', desc: '학습 기록 조회', emoji: '🧠' },

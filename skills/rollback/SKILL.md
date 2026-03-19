@@ -12,6 +12,6 @@ triggers: ["rollback", "롤백", "되돌리기", "undo", "복구"]
 
 ## How it works
 1. 파이프라인 실행 전 자동 체크포인트 생성
-2. Shield 리뷰에서 Critical 발견 시 롤백 제안
+2. Milla 리뷰에서 Critical 발견 시 롤백 제안
 3. 롤백 시 새 브랜치 생성 (swkit-rollback-*)
 4. 이전 변경사항은 stash에 보존

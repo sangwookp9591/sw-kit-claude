@@ -81,7 +81,7 @@ export function generateAutoRun(params, projectDir) {
     });
   });
 
-  // Add dependency: last worker (Proof) depends on all others
+  // Add dependency: last worker (Sam) depends on all others
   if (team.workers.length > 1) {
     const lastIdx = team.workers.length;
     const blockIds = team.workers.slice(0, -1).map((_, i) => String(i + 1));
