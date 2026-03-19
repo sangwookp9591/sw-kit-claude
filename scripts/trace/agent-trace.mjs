@@ -18,7 +18,7 @@ function getTracePath(projectDir) {
 /**
  * Record a trace event.
  * @param {object} event
- * @param {string} event.agent - Agent name (Scout, Archie, Bolt, etc.)
+ * @param {string} event.agent - Agent name (Sam, Able, Klay, Jay, etc.)
  * @param {string} event.action - What the agent did (read, write, bash, decide)
  * @param {string} event.target - File or command target
  * @param {string} [event.reason] - Why this action was taken
