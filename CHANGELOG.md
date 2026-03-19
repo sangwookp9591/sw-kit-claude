@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.0] - 2026-03-19
+
+### Added — Level 5 Harness Engineering (100%)
+- **Auto Runner** — `/swkit auto` 전체 파이프라인 실행 계획 생성
+  - TeamCreate→TaskCreate→Task(spawn) CC 네이티브 도구 시퀀스 자동 생성
+  - 5 phases: create-team → create-tasks → spawn-workers → monitor → shutdown
+- **Retry Engine** — exponential backoff (1s→2s→4s) + jitter + circuit breaker 연동
+- **Handoff Manager** — 단계 전환 시 .sw-kit/handoffs/ 자동 생성
+  - Decided/Rejected/Risks/Files/Remaining 구조
+- **Dashboard** — 실시간 상태 표시 (compact + full)
+  - PDCA 단계, TDD 페이즈, Task 진행, 예산, 서킷 브레이커 통합
+- Team preset 경계 조정 (solo≤2, duo≤4, squad≤6, full≥7)
+
+### Performance
+- 33/33 tests ALL GREEN
+- Hook import chain: **5ms**
+- Harness 4-Axis: **100/100** (Level 5 완전 달성)
+
 ## [1.2.0] - 2026-03-19
 
 ### Added

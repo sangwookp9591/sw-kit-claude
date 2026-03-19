@@ -90,11 +90,11 @@ export function selectTeam(signals = {}) {
   const complexity = scoreComplexity(signals);
 
   let preset;
-  if (complexity.score <= 3) {
+  if (complexity.score <= 2) {
     preset = 'solo';
-  } else if (complexity.score <= 5) {
+  } else if (complexity.score <= 4) {
     preset = 'duo';
-  } else if (complexity.score <= 8) {
+  } else if (complexity.score <= 6) {
     preset = 'squad';
   } else {
     preset = 'full';
