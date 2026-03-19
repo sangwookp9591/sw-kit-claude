@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-hooks.json",
-  "description": "sw-kit Harness Engineering Agent v0.1.0",
+  "description": "sw-kit Harness Engineering Agent v0.3.0",
   "hooks": {
     "SessionStart": [
       {
@@ -27,7 +27,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|Bash",
         "hooks": [
           {
             "type": "command",
