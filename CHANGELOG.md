@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.1.5] - 2026-03-23
+
+### Improved — Agent-UI DX 개선 (Ralplan 합의 기반)
+
+#### Core: hooks.json matcher 확장
+- **PreToolUse/PostToolUse matcher**: `Write|Edit|Bash` → `Write|Edit|Bash|Agent|Task` — 에이전트 spawn/complete 이벤트 감지 활성화
+
+#### Agent Trace: 에이전트 이름 기록
+- **post-tool-use.mjs**: Agent/Task 호출 시 `subagent_type`에서 에이전트 이름 추출하여 trace 기록
+- **agent-trace.mjs**: `recordToolUse`가 `agent: 'session'` 대신 실제 에이전트 이름 + `spawn` action 기록
+
+#### DX: 팀 배치 가시성 강화
+- **user-prompt-submit.mjs**: 구분선(`━━━ sw-kit Team Deployment ━━━`) + Pipeline 요약 라인 추가
+
+#### agent-ui SKILL.md 리팩터
+- 기본 모드: `formatTraceSummary()` 기반 내장 상태 표시 (외부 의존 없음)
+- `--status`: 내장 기능 + 3D 오피스 전체 진단
+- `--3d`: 3D 오피스 분리 (미설치 시 친절한 안내 + 클라우드 fallback)
+- `--setup`: 3D 오피스 자동 설정 위자드
+- 트러블슈팅 FAQ 추가
+
+#### Documentation
+- `.sw-kit/docs/agent-ui-audit.md`: D1-D5 진단 보고서 (Ralplan 합의 산출물)
+
 ## [2.1.4] - 2026-03-23
 
 ### Fixed — 근본 원인 수정 + 감사 버그 수정

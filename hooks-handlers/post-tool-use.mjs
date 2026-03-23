@@ -14,7 +14,15 @@ try {
   const toolResponse = parsed.tool_response || '';
 
   if (toolName) {
-    recordToolUse(toolName, parsed.tool_input || {}, toolResponse, projectDir);
+    // For Agent/Task calls, extract the actual agent name from subagent_type
+    const toolInput = parsed.tool_input || {};
+    if ((toolName === 'Agent' || toolName === 'Task') && toolInput.subagent_type) {
+      const agentKey = toolInput.subagent_type.replace('sw-kit:', '');
+      const agentName = toolInput.name || agentKey;
+      recordToolUse(toolName, { ...toolInput, _agentName: agentName }, toolResponse, projectDir);
+    } else {
+      recordToolUse(toolName, toolInput, toolResponse, projectDir);
+    }
     resetErrorCount(projectDir);
   }
 

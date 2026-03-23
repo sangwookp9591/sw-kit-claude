@@ -65,7 +65,11 @@ export function recordTrace(event, projectDir) {
  * @param {string} [projectDir]
  */
 export function recordToolUse(toolName, toolInput, toolResponse, projectDir) {
-  const target = toolInput?.file_path || toolInput?.command?.slice(0, 80) || toolInput?.pattern || 'unknown';
+  const isAgentCall = toolName === 'Agent' || toolName === 'Task';
+  const target = isAgentCall
+    ? (toolInput?.description || toolInput?.subagent_type || 'agent').slice(0, 80)
+    : (toolInput?.file_path || toolInput?.command?.slice(0, 80) || toolInput?.pattern || 'unknown');
+  const agent = toolInput?._agentName || 'session';
   const isError = toolResponse && (
     toolResponse.includes('Error') ||
     toolResponse.includes('error') ||
@@ -73,8 +77,8 @@ export function recordToolUse(toolName, toolInput, toolResponse, projectDir) {
   );
 
   recordTrace({
-    agent: 'session',
-    action: toolName.toLowerCase(),
+    agent,
+    action: isAgentCall ? 'spawn' : toolName.toLowerCase(),
     target,
     result: isError ? 'fail' : 'success'
   }, projectDir);
