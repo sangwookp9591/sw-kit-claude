@@ -2,13 +2,39 @@
   "name": "sw-kit-claude",
   "version": "2.1.2",
   "type": "module",
-  "description": "Harness Engineering Agent for Claude Code",
+  "description": "Harness Engineering Agent for Claude Code — 10 named agents with PDCA, TDD, team pipeline",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/sangwookp9591/sw-kit-claude.git"
   },
+  "homepage": "https://github.com/sangwookp9591/sw-kit-claude#readme",
+  "keywords": [
+    "claude-code",
+    "ai-agents",
+    "sw-kit",
+    "harness",
+    "pdca",
+    "tdd",
+    "team-pipeline",
+    "agent-ui",
+    "3d-office"
+  ],
+  "author": "sangwookp9591",
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "files": [
+    "agents/",
+    "skills/",
+    "hooks/",
+    "hooks-handlers/",
+    "scripts/",
+    "commands/",
+    "templates/",
+    "images/",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ]
 }
