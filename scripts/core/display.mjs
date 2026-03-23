@@ -22,6 +22,9 @@ const C = {
   lime: '\x1b[38;5;154m',
   sky: '\x1b[38;5;117m',
 
+  // Status
+  red: '\x1b[31m',
+
   // Backgrounds
   bgPurple: '\x1b[45m',
   bgCyan: '\x1b[46m',

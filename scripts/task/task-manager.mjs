@@ -7,7 +7,7 @@
 
 import { readState, writeState, readStateOrDefault } from '../core/state.mjs';
 import { createLogger } from '../core/logger.mjs';
-import { mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const log = createLogger('task');

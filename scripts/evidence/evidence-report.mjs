@@ -27,7 +27,7 @@ export function generateReport(feature, options = {}, projectDir) {
 
   // Load PDCA state for iteration count
   const pdcaState = readState(join(dir, '.sw-kit', 'state', 'pdca-status.json'));
-  const featureState = pdcaState.ok ? pdcaState.data.features?.[feature] : null;
+  const featureState = pdcaState.ok && pdcaState.data ? pdcaState.data.features?.[feature] : null;
   const iterations = featureState?.iteration || 0;
 
   const date = new Date().toISOString().slice(0, 10);
