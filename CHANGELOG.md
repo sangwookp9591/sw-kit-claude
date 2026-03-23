@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.6] - 2026-03-23
+## [2.1.7] - 2026-03-23
 
 ### Improved — Agent-UI DX 개선 (Ralplan 합의 기반)
 
@@ -15,11 +15,20 @@
 - **user-prompt-submit.mjs**: 구분선(`━━━ sw-kit Team Deployment ━━━`) + Pipeline 요약 라인 추가
 
 #### agent-ui SKILL.md 리팩터
-- 기본 모드: `formatTraceSummary()` 기반 내장 상태 표시 (외부 의존 없음)
+- 기본 모드: `open https://office.sw-world.site` — 항상 클라우드 3D 오피스 브라우저 오픈
+- `--monitor`: 터미널 내 에이전트 활동 요약 (formatTraceSummary 기반)
 - `--status`: 내장 기능 + 3D 오피스 전체 진단
-- `--3d`: 3D 오피스 분리 (미설치 시 친절한 안내 + 클라우드 fallback)
-- `--setup`: 3D 오피스 자동 설정 위자드
+- `--setup`: **원커맨드 자동 설정** (`agent-ui-setup.mjs`) — 환경변수 + hook 자동 등록/해제
 - 트러블슈팅 FAQ 추가
+
+#### agent-ui-setup.mjs (신규)
+- sw-world-agents-view 경로 자동 탐색
+- `~/.claude/settings.json`에 환경변수 3개 + hook 3개 자동 등록
+- 중복 hook 방지, `--uninstall`로 완전 해제
+- 클라우드 URL(`office.sw-world.site`) 기본 고정
+
+#### Pipeline 역할 파싱 수정
+- `user-prompt-submit.mjs`: `Jay(—)` → `Jay(Backend)` — `—` 구분자 기반 역할 추출
 
 #### Documentation
 - `.sw-kit/docs/agent-ui-audit.md`: D1-D5 진단 보고서 (Ralplan 합의 산출물)
