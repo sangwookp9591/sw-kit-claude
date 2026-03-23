@@ -61,14 +61,21 @@ fi
       "matcher": "startup",
       "hooks": [{
         "type": "command",
-        "command": "node {OFFICE_DIR}/scripts/hooks/session-connect.mjs"
+        "command": "node ${OFFICE_DIR}/scripts/hooks/session-connect.mjs"
       }]
     }],
     "PreToolUse": [{
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "node {OFFICE_DIR}/scripts/hooks/tool-reporter.mjs"
+        "command": "node ${OFFICE_DIR}/scripts/hooks/tool-reporter.mjs"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "command": "node ${OFFICE_DIR}/scripts/hooks/tool-done-reporter.mjs"
       }]
     }]
   }

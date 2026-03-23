@@ -223,6 +223,7 @@ AskUserQuestion:
 ```javascript
 #!/usr/bin/env node
 import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 
@@ -233,7 +234,7 @@ const candidates = [
 ].filter(Boolean);
 
 let pluginRoot = candidates.find(p => {
-  try { return require('fs').existsSync(join(p, 'scripts/hud/statusline.mjs')); } catch { return false; }
+  try { return existsSync(join(p, 'scripts/hud/statusline.mjs')); } catch { return false; }
 }) || candidates[0];
 
 try {
@@ -287,14 +288,14 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/setup/setup-progress.mjs" save 3 <CONFIG_TAR
 ### Mark Completion
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/setup/setup-progress.mjs" complete "2.0.0" "<CONFIG_TARGET>" "<HUD_ENABLED>" "<DEFAULT_MODE>"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/setup/setup-progress.mjs" complete "2.1.4" "<CONFIG_TARGET>" "<HUD_ENABLED>" "<DEFAULT_MODE>"
 ```
 
 ### Show Welcome
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  sw-kit v2.0.0 셋업 완료!
+  sw-kit v2.1.4 셋업 완료!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   스코프:     {local → 이 프로젝트만 | global → 모든 프로젝트}
