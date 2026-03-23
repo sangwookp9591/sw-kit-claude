@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.1.4] - 2026-03-23
+
+### Fixed — 근본 원인 수정 + 감사 버그 수정
+
+#### Critical Fixes
+- **plan-manager.mjs**: ESM에서 `require('node:fs')` 사용 → `readdirSync` import로 교체. `listPlans()`/`getPlan()` 정상화
+- **persist.mjs 경로**: 스킬에서 상대 경로 `scripts/cli/persist.mjs` → `"${CLAUDE_PLUGIN_ROOT}/scripts/cli/persist.mjs"` 절대 경로로 수정 (plan-task, auto, team)
+- **display.mjs**: `C.red` 컬러 코드 누락 → `/swkit help` 런타임 크래시 수정
+- **evidence-report.mjs**: `pdcaState.data` null 안전 접근 추가
+
+#### Agent-UI Improvements
+- **PostToolUse 훅 추가**: `tool_done` 이벤트 전송 → 3D 캐릭터가 active→idle 정상 복귀
+- **session-connect.mjs**: 단계별 상태 출력 (서버 확인 → 등록 → URL/RC 상태)
+- **agent-ui/SKILL.md**: `{OFFICE_DIR}` → `${OFFICE_DIR}` 문법 수정 + PostToolUse 훅 설정 추가
+- **start/SKILL.md**: HUD 래퍼 `require('fs')` → ESM `import { existsSync }` 수정
+
+#### New Commands (/ 자동완성)
+- 14개 command 등록: auto, design, explore, help, plan, review, rollback, start, swkit, task, tdd, team, verify, wizard
+
+#### Code Quality
+- **task-manager.mjs**: 미사용 `existsSync`, `readdirSync` import 제거
+- **버전 통일**: 하드코딩된 `v2.0.0` → `v2.1.4` (start/SKILL.md, session-start.mjs)
+
+#### TDD (11/11 PASS)
+- `tests/plan-task.test.mjs` 추가: Plan Manager 4, Task Manager 4, persist.mjs CLI 3
+
 ## [2.1.2] - 2026-03-23
 
 ### Added — Agent UI (3D Office Visualization)

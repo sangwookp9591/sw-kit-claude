@@ -34,6 +34,26 @@ claude plugin update sw-kit@swkit-marketplace
 
 > 버전은 `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` + `package.json` 3곳의 매니페스트로 관리됩니다. `claude plugin update`는 이 매니페스트의 version 필드를 기준으로 업데이트를 판단합니다.
 
+### 새 버전 릴리즈 방법 (메인테이너용)
+
+```bash
+# 1. 3곳 매니페스트 버전 동시 업데이트
+sed -i '' 's/"version": "OLD"/"version": "NEW"/g' \
+  package.json \
+  .claude-plugin/marketplace.json \
+  .claude-plugin/plugin.json
+
+# 2. CHANGELOG.md에 변경 내역 추가
+
+# 3. 커밋 + 태그 + 푸시
+git add -A
+git commit -m "chore: bump version to NEW across all manifests"
+git tag vNEW
+git push && git push origin vNEW
+```
+
+> **주의**: `package.json`만 올리고 매니페스트를 빠뜨리면 `claude plugin update`가 새 버전을 감지하지 못합니다. 3곳 모두 반드시 동일 버전으로 통일하세요.
+
 ---
 
 <h2 id="team">Agent Team (10 named agents)</h2>
