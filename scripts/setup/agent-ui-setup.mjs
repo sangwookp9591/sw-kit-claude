@@ -89,8 +89,8 @@ function install() {
   }
   console.log('');
 
-  // 2. Determine env values
-  const officeUrl = getArg('--office-url') || (officeDir ? `http://localhost:5173` : CLOUD_URL);
+  // 2. Determine env values — always use cloud URL
+  const officeUrl = getArg('--office-url') || CLOUD_URL;
   const teamId = getArg('--team-id') || 'default';
   const agentName = getArg('--agent-name') || process.env.USER || 'agent';
 

@@ -24,17 +24,8 @@ triggers: ["agent-ui", "3d office", "오피스", "시각화", "agent view", "에
 **반드시 아래 Bash 커맨드를 실행하세요. 분석하거나 질문하지 마세요.**
 
 ```bash
-OFFICE_DIR="$HOME/sw-world-agents-view"
-if [ ! -d "$OFFICE_DIR" ]; then
-  OFFICE_DIR="$(find $HOME/Project -maxdepth 2 -name 'sw-world-agents-view' -o -name 'swkit-office' 2>/dev/null | head -1)"
-fi
-
-if [ -n "$OFFICE_DIR" ] && [ -f "$OFFICE_DIR/bin/agent-ui.mjs" ]; then
-  node "$OFFICE_DIR/bin/agent-ui.mjs"
-else
-  echo "로컬 설치 없음 — 클라우드 모드로 접속합니다."
-  open "https://office.sw-world.site"
-fi
+echo "3D Agent Office를 브라우저에서 엽니다..."
+open "https://office.sw-world.site"
 ```
 
 ---
