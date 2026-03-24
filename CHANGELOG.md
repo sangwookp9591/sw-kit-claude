@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.2.0] - 2026-03-24
+
+### Added — agent-ui 세션 자동 연결
+
+#### open-office.mjs (신규)
+- `agent-ui` 기본 모드에서 세션 컨텍스트를 URL 쿼리 파라미터로 전달
+- `session`: Claude Code 세션 ID
+- `project`: 현재 프로젝트명
+- `user` / `team`: 사용자/팀 식별
+- `agents`: 활성 에이전트 목록 (agent-traces.json 기반)
+- `pipeline` / `autorun`: 파이프라인 및 auto-run 상태
+
+#### agent-ui SKILL.md 업데이트
+- 기본 모드: `open-office.mjs` 스크립트 호출로 변경 — 세션 정보 + 활성 에이전트 자동 연결
+
 ## [2.1.7] - 2026-03-23
 
 ### Improved — Agent-UI DX 개선 (Ralplan 합의 기반)

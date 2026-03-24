@@ -23,9 +23,10 @@ triggers: ["agent-ui", "3d office", "오피스", "시각화", "agent view", "에
 
 **반드시 아래 Bash 커맨드를 실행하세요. 분석하거나 질문하지 마세요.**
 
+현재 세션 ID + 활성 에이전트 정보를 URL 파라미터로 전달하여 3D 오피스와 자동 연결합니다.
+
 ```bash
-echo "3D Agent Office를 브라우저에서 엽니다..."
-open "https://office.sw-world.site"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/agent-ui/open-office.mjs"
 ```
 
 ---
