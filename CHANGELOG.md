@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.3] - 2026-03-26
+
+### Changed — 매니페스트 description 업데이트
+
+- `package.json`, `plugin.json`, `marketplace.json` description에 v2.4.x 신규 기능 반영
+- 에이전트 14명, Flutter 스킬, Gate Review 등 최신 스펙 반영
+
 ## [2.4.2] - 2026-03-26
 
 ### Fixed — persist.mjs `--dir` 누락으로 .aing/tasks 미생성 버그
