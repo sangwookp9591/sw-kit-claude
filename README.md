@@ -56,7 +56,7 @@ git push && git push origin vNEW
 
 ---
 
-<h2 id="team">Agent Team (10 named agents)</h2>
+<h2 id="team">Agent Team (14 named agents)</h2>
 
 <table>
 <tr>
@@ -86,6 +86,8 @@ git push && git push origin vNEW
 | <img src="images/jay.svg" width="18"> | **Jay** | API Development | `sonnet` |
 | <img src="images/jerry.svg" width="18"> | **Jerry** | DB / Infrastructure | `sonnet` |
 | <img src="images/milla.svg" width="18"> | **Milla** | Security / Auth | `sonnet` |
+| | **Jun** | Performance / Optimization | `sonnet` |
+| | **Simon** | Code Intelligence / Dead Code | `sonnet` |
 
 ### <img src="images/derek.svg" width="16"> Frontend
 

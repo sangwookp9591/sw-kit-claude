@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.4.0] - 2026-03-26
+
+### Added — 신규 에이전트 2개 + 스킬 4개 + Team Gate Review
+
+#### 신규 에이전트
+- **Jun** (sonnet): Performance / Optimization — 런타임 핫스팟, 번들 사이즈, 쿼리/메모리 분석
+- **Simon** (sonnet): Code Intelligence / Dead Code — LSP/AST 기반 미사용 export/함수/파일 탐지
+
+#### 신규 스킬 4개
+- `/aing refactor`: 구조적 리팩토링 — Klay(영향 분석) → Jay/Derek(실행) → Milla(검증), 자동 체크포인트
+- `/aing test`: 테스트 실행/커버리지 분석/누락 테스트 생성 — run/cover/gen 3모드
+- `/aing perf`: 성능 프로파일링 — Jun(분석) + Klay(구조), bundle/runtime/query 3모드
+- `/aing lsp`: 죽은 코드 탐지 — Simon(LSP/AST/Grep 3단계), `--fix`로 자동 제거
+
+#### Team Pipeline 강화: Task-Level Gate Review
+- 각 task 완료마다 Milla(haiku) 자동 gate review 실행 (build/tests/security 체크)
+- `GATE_PASS` → 다음 task / `GATE_FAIL` → 즉시 fix → re-gate (최대 2회)
+- **"리뷰할까요?" 질문 금지** — 하네스 엔지니어링 원칙: 파이프라인이 자동 판정·전환
+- team-verify의 performance reviewer를 Jay → Jun으로 전환
+
+### Removed
+- `commands/` 디렉토리 전체 삭제 (legacy delegation 래퍼 14개) — `/aing:*` prefix 스킬만 사용
+
+### Fixed
+- `perf/SKILL.md`: 에이전트 이름 불일치 (Jay → Jun) 4곳 수정
+- `lsp/SKILL.md`: 에이전트 이름 불일치 (Klay → Simon) 2곳 수정
+- `team/SKILL.md`: performance reviewer 참조 Jay → Jun 수정
+- `test/SKILL.md`: 트리거 `"테스트"` 충돌 → `"테스트 실행"`으로 구체화 (tdd 스킬과 분리)
+- `refactor/SKILL.md`: 트리거 `"정리"` → `"구조 정리"`로 구체화 (lsp 스킬과 분리)
+- `agents/simon.md`: 도구/규칙 불일치 해소 (read-only 전용 명시)
+
 ## [2.3.3] - 2026-03-26
 
 ### Added — Statusline 업데이트 알림 + 랜딩 페이지 최신화

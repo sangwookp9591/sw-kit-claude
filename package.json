@@ -1,8 +1,8 @@
 {
   "name": "ai-ng-kit-claude",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "type": "module",
-  "description": "Harness Engineering Agent for Claude Code — 10 named agents with PDCA, TDD, team pipeline",
+  "description": "Harness Engineering Agent for Claude Code — 14 named agents with PDCA, TDD, team pipeline, gate review",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
     "hooks/",
     "hooks-handlers/",
     "scripts/",
-    "commands/",
     "templates/",
     "images/",
     "CHANGELOG.md",
