@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2] - 2026-03-26
+
+### Fixed — persist.mjs `--dir` 누락으로 .aing/tasks 미생성 버그
+
+- `persist.mjs` 호출 시 `--dir "$(pwd)"` 미전달로 cwd가 플러그인 디렉토리일 때 `.aing/tasks/`가 사용자 프로젝트가 아닌 엉뚱한 위치에 생성되는 버그 수정
+- 영향 스킬 4개 모두 수정: `plan-task`, `auto`, `team`, `debug`
+
 ## [2.4.1] - 2026-03-26
 
 ### Changed — 에이전트 역할 재편 + Flutter 스킬 + 리브랜딩 잔여 정리

@@ -215,10 +215,10 @@ Rules:
 After Able returns the FINAL_PLAN JSON, persist via JSON stdin:
 
 ```bash
-printf '%s' '{FINAL_PLAN_JSON}' | node "${CLAUDE_PLUGIN_ROOT}/scripts/cli/persist.mjs" plan --stdin
+printf '%s' '{FINAL_PLAN_JSON}' | node "${CLAUDE_PLUGIN_ROOT}/scripts/cli/persist.mjs" plan --stdin --dir "$(pwd)"
 ```
 
-Note: Use `printf '%s'` instead of `echo` to avoid shell quote issues when JSON contains single quotes.
+Note: `--dir "$(pwd)"` is **mandatory** — without it, persist.mjs defaults to `process.cwd()` which may differ from the user's project directory when the script is invoked via `${CLAUDE_PLUGIN_ROOT}`. Use `printf '%s'` instead of `echo` to avoid shell quote issues when JSON contains single quotes.
 
 This creates:
 - `.aing/plans/{date}-{feature}.md` — Structured plan with Options, Review Notes, Complexity

@@ -40,6 +40,7 @@ mkdir -p .aing/debug
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/cli/persist.mjs" debug-init \
+  --dir "$(pwd)" \
   --slug "{slug}" \
   --title "{symptom}" \
   --date "{YYYY-MM-DD}"
