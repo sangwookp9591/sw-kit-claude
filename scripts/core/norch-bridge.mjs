@@ -39,10 +39,17 @@ const AGENT_MAP = {
   simon: { name: 'Simon', role: '코드분석', model: 'sonnet' },
 };
 
+// aing subagent_type → norch agent name alias
+const ALIAS = {
+  wizard: 'iron',
+  'figma-reader': 'willji',
+  'progress-checker': 'simon',
+};
+
 function resolveAgent(nameOrType) {
   if (!nameOrType) return null;
   const key = nameOrType.toLowerCase().replace(/^aing:/, '');
-  return AGENT_MAP[key] ?? null;
+  return AGENT_MAP[key] ?? AGENT_MAP[ALIAS[key]] ?? null;
 }
 
 export function norchSessionStart(sessionId) {

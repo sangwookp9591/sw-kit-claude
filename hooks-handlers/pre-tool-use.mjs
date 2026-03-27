@@ -2,7 +2,7 @@
  * aing PreToolUse Hook v1.3.2
  */
 import { readStdinJSON } from '../scripts/core/stdin.mjs';
-import { norchToolUse } from '../scripts/core/norch-bridge.mjs';
+import { norchToolUse, norchAgentSpawn } from '../scripts/core/norch-bridge.mjs';
 import { checkBashCommand, checkFilePath, formatViolations } from '../scripts/guardrail/guardrail-engine.mjs';
 import { checkStepLimit, checkFileChangeLimit, checkForbiddenPath } from '../scripts/guardrail/safety-invariants.mjs';
 import { isDryRunActive, queueChange, formatPreview } from '../scripts/guardrail/dry-run.mjs';
@@ -15,7 +15,13 @@ try {
   const projectDir = process.env.PROJECT_DIR || process.cwd();
   const ctx = [];
 
-  norchToolUse('session', toolName, toolInput.file_path || toolInput.command?.slice(0, 50), null);
+  // Agent/Task spawn → norch에 agent-spawn 이벤트 (실행 시작 전)
+  if ((toolName === 'Agent' || toolName === 'Task') && toolInput.subagent_type) {
+    const agentKey = toolInput.name || toolInput.subagent_type.replace('aing:', '');
+    norchAgentSpawn('session', agentKey, toolInput.description);
+  } else {
+    norchToolUse('session', toolName, toolInput.file_path || toolInput.command?.slice(0, 50), null);
+  }
   const step = checkStepLimit(projectDir);
   if (!step.ok) ctx.push(step.message);
 
