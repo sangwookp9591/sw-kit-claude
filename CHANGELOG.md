@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.8] - 2026-03-27
+
+### Added — GitHub Issue 자동 처리 파이프라인
+
+- `.github/workflows/issue-handler.yml` 추가
+- `aing-auto` 라벨이 붙은 이슈를 Claude Code CLI로 자동 분석/수정
+- 수정 완료 시 PR 자동 생성 + 이슈에 코멘트
+- GitHub Actions command injection 방지 (env 변수만 사용)
+
 ## [2.4.7] - 2026-03-27
 
 ### Added — norch SendMessage 연동 + 배포 품질 개선
