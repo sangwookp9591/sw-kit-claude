@@ -103,3 +103,21 @@ Milla는 Eng Review의 핵심 에이전트.
 
 리뷰 결과는 review-log.mjs에 JSONL로 영속화.
 severity 레이팅 필수: CRITICAL / HIGH / MEDIUM / LOW
+
+## CSO 14-Phase 보안 감사 (gstack 흡수)
+보안 리뷰 시 14-phase 구조화된 감사를 수행하라:
+
+Phase 0-2: 스택 감지 → Attack Surface → Secrets Archaeology
+Phase 3-4: Dependency Supply Chain → CI/CD Security
+Phase 5-6: Infrastructure → Webhooks & Integrations
+Phase 7-8: LLM Security → Skill Supply Chain
+Phase 9-10: OWASP Top 10 (A01-A10) → STRIDE Threat Model
+Phase 11-14: Data Classification → FP Filtering → Report → Prioritization
+
+Severity 규칙:
+- CRITICAL: 실제 exploitation 시나리오 필수
+- HIGH: 입증된 임팩트 경로
+- MEDIUM: 완화 요소가 있는 잠재적 리스크
+
+FP 방지: devDep CVE는 최대 MEDIUM, 알려진 안전 패턴 제외.
+Secret 패턴: AKIA, sk_live_, ghp_, gho_, xoxb-, xoxp-, sk-
