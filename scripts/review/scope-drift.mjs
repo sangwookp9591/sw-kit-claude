@@ -86,6 +86,108 @@ export function formatDrift(analysis) {
   return lines.join('\n');
 }
 
+/**
+ * Three-way scope comparison (absorbed from gstack).
+ * Compares: stated intent (TODOS/PR) vs plan file vs actual diff.
+ *
+ * @param {object} context
+ * @param {string} [context.todosContent] - TODOS.md content
+ * @param {string} [context.prDescription] - PR description
+ * @param {string} [context.planContent] - Plan file content
+ * @param {string[]} context.changedFiles - Files in diff
+ * @param {string[]} context.commitMessages - Commit messages
+ * @returns {{ intent: string[], delivered: string[], scopeCreep: string[], missing: string[], verdict: string }}
+ */
+export function threeWayComparison(context) {
+  // Extract intent from TODOS, PR description, and commit messages
+  const intent = extractIntent(context.todosContent, context.prDescription, context.commitMessages);
+
+  // Extract delivered items from changed files
+  const delivered = (context.changedFiles || []).map(f => {
+    const parts = f.split('/');
+    return parts.length > 1 ? parts.slice(0, 2).join('/') : f;
+  });
+  const uniqueDelivered = [...new Set(delivered)];
+
+  // Scope creep: files changed that don't match any intent
+  const scopeCreep = uniqueDelivered.filter(d =>
+    !intent.some(i => d.toLowerCase().includes(i.toLowerCase().split(' ')[0]))
+  );
+
+  // Missing: intent items not reflected in any changed file
+  const missing = intent.filter(i =>
+    !uniqueDelivered.some(d => d.toLowerCase().includes(i.toLowerCase().split(' ')[0]))
+  );
+
+  let verdict = 'CLEAN';
+  if (scopeCreep.length > 0 && missing.length > 0) {
+    verdict = 'DRIFT DETECTED + REQUIREMENTS MISSING';
+  } else if (scopeCreep.length > 0) {
+    verdict = 'DRIFT DETECTED';
+  } else if (missing.length > 0) {
+    verdict = 'REQUIREMENTS MISSING';
+  }
+
+  return { intent, delivered: uniqueDelivered, scopeCreep, missing, verdict };
+}
+
+/**
+ * Extract intent from various sources.
+ */
+function extractIntent(todos, prDesc, commits) {
+  const items = [];
+
+  // From TODOS.md: look for checkbox items
+  if (todos) {
+    const matches = todos.match(/- \[[ x]\] (.+)/g) || [];
+    items.push(...matches.map(m => m.replace(/- \[[ x]\] /, '')));
+  }
+
+  // From PR description: look for bullet points
+  if (prDesc) {
+    const matches = prDesc.match(/^[-*] (.+)/gm) || [];
+    items.push(...matches.map(m => m.replace(/^[-*] /, '')));
+  }
+
+  // From commit messages: extract conventional commit descriptions
+  if (commits) {
+    for (const msg of commits) {
+      const match = msg.match(/^\w+(?:\([^)]+\))?\s*:\s*(.+)/);
+      if (match) items.push(match[1]);
+    }
+  }
+
+  return [...new Set(items)];
+}
+
+/**
+ * Format three-way comparison for display.
+ */
+export function formatThreeWay(result) {
+  const lines = [`Scope Check: [${result.verdict}]`];
+
+  if (result.intent.length > 0) {
+    lines.push(`\nIntent (${result.intent.length} items):`);
+    for (const i of result.intent.slice(0, 8)) lines.push(`  ▸ ${i}`);
+  }
+
+  if (result.scopeCreep.length > 0) {
+    lines.push(`\nScope Creep (${result.scopeCreep.length} areas):`);
+    for (const s of result.scopeCreep.slice(0, 5)) lines.push(`  ⚠ ${s}`);
+  }
+
+  if (result.missing.length > 0) {
+    lines.push(`\nMissing Requirements (${result.missing.length}):`);
+    for (const m of result.missing.slice(0, 5)) lines.push(`  ✗ ${m}`);
+  }
+
+  if (result.verdict === 'CLEAN') {
+    lines.push('\nAll changes align with stated intent.');
+  }
+
+  return lines.join('\n');
+}
+
 function matchGlob(str, pattern) {
   const regex = new RegExp(
     '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$'

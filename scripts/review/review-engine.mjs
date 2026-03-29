@@ -22,6 +22,89 @@ import { appendReviewLog } from './review-log.mjs';
 const log = createLogger('review-engine');
 
 /**
+ * Review passes (absorbed from gstack's two-pass review system).
+ * Pass 1: CRITICAL (blocks ship)
+ * Pass 2: INFORMATIONAL (quality improvement)
+ */
+export const REVIEW_PASSES = {
+  CRITICAL: [
+    'sql-injection',        // Parameterized queries required
+    'race-conditions',      // Concurrent access patterns
+    'llm-trust-boundary',   // System prompt leakage, prompt injection
+    'enum-completeness',    // Switch/case exhaustiveness
+    'auth-bypass',          // Authentication/authorization gaps
+    'data-exposure',        // PII, secrets in logs/responses
+  ],
+  INFORMATIONAL: [
+    'conditional-side-effects', // Operations inside conditionals
+    'magic-numbers',        // Unexplained constants
+    'dead-code',           // Unreachable/unused code
+    'n-plus-one',          // Database query patterns
+    'stale-comments',      // Comments that no longer match code
+    'missing-error-handling', // Unhandled error paths
+  ],
+};
+
+/**
+ * Fix-First Heuristic: classify findings as AUTO-FIX or ASK.
+ * AUTO-FIX: safe to apply directly (dead code, stale comments, formatting)
+ * ASK: needs user judgment (architecture, behavior changes, trade-offs)
+ *
+ * @param {object} finding - { type, severity, description, file, line }
+ * @returns {'auto-fix' | 'ask'}
+ */
+export function classifyFinding(finding) {
+  const autoFixable = [
+    'dead-code', 'stale-comments', 'magic-numbers',
+    'missing-error-handling', 'n-plus-one',
+  ];
+
+  if (finding.severity === 'CRITICAL') return 'ask';
+  if (autoFixable.includes(finding.type)) return 'auto-fix';
+  return 'ask';
+}
+
+/**
+ * Format review results in gstack's output format.
+ * @param {Array} findings - Array of { type, severity, description, file, line, classification }
+ * @returns {string}
+ */
+export function formatReviewResults(findings) {
+  const critical = findings.filter(f => f.severity === 'CRITICAL');
+  const informational = findings.filter(f => f.severity !== 'CRITICAL');
+  const autoFixed = findings.filter(f => f.classification === 'auto-fix');
+  const needsAsk = findings.filter(f => f.classification === 'ask');
+
+  const lines = [
+    `Pre-Landing Review: ${findings.length} issues (${critical.length} critical, ${informational.length} informational)`,
+    '',
+  ];
+
+  if (autoFixed.length > 0) {
+    lines.push('Auto-Fixed:');
+    for (const f of autoFixed) {
+      lines.push(`  [AUTO-FIXED] [${f.file}:${f.line}] ${f.description}`);
+    }
+    lines.push('');
+  }
+
+  if (needsAsk.length > 0) {
+    lines.push('Needs Decision:');
+    for (const f of needsAsk) {
+      const icon = f.severity === 'CRITICAL' ? '✗' : '△';
+      lines.push(`  ${icon} [${f.severity}] [${f.file}:${f.line}] ${f.description}`);
+    }
+    lines.push('');
+  }
+
+  if (findings.length === 0) {
+    lines.push('All checks passed. No issues found.');
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Agent assignments per review tier.
  */
 export const REVIEW_AGENTS = {

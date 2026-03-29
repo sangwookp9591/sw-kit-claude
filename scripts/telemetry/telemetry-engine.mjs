@@ -14,7 +14,7 @@
  *
  * @module scripts/telemetry/telemetry-engine
  */
-import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { appendFileSync, readFileSync, existsSync, mkdirSync, unlinkSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.mjs';
 
@@ -198,4 +198,93 @@ export function formatUsageSummary(summary) {
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Create a pending marker for crash recovery.
+ * If the skill crashes, the marker is finalized as 'unknown' on next run.
+ *
+ * @param {string} sessionId
+ * @param {string} skill
+ * @param {string} [projectDir]
+ */
+export function createPendingMarker(sessionId, skill, projectDir) {
+  const dir = projectDir || process.cwd();
+  const telDir = join(dir, TELEMETRY_DIR);
+  mkdirSync(telDir, { recursive: true });
+
+  const marker = {
+    ts: new Date().toISOString(),
+    skill,
+    sessionId,
+    status: 'pending',
+  };
+
+  try {
+    const markerPath = join(telDir, `.pending-${sessionId}`);
+    appendFileSync(markerPath, JSON.stringify(marker));
+  } catch {
+    // Best effort
+  }
+}
+
+/**
+ * Finalize pending marker (skill completed normally).
+ *
+ * @param {string} sessionId
+ * @param {string} [projectDir]
+ */
+export function finalizePendingMarker(sessionId, projectDir) {
+  const dir = projectDir || process.cwd();
+  const markerPath = join(dir, TELEMETRY_DIR, `.pending-${sessionId}`);
+
+  try {
+    if (existsSync(markerPath)) {
+      unlinkSync(markerPath);
+    }
+  } catch {
+    // Best effort
+  }
+}
+
+/**
+ * Recover any orphaned pending markers from crashed sessions.
+ * Called at session start.
+ *
+ * @param {string} [projectDir]
+ */
+export function recoverPendingMarkers(projectDir) {
+  const dir = projectDir || process.cwd();
+  const telDir = join(dir, TELEMETRY_DIR);
+
+  if (!existsSync(telDir)) return;
+
+  try {
+    const files = readdirSync(telDir).filter(f => f.startsWith('.pending-'));
+
+    for (const file of files) {
+      const markerPath = join(telDir, file);
+      try {
+        const content = readFileSync(markerPath, 'utf-8');
+        const marker = JSON.parse(content);
+
+        // Log the crashed session as 'unknown' outcome
+        logSkillUsage({
+          skill: marker.skill || 'unknown',
+          duration_s: 0,
+          outcome: 'unknown',
+          complexityLevel: null,
+          tokensUsed: null,
+          teamPreset: null,
+        }, projectDir);
+
+        unlinkSync(markerPath);
+      } catch {
+        // Corrupt marker, just delete it
+        try { unlinkSync(markerPath); } catch {}
+      }
+    }
+  } catch {
+    // Best effort recovery
+  }
 }

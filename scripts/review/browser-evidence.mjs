@@ -14,6 +14,7 @@
  */
 import { addEvidence } from '../evidence/evidence-chain.mjs';
 import { createLogger } from '../core/logger.mjs';
+import { parseAriaSnapshot, formatRefs, checkStale } from './aria-refs.mjs';
 
 const log = createLogger('browser-evidence');
 
@@ -214,4 +215,76 @@ export function formatBrowserEvidence(entries) {
   lines.push(`  Total: ${passed}/${total} passed`);
 
   return lines.join('\n');
+}
+
+/**
+ * Orchestrate a complete browser QA session.
+ * Combines: navigate → snapshot → ARIA refs → test actions → evidence collection.
+ *
+ * This is the high-level function agents call to run browser-based QA.
+ * It uses MCP Playwright tools under the hood.
+ *
+ * @param {string} feature - Feature being tested
+ * @param {object} config
+ * @param {string} config.baseUrl - Base URL to test (e.g. http://localhost:3000)
+ * @param {string[]} config.routes - Routes to test
+ * @param {string[]} [config.interactions] - Key interactions to verify
+ * @param {boolean} [config.checkA11y] - Run accessibility check
+ * @param {boolean} [config.checkConsole] - Check console for errors
+ * @param {string} [projectDir]
+ * @returns {{ testPlan: Array, evidenceCount: number }}
+ */
+export function orchestrateBrowserQA(feature, config, projectDir) {
+  const testPlan = buildBrowserTestPlan({
+    feature,
+    routes: (config.routes || []).map(r => `${config.baseUrl}${r}`),
+    interactions: config.interactions || [],
+  });
+
+  log.info(`Browser QA plan: ${testPlan.length} tests for ${feature}`);
+  log.info(`Routes: ${config.routes?.join(', ')}`);
+  log.info(`Base URL: ${config.baseUrl}`);
+
+  // The actual test execution is done by agents using MCP tools.
+  // This function prepares the plan and returns instructions.
+  return {
+    testPlan,
+    evidenceCount: 0,  // Updated as agents execute tests
+    instructions: [
+      `1. Navigate to each route: ${(config.routes || []).join(', ')}`,
+      '2. Take browser_snapshot for ARIA refs',
+      '3. Execute interactions using refs (@e1, @e2...)',
+      '4. Take screenshots before/after each interaction',
+      '5. Check console_messages for errors',
+      config.checkA11y ? '6. Run accessibility check via snapshot analysis' : null,
+      '7. Record evidence using addScreenshotEvidence/addConsoleEvidence',
+    ].filter(Boolean),
+  };
+}
+
+/**
+ * Parse and analyze an ARIA snapshot for QA purposes.
+ * Combines ARIA parsing with evidence recording.
+ *
+ * @param {string} feature
+ * @param {string} snapshotText - Raw snapshot output
+ * @param {string} url - Current page URL
+ * @param {string} [projectDir]
+ * @returns {{ refs: Map, refCount: number, formatted: string }}
+ */
+export function analyzeSnapshot(feature, snapshotText, url, projectDir) {
+  const refs = parseAriaSnapshot(snapshotText);
+
+  // Record as accessibility evidence
+  addAccessibilityEvidence(feature, {
+    url,
+    violations: 0,  // Snapshot parsing doesn't detect violations directly
+    issues: [],
+  }, projectDir);
+
+  return {
+    refs,
+    refCount: refs.size,
+    formatted: formatRefs(refs),
+  };
 }
