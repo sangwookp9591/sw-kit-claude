@@ -30,6 +30,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.mjs"
+    "**/*.mjs",
+    "tests/e2e/browse/**"
   ]
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.6] - 2026-03-30 — Stop Hook Schema Fix + Build Pipeline
+
+### Fixed
+- **Stop hook JSON validation error**: `stop.ts` and `stop-failure.ts` used `hookSpecificOutput.additionalContext` which is not supported by Stop hook schema. Changed to `stopReason` top-level field.
+- **Build pipeline**: Added `tests/e2e/browse/**` to tsconfig exclude to unblock compilation (browse dist artifacts not present in plugin cache).
+- **dist/ generation**: Ran `npm install --legacy-peer-deps` + `npx tsc` to generate missing `dist/hooks-handlers/*.js` files.
+
 ## [2.8.3] - 2026-03-30 — Production Browse + Eval E2E + Ship Full Chain + Teacher Engine
 
 ### Added

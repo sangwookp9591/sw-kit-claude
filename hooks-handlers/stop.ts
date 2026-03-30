@@ -109,7 +109,7 @@ try {
 
   if (ctx.length > 0) {
     process.stdout.write(JSON.stringify({
-      hookSpecificOutput: { additionalContext: ctx.join('\n') }
+      stopReason: ctx.join('\n')
     }));
   } else {
     process.stdout.write(JSON.stringify({}));

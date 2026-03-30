@@ -56,7 +56,7 @@ try {
   } catch (_) {}
 
   process.stdout.write(JSON.stringify({
-    hookSpecificOutput: { additionalContext: `[aing Self-Healing] ${cat} -- ${rec}` }
+    stopReason: `[aing Self-Healing] ${cat} -- ${rec}`
   }));
 } catch (err: unknown) {
   process.stderr.write(`[aing:stop-failure] ${(err as Error).message}\n`);
