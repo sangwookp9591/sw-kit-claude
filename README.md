@@ -258,34 +258,285 @@ Correct    ███████████████████████
 
 ---
 
-## 5 Usage Patterns
+## How to Use aing (초보자 가이드)
 
-| Pattern | When | Command |
-|---------|------|---------|
-| **A. Quick Task** | "빨리 하나만 해줘" | `/aing do "rate limit 추가"` |
-| **B. Full Pipeline** | 기능 처음부터 끝까지 | `/aing auto user-auth "JWT 인증"` |
-| **C. Review Only** | 내가 코딩, 리뷰만 | `/aing review-pipeline` |
-| **D. Custom Team** | 팀 직접 구성 | `/aing team jay milla "결제 리팩토링"` |
-| **E. Non-Developer** | 개발 경험 없이 | `/aing wizard` |
+aing을 처음 써보시나요? 어렵게 생각할 필요 없습니다.
+**자연어로 말하면 됩니다.** 명령어를 외울 필요 없어요.
+
+### 가장 쉬운 시작법
+
+Claude Code에서 이렇게 말하세요:
+
+```
+로그인 기능 만들어줘
+```
+
+또는
+
+```
+/aing do "로그인 기능 만들어줘"
+```
+
+aing이 알아서 적절한 에이전트를 배정하고, 계획을 세우고, 코드를 작성합니다.
+
+---
+
+### 상황별 "이렇게 말하세요" 가이드
+
+<table>
+<tr><th width="30%">하고 싶은 것</th><th width="35%">이렇게 말하세요</th><th width="35%">또는 이 명령어</th></tr>
+<tr>
+<td><b>뭔가 만들어달라고</b></td>
+<td>
+
+"로그인 기능 추가해줘"
+"댓글 기능 만들어줘"
+"결제 API 연동해줘"
+
+</td>
+<td>
+
+`/aing do "로그인 기능"`
+`/aing auto auth "JWT 인증"`
+
+</td>
+</tr>
+<tr>
+<td><b>버그가 있어</b></td>
+<td>
+
+"로그인하면 500 에러 나"
+"버튼 클릭하면 아무 반응 없어"
+"배포하니까 깨졌어"
+
+</td>
+<td>
+
+`/aing debug "500 에러"`
+
+</td>
+</tr>
+<tr>
+<td><b>코드 검토해줘</b></td>
+<td>
+
+"내가 짠 코드 좀 봐줘"
+"PR 올리기 전에 리뷰해줘"
+"보안 문제 없는지 확인해줘"
+
+</td>
+<td>
+
+`/aing review-pipeline`
+`/aing review cso`
+
+</td>
+</tr>
+<tr>
+<td><b>코드 이해가 안 돼</b></td>
+<td>
+
+"이 프로젝트 구조 설명해줘"
+"auth 폴더가 뭐 하는 곳이야?"
+"이 함수 어떻게 동작해?"
+
+</td>
+<td>
+
+`/aing explore src/auth`
+
+</td>
+</tr>
+<tr>
+<td><b>테스트 작성</b></td>
+<td>
+
+"이 기능 테스트 짜줘"
+"테스트 먼저 쓰고 코드 짤래"
+
+</td>
+<td>
+
+`/aing test`
+`/aing tdd start auth "JWT"`
+
+</td>
+</tr>
+<tr>
+<td><b>PR 만들고 배포</b></td>
+<td>
+
+"이거 PR 만들어줘"
+"배포할 준비 됐어"
+
+</td>
+<td>
+
+`/aing ship`
+
+</td>
+</tr>
+<tr>
+<td><b>성능이 느려</b></td>
+<td>
+
+"왜 이렇게 느리지?"
+"번들 사이즈 확인해줘"
+
+</td>
+<td>
+
+`/aing perf runtime`
+`/aing perf bundle`
+
+</td>
+</tr>
+<tr>
+<td><b>코드 정리</b></td>
+<td>
+
+"이 코드 리팩토링해줘"
+"안 쓰는 코드 정리해줘"
+
+</td>
+<td>
+
+`/aing refactor src/`
+`/aing lsp`
+
+</td>
+</tr>
+<tr>
+<td><b>개발자가 아닌데</b></td>
+<td>
+
+"쇼핑몰 만들어줘"
+"블로그 색상 바꿔줘"
+
+</td>
+<td>
+
+`/aing wizard`
+
+</td>
+</tr>
+</table>
+
+---
+
+### 5 Usage Patterns
+
+| | Pattern | 언제 | 예시 | 비용 |
+|:---:|---------|------|------|:----:|
+| A | **Quick** | 간단한 작업 1개 | `/aing do "에러 핸들링 추가"` | ~15K |
+| B | **Full** | 기능 전체 구현 | `/aing auto auth "JWT 인증"` | ~48K-123K |
+| C | **Review** | 코딩 후 리뷰만 | `/aing review-pipeline` | ~18K |
+| D | **Team** | 에이전트 직접 선택 | `/aing team jay milla "결제"` | 가변 |
+| E | **Wizard** | 비개발자 | `/aing wizard` | ~15K |
+
+### Pattern A: Quick ("하나만 빨리")
+
+가장 자주 쓰는 패턴. 작은 작업 하나를 빠르게.
+
+```
+/aing do "로그인 페이지에 비밀번호 표시/숨기기 토글 추가"
+/aing do "API 응답에 pagination 추가"
+/aing do "에러 메시지를 한국어로 변경"
+/aing do "README에 설치 방법 추가"
+```
+
+aing이 복잡도를 자동 판단해서 에이전트 1명(Solo)으로 처리합니다.
+
+### Pattern B: Full Pipeline ("처음부터 끝까지")
+
+새 기능을 만들 때. 14명이 협업합니다.
+
+```
+/aing auto user-auth "JWT 인증 + 리프레시 토큰 + 소셜 로그인"
+/aing auto payment "Stripe 결제 연동 + 웹훅 + 환불"
+/aing auto chat "실시간 채팅 + WebSocket + 메시지 저장"
+```
+
+자동으로 이 과정을 거칩니다:
+1. **Klay**이 코드를 분석하고 설계
+2. **Able**이 요구사항을 정리하고 태스크 분배
+3. **Jay/Derek/Jerry** 등이 코드 작성 (테스트 먼저)
+4. **Milla**가 보안 리뷰, **Sam**이 최종 검증
+5. 모든 테스트 통과 → 완료 보고서
+
+### Pattern C: Review Only ("내 코드 봐줘")
+
+직접 코딩한 후 리뷰만 받고 싶을 때.
+
+```
+# 복잡도에 따라 자동 선택 (가장 추천)
+/aing review-pipeline
+
+# 특정 리뷰만 지정
+/aing review-pipeline eng        # 코드 품질 + 보안
+/aing review-pipeline design     # UI/UX 디자인
+/aing review-pipeline full       # 전체 4단계 리뷰
+```
+
+리뷰 결과 예시:
+```
+Pre-Landing Review: 3 issues (1 critical, 2 informational)
+
+  [AUTO-FIXED] [src/auth.ts:47] Unused import removed
+  ✗ [CRITICAL] [src/api/user.ts:23] SQL injection risk
+  △ [MEDIUM] [src/utils/format.ts:12] Magic number 86400
+```
+
+### Pattern D: Custom Team ("이 친구들한테 시켜")
+
+특정 에이전트를 직접 골라서 팀 구성.
+
+```
+/aing team jay jerry "DB 스키마 변경 + API 마이그레이션"
+/aing team willji iron "디자인 시스템 구축"
+/aing team klay milla "아키텍처 리뷰 + 보안 감사"
+```
+
+### Pattern E: Wizard ("나는 개발자가 아닌데")
+
+코딩 경험이 없어도 됩니다. 하고 싶은 걸 말하세요.
+
+```
+/aing wizard
+
+> "회사 홈페이지 만들어줘. 소개, 팀 멤버, 연락처 페이지가 필요해"
+> "내 블로그에 다크모드 추가해줘"
+> "엑셀 파일을 읽어서 차트로 보여주는 페이지 만들어줘"
+```
+
+---
 
 ### Full Development Flow
 
+전체 기능 개발의 흐름. 모든 단계가 자동입니다.
+
 ```
 ┌──────────────────────────────────────────────────────────┐
+│                                                           │
 │  1. Plan      /aing plan "JWT 인증"                      │
-│     ↓         Able 요구사항 + Klay 아키텍처               │
+│     ↓         Able이 "뭘 만들지" 정리                     │
+│               Klay이 "어떻게 만들지" 설계                  │
 │                                                           │
 │  2. Build     /aing auto user-auth "JWT 인증"            │
-│     ↓         PDCA: plan → do → check → act → review     │
+│     ↓         Jay가 백엔드, Derek이 프론트엔드             │
+│               테스트 먼저 작성 → 코드 → 리팩토링           │
 │                                                           │
 │  3. Review    /aing review-pipeline                      │
-│     ↓         4-tier: Eng / CEO / Design / Outside       │
+│     ↓         Milla가 보안 체크                           │
+│               Willji가 디자인 체크                         │
+│               Sam이 전체 검증                              │
 │                                                           │
 │  4. Ship      /aing ship                                 │
-│     ↓         merge → test → version → changelog → PR    │
+│     ↓         테스트 → 버전업 → PR 자동 생성               │
 │                                                           │
 │  5. Retro     /aing retro 7d                             │
-│               sessions, hotspots, focus score             │
+│               "이번 주 뭘 했고, 뭐가 잘됐나" 회고          │
+│                                                           │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -298,39 +549,64 @@ Correct    ███████████████████████
 ```
 /aing auto user-auth "JWT auth"
 
-  1. Klay     scan codebase, design architecture
-  2. Able     requirements + task checklist
-  3. Jay      API (TDD: RED-GREEN-REFACTOR)
-     Jerry    database schema + migration
-     Milla    auth middleware + security
-     Willji   login UI design
-     Derek    frontend implementation
-  4. Milla    4-tier review (OWASP, CSO 14-phase)
-     Sam      evidence chain verification
-  5. Sam      verdict: ACHIEVED (9/10)
-     Ship     merge → test → v2.5.1 → CHANGELOG → PR
+  1. Klay     코드베이스 스캔 → 아키텍처 설계
+  2. Able     요구사항 → 태스크 분배
+  3. Jay      백엔드 API (테스트 먼저 작성)
+     Jerry    DB 스키마 + 마이그레이션
+     Milla    인증 미들웨어 + 보안
+     Willji   로그인 UI 디자인
+     Derek    프론트엔드 구현
+  4. Milla    보안 리뷰 (OWASP Top 10)
+     Sam      증거 수집 + 최종 검증
+  5. Sam      판정: ACHIEVED (9/10)
+     Ship     테스트 → v2.5.1 → CHANGELOG → PR
 
-  → .aing/reports/ completion report
-  → Cross-Session Learning captured
+  → 완료 보고서 자동 저장
+  → 학습 내용 다음 세션에 자동 반영
 ```
 
-### Quick Reference
+### 상황별 빠른 참조
 
-| Situation | Command |
-|-----------|---------|
-| 버그 수정 | `/aing debug "에러 설명"` |
-| 코드 리뷰 | `/aing review-pipeline` |
-| 테스트 작성 | `/aing tdd start auth "JWT 테스트"` |
-| 성능 분석 | `/aing perf runtime` |
-| 코드 탐색 | `/aing explore src/auth` |
-| 리팩토링 | `/aing refactor src/services` |
-| 죽은 코드 | `/aing lsp` |
-| 편집 제한 | `/aing freeze src/auth` |
-| 보안 감사 | `/aing review cso` |
-| 회고 | `/aing retro 7d` |
-| 상태 확인 | `/aing status` |
+| 이런 상황이라면 | 이렇게 하세요 | 명령어 |
+|:--------------|:------------|:------|
+| 간단한 수정 1개 | 그냥 말하세요 | `/aing do "설명"` |
+| 새 기능 만들기 | 기능명 + 설명 | `/aing auto 기능명 "설명"` |
+| 버그 발견 | 증상 설명 | `/aing debug "증상"` |
+| 코드 리뷰 | 그냥 실행 | `/aing review-pipeline` |
+| PR + 배포 | 리뷰 통과 후 | `/aing ship` |
+| 테스트 작성 | TDD로 | `/aing tdd start 기능 "설명"` |
+| 성능 문제 | 분석 요청 | `/aing perf runtime` |
+| 코드 이해 | 폴더 지정 | `/aing explore src/` |
+| 리팩토링 | 대상 지정 | `/aing refactor src/services` |
+| 죽은 코드 정리 | 그냥 실행 | `/aing lsp` |
+| 보안 감사 | 그냥 실행 | `/aing review cso` |
+| 편집 범위 제한 | 폴더 지정 | `/aing freeze src/auth` |
+| 제한 해제 | 그냥 실행 | `/aing unfreeze` |
+| 주간 회고 | 기간 지정 | `/aing retro 7d` |
+| 진행 상황 | 그냥 실행 | `/aing status` |
+| 실수 복구 | 그냥 실행 | `/aing rollback` |
 
-> Full guide: [docs/USER-GUIDE.md](docs/USER-GUIDE.md)
+### 자주 하는 질문
+
+**Q: 명령어를 안 외워도 되나요?**
+네. 자연어로 말하면 됩니다. `/aing do "하고 싶은 것"` 하나만 기억하세요.
+
+**Q: 비용이 얼마나 드나요?**
+간단한 작업 ~15K 토큰, 전체 파이프라인 ~48K-123K 토큰.
+복잡도에 따라 자동 조절됩니다.
+
+**Q: 실수하면 어떻게 되나요?**
+`/aing rollback`으로 마지막 안전한 상태로 돌아갑니다.
+위험한 명령(rm -rf 등)은 자동으로 차단됩니다.
+
+**Q: 테스트 없이 배포할 수 있나요?**
+아닙니다. Evidence Chain이 PASS여야 ship이 실행됩니다.
+"증거 없으면 완료 아님"이 원칙입니다.
+
+**Q: 영어로도 되나요?**
+네. 한국어/영어 자동 감지됩니다.
+
+> 전체 가이드: [docs/USER-GUIDE.md](docs/USER-GUIDE.md)
 
 ---
 
