@@ -16,7 +16,14 @@ const log = createLogger('stop');
 
 try {
   const projectDir = process.env.PROJECT_DIR || process.cwd();
-  norchSessionEnd(process.env.SESSION_ID || 'default');
+  const sessionId = process.env.SESSION_ID || 'default';
+  norchSessionEnd(sessionId);
+
+  // Telemetry: log session end (best-effort)
+  try {
+    const { logSession } = await import('../scripts/telemetry/telemetry-engine.mjs');
+    logSession({ type: 'end', sessionId }, projectDir);
+  } catch { /* telemetry is best-effort */ }
 
   // Log context budget usage for this session
   const budget = getBudgetStatus();

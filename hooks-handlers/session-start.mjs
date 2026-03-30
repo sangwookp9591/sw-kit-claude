@@ -22,7 +22,16 @@ const log = createLogger('session-start');
 
 try {
   const projectDir = process.env.PROJECT_DIR || process.cwd();
-  norchSessionStart(process.env.SESSION_ID || 'default');
+  const sessionId = process.env.SESSION_ID || 'default';
+  norchSessionStart(sessionId);
+
+  // Telemetry: recover crashed sessions + log start (best-effort)
+  try {
+    const { logSession, recoverPendingMarkers } = await import('../scripts/telemetry/telemetry-engine.mjs');
+    recoverPendingMarkers(projectDir);
+    logSession({ type: 'start', sessionId }, projectDir);
+  } catch { /* telemetry is best-effort */ }
+
   const config = loadConfig(projectDir);
 
   resetBudget();
