@@ -1,5 +1,16 @@
 node_modules/
+dist/
 .omc/
 .aing/
+.gemini/
+.claude/
+.commandcode/
+.agents/
+.bkit/
+.env*
+coverage/
 *.log
+*.tmp
 .DS_Store
+.pdca-status.json
+skills-lock.json
