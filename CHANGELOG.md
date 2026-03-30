@@ -1,6 +1,6 @@
 # Changelog
 
-## [3.0.0] - 2026-03-30 — gstack Differentiation
+## [2.8.0] - 2026-03-30 — gstack Differentiation
 
 ### Added
 - Multi-AI Consensus Engine: 3-voice voting (Claude + Codex + Gemini) with cli-bridge factory
