@@ -36,8 +36,8 @@ export const SKILL_TOUCHFILES = {
   'flutter-animation': ['skills/flutter-animation/'],
   'agent-ui': ['skills/agent-ui/', 'scripts/agent-ui/'],
   'progress-check': ['skills/progress-check/', 'agents/progress-checker.md'],
-  'review-pipeline': ['skills/review-pipeline/', 'scripts/review/', 'agents/milla.md', 'agents/klay.md', 'agents/sam.md', 'agents/able.md', 'agents/willji.md', 'agents/iron.md'],
-  'ship': ['skills/ship/', 'scripts/ship/', 'scripts/review/', 'scripts/evidence/'],
+  'review-pipeline': ['skills/review-pipeline/', 'scripts/review/', 'agents/milla.md', 'agents/klay.md', 'agents/sam.md', 'agents/simon.md', 'agents/able.md', 'agents/willji.md', 'agents/iron.md'],
+  'ship': ['skills/ship/', 'scripts/ship/', 'scripts/review/', 'scripts/evidence/', 'scripts/qa/'],
 };
 
 /**
