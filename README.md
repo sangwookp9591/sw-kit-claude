@@ -258,20 +258,38 @@ Correct    ███████████████████████
 
 ---
 
-## Quick Start
+## 5 Usage Patterns
+
+| Pattern | When | Command |
+|---------|------|---------|
+| **A. Quick Task** | "빨리 하나만 해줘" | `/aing do "rate limit 추가"` |
+| **B. Full Pipeline** | 기능 처음부터 끝까지 | `/aing auto user-auth "JWT 인증"` |
+| **C. Review Only** | 내가 코딩, 리뷰만 | `/aing review-pipeline` |
+| **D. Custom Team** | 팀 직접 구성 | `/aing team jay milla "결제 리팩토링"` |
+| **E. Non-Developer** | 개발 경험 없이 | `/aing wizard` |
+
+### Full Development Flow
 
 ```
--- Start a PDCA cycle
-/aing start user-auth
-
--- Or run the full pipeline automatically
-/aing auto user-auth "JWT authentication with refresh tokens"
-
--- Non-developer? Just say what you want
-/aing wizard
+┌──────────────────────────────────────────────────────────┐
+│  1. Plan      /aing plan "JWT 인증"                      │
+│     ↓         Able 요구사항 + Klay 아키텍처               │
+│                                                           │
+│  2. Build     /aing auto user-auth "JWT 인증"            │
+│     ↓         PDCA: plan → do → check → act → review     │
+│                                                           │
+│  3. Review    /aing review-pipeline                      │
+│     ↓         4-tier: Eng / CEO / Design / Outside       │
+│                                                           │
+│  4. Ship      /aing ship                                 │
+│     ↓         merge → test → version → changelog → PR    │
+│                                                           │
+│  5. Retro     /aing retro 7d                             │
+│               sessions, hotspots, focus score             │
+└──────────────────────────────────────────────────────────┘
 ```
 
-### Pipeline Flow
+### Pipeline Example
 
 <p align="center">
   <img src="images/pipeline-flow.svg" width="600" alt="aing pipeline flow">
@@ -280,25 +298,39 @@ Correct    ███████████████████████
 ```
 /aing auto user-auth "JWT auth"
 
-  1. Klay     -- scan codebase, extract conventions, design architecture
-  2. Able     -- write requirements + spec + task checklist
-  3. Jay      -- implement API (TDD: RED-GREEN-REFACTOR)
-     Jerry    -- database schema + migration
-     Milla    -- auth middleware + security
-     Willji   -- login UI design
-     Derek    -- frontend implementation
-     Rowan    -- form interactions + animations
-  4. Milla    -- security review (OWASP Top 10)
-     Sam      -- final code review + evidence chain
-  5. Sam      -- verdict:
-                 [test] PASS (24/24)
-                 [build] PASS
-                 [lint] PASS (0 errors)
-                 Verdict: PASS
+  1. Klay     scan codebase, design architecture
+  2. Able     requirements + task checklist
+  3. Jay      API (TDD: RED-GREEN-REFACTOR)
+     Jerry    database schema + migration
+     Milla    auth middleware + security
+     Willji   login UI design
+     Derek    frontend implementation
+  4. Milla    4-tier review (OWASP, CSO 14-phase)
+     Sam      evidence chain verification
+  5. Sam      verdict: ACHIEVED (9/10)
+     Ship     merge → test → v2.5.1 → CHANGELOG → PR
 
-  -> .aing/reports/ completion report
-  -> Cross-Session Learning captured
+  → .aing/reports/ completion report
+  → Cross-Session Learning captured
 ```
+
+### Quick Reference
+
+| Situation | Command |
+|-----------|---------|
+| 버그 수정 | `/aing debug "에러 설명"` |
+| 코드 리뷰 | `/aing review-pipeline` |
+| 테스트 작성 | `/aing tdd start auth "JWT 테스트"` |
+| 성능 분석 | `/aing perf runtime` |
+| 코드 탐색 | `/aing explore src/auth` |
+| 리팩토링 | `/aing refactor src/services` |
+| 죽은 코드 | `/aing lsp` |
+| 편집 제한 | `/aing freeze src/auth` |
+| 보안 감사 | `/aing review cso` |
+| 회고 | `/aing retro 7d` |
+| 상태 확인 | `/aing status` |
+
+> Full guide: [docs/USER-GUIDE.md](docs/USER-GUIDE.md)
 
 ---
 
@@ -308,10 +340,10 @@ Korean and English auto-detected:
 
 | Input | Action |
 |-------|--------|
-| "plan" / "plan this" | PDCA Plan stage |
-| "verify" / "verify" | PDCA Check stage |
-| "build me" / "build" | Iron wizard mode |
-| "explore" / "explore" | Klay codebase scan |
+| "계획" / "plan" | PDCA Plan stage |
+| "검증" / "verify" | PDCA Check stage |
+| "만들어" / "build" | Iron wizard mode |
+| "탐색" / "explore" | Klay codebase scan |
 
 ---
 
