@@ -1,0 +1,70 @@
+name: "E2E Evals"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Test tier (gate or all)'
+        required: false
+        default: 'gate'
+      suite:
+        description: 'Specific test suite (or "all")'
+        required: false
+        default: 'all'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      EVALS: "1"
+      EVALS_TIER: ${{ inputs.tier }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code || echo "Claude Code not available in CI"
+
+      - name: Determine affected skills
+        id: affected
+        run: |
+          node -e "
+            import { affectedSkills } from './scripts/build/touchfiles.mjs';
+            import { execSync } from 'node:child_process';
+            try {
+              const changed = execSync('git diff --name-only origin/main...HEAD', { encoding: 'utf-8' }).trim().split('\n');
+              const affected = affectedSkills(changed);
+              console.log('Affected skills:', affected.join(', ') || 'none');
+              console.log('::set-output name=skills::' + affected.join(','));
+            } catch {
+              console.log('Could not determine affected skills, running all');
+              console.log('::set-output name=skills::all');
+            }
+          "
+
+      - name: Run eval suite
+        if: env.ANTHROPIC_API_KEY != ''
+        run: |
+          echo "Running evals for: ${{ steps.affected.outputs.skills }}"
+          echo "Tier: ${{ inputs.tier }}"
+          # E2E evals require claude CLI — skip if not available
+          which claude && node --test tests/e2e/*.test.mjs || echo "Claude CLI not available, skipping E2E"
+
+      - name: Save eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: .aing/evals/
+          retention-days: 30

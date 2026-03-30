@@ -1,0 +1,40 @@
+name: "Skill Docs Freshness"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - 'scripts/build/**'
+      - 'agents/**'
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'scripts/build/**'
+      - 'agents/**'
+
+jobs:
+  check-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check skill docs freshness
+        run: node scripts/build/generate-all.mjs --check
+
+      - name: Validate all skills
+        run: |
+          node -e "
+            import { validateAllSkills, formatValidation } from './tests/helpers/skill-validator.mjs';
+            const results = validateAllSkills();
+            console.log(formatValidation(results));
+            const hasErrors = results.some(r => !r.valid);
+            if (hasErrors) process.exit(1);
+          "

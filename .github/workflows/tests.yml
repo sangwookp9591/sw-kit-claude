@@ -1,0 +1,51 @@
+name: "Tests"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run unit tests
+        run: node --test tests/*.test.mjs
+
+      - name: Run skill validation
+        run: |
+          node -e "
+            import { validateAllSkills } from './tests/helpers/skill-validator.mjs';
+            const results = validateAllSkills();
+            const errors = results.filter(r => !r.valid);
+            console.log('Skills validated:', results.length, '| Errors:', errors.length);
+            if (errors.length > 0) {
+              for (const e of errors) console.log('  FAIL:', e.skill, e.errors.join(', '));
+              process.exit(1);
+            }
+          "
+
+      - name: Check touchfiles coverage
+        run: |
+          node -e "
+            import { SKILL_TOUCHFILES } from './scripts/build/touchfiles.mjs';
+            import { readdirSync, existsSync } from 'node:fs';
+            const skills = readdirSync('skills', { withFileTypes: true })
+              .filter(e => e.isDirectory()).map(e => e.name);
+            const covered = Object.keys(SKILL_TOUCHFILES);
+            const missing = skills.filter(s => !covered.includes(s));
+            console.log('Skills:', skills.length, '| Touchfiles:', covered.length);
+            if (missing.length > 0) {
+              console.log('Missing touchfiles:', missing.join(', '));
+              // Warning only, not blocking
+            }
+          "
