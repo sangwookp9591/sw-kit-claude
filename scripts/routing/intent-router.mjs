@@ -62,6 +62,43 @@ const TEAM_KEYWORDS = [
   'team', 'large scale', 'full system', 'migration', 'entire',
 ];
 
+const DEBUG_KEYWORDS = [
+  '버그', '에러', '오류', '안 돼', '안돼', '깨졌', '고쳐', '수정해', '왜 안',
+  '반응 없', '작동 안', '동작 안', '안 됨', '실패',
+  'bug', 'error', 'fix', 'broken', 'crash', 'fail', 'not working', '500',
+  'no response', 'does not work',
+];
+
+const REVIEW_KEYWORDS = [
+  '리뷰', '코드 리뷰', '봐줘', '코드 검토', 'PR 리뷰',
+  'review', 'check my code', 'look at', 'code review',
+];
+
+const EXPLORE_KEYWORDS = [
+  '구조', '설명해', '이해', '뭐 하는', '어떻게 동작', '분석해',
+  'explain', 'understand', 'how does', 'what does', 'structure',
+];
+
+const PERF_KEYWORDS = [
+  '느려', '느리', '성능', '속도', '최적화', '무거', '메모리', '번들', '로딩',
+  'slow', 'performance', 'optimize', 'speed', 'memory', 'bundle', 'loading',
+];
+
+const REFACTOR_KEYWORDS = [
+  '리팩토링', '정리', '깔끔', '개선', '코드 정리',
+  'refactor', 'cleanup', 'clean up', 'improve',
+];
+
+const TEST_KEYWORDS = [
+  '테스트', 'TDD', '커버리지', '테스트 짜',
+  'test', 'coverage', 'write test',
+];
+
+const SECURITY_KEYWORDS = [
+  '보안', '취약점', 'OWASP', '감사', 'CSO', '인젝션',
+  'security', 'vulnerability', 'audit', 'injection',
+];
+
 // ─────────────────────────────────────────────
 // 앵커 탐지
 // ─────────────────────────────────────────────
@@ -89,15 +126,43 @@ function detectAnchors(input) {
 // ─────────────────────────────────────────────
 
 function detectDesign(input) {
-  return DESIGN_KEYWORDS.some(kw => input.includes(kw));
+  return DESIGN_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
 }
 
 function detectPlanIntent(input) {
-  return PLAN_KEYWORDS.some(kw => input.includes(kw));
+  return PLAN_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
 }
 
 function detectTeamIntent(input) {
-  return TEAM_KEYWORDS.some(kw => input.includes(kw));
+  return TEAM_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectDebug(input) {
+  return DEBUG_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectReview(input) {
+  return REVIEW_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectExplore(input) {
+  return EXPLORE_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectPerf(input) {
+  return PERF_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectRefactor(input) {
+  return REFACTOR_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectTest(input) {
+  return TEST_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
+}
+
+function detectSecurity(input) {
+  return SECURITY_KEYWORDS.some(kw => input.toLowerCase().includes(kw.toLowerCase()));
 }
 
 // ─────────────────────────────────────────────
@@ -205,6 +270,13 @@ export function routeIntent(input) {
   const isDesign = detectDesign(safeInput);
   const isPlanIntent = detectPlanIntent(safeInput);
   const isTeamIntent = detectTeamIntent(safeInput);
+  const isDebug = detectDebug(safeInput);
+  const isReview = detectReview(safeInput);
+  const isExplore = detectExplore(safeInput);
+  const isPerf = detectPerf(safeInput);
+  const isRefactor = detectRefactor(safeInput);
+  const isTest = detectTest(safeInput);
+  const isSecurity = detectSecurity(safeInput);
   const wordCount = safeInput.split(/\s+/).length;
   const complexityScore = estimateComplexity(safeInput, anchorInfo);
 
@@ -212,8 +284,55 @@ export function routeIntent(input) {
   let confidence;
   let reason;
 
+  // ── 직접 라우팅 (특정 스킬로 바로 연결) ──
+
+  // 우선순위 0: 버그/에러 → debug
+  if (isDebug) {
+    route = 'debug';
+    confidence = 0.90;
+    reason = `버그/에러 키워드 감지 → 체계적 디버깅`;
+  }
+  // 우선순위 0: 보안 감사 → review-cso (리뷰보다 먼저 체크)
+  else if (isSecurity) {
+    route = 'review-cso';
+    confidence = 0.90;
+    reason = `보안 키워드 감지 → CSO 14-phase 감사`;
+  }
+  // 우선순위 0: 리뷰 요청 → review-pipeline
+  else if (isReview) {
+    route = 'review-pipeline';
+    confidence = 0.90;
+    reason = `리뷰 키워드 감지 → 4-tier 리뷰 파이프라인`;
+  }
+  // 우선순위 0: 코드 이해 → explore
+  else if (isExplore) {
+    route = 'explore';
+    confidence = 0.88;
+    reason = `탐색/이해 키워드 감지 → 코드베이스 스캔`;
+  }
+  // 우선순위 0: 성능 → perf
+  else if (isPerf) {
+    route = 'perf';
+    confidence = 0.88;
+    reason = `성능 키워드 감지 → 성능 프로파일링`;
+  }
+  // 우선순위 0: 리팩토링 → refactor
+  else if (isRefactor) {
+    route = 'refactor';
+    confidence = 0.85;
+    reason = `리팩토링 키워드 감지 → 구조적 리팩토링`;
+  }
+  // 우선순위 0: 테스트 → tdd
+  else if (isTest) {
+    route = 'tdd';
+    confidence = 0.85;
+    reason = `테스트 키워드 감지 → TDD 사이클`;
+  }
+
+  // ── 일반 라우팅 ──
+
   // 우선순위 1: 팀 키워드 → team
-  if (isTeamIntent) {
+  else if (isTeamIntent) {
     route = 'team';
     confidence = 0.85;
     reason = `팀 키워드 감지 + complexity ${complexityScore}`;
@@ -248,17 +367,29 @@ export function routeIntent(input) {
     confidence = 0.75;
     reason = `complexity ${complexityScore} ≥ 5 — 팀 필요`;
   }
-  // 우선순위 6: 짧고 모호 (≤15단어, 앵커 없음) → plan
-  else if (wordCount <= 15) {
-    route = 'plan';
-    confidence = 0.72;
-    reason = `짧고 모호한 입력 (${wordCount}단어, 앵커 없음) — 스코핑 필요`;
+  // 우선순위 6: 짧고 구체적 (앵커 없지만 ≤15단어) → auto(solo)
+  else if (wordCount <= 15 && wordCount > 3) {
+    route = 'auto';
+    confidence = 0.75;
+    reason = `짧은 구체적 요청 (${wordCount}단어) → 빠른 실행`;
   }
-  // 기본: plan
-  else {
+  // 우선순위 7: 만들기/추가 등 action verb → auto
+  else if (/추가|만들어|구현|생성|넣어|해줘|add|create|implement|build/i.test(safeInput)) {
+    route = 'auto';
+    confidence = 0.80;
+    reason = `행동 키워드 감지 (${wordCount}단어) → 자동 실행`;
+  }
+  // 우선순위 8: 아주 짧거나 모호 → plan
+  else if (wordCount <= 3) {
     route = 'plan';
     confidence = 0.6;
-    reason = `기본 라우팅 — 계획 수립 권장`;
+    reason = `너무 짧은 입력 (${wordCount}단어) — 스코핑 필요`;
+  }
+  // 기본: auto
+  else {
+    route = 'auto';
+    confidence = 0.65;
+    reason = `기본 라우팅 — 자동 실행`;
   }
 
   const preset = resolvePreset(route, complexityScore, isDesign);
