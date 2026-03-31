@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.8.82] - 2026-03-31 — Independent: remove all external references
+
+### Changed
+
+- **프로젝트 독립화:** 모든 외부 프레임워크 참조 제거, aing 독자 브랜딩 확립
+- docs/WHY-AING.md, ROADMAP-v3.md 전면 리라이트 (독자 가치 제안)
+- README.md 비교표 → 독자 스펙 테이블
+- agents/*.md, scripts/*.ts, skills/*.md, CHANGELOG.md에서 외부 참조 정리
+- dist/ 재빌드 반영
+
 ## [2.8.81] - 2026-03-31 — Fix: dist/ included in git for plugin cache
 
 ### Fixed
