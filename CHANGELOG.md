@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.8.87] - 2026-03-31 — Skill Progressive Disclosure Refactor
+
+### Changed
+
+- **5대 스킬 SKILL.md progressive disclosure 리팩토링** — 본문 68% 축소 (1,941줄 → 603줄)
+  - `team` (542→157줄): 5 stage를 `references/stage-*.md`로 분리
+  - `auto` (403→155줄): presets, worker prompt, report를 `references/`로 분리
+  - `start` (350→88줄): 4 phase 상세를 `references/phase-details.md`로 분리
+  - `debug` (331→92줄): agent prompts, templates, 보조 모드를 `references/`로 분리
+  - `plan-task` (315→111줄): Able/Klay/Milla 프롬프트 템플릿을 `references/`로 분리
+- **설계 원칙**: SKILL.md = "무엇을 어떤 순서로" (흐름+전환조건), references/ = "구체적으로 어떻게" (프롬프트+UI포맷)
+- Sub-agent가 역할/기능을 더 정확히 이해하도록 핵심 정보 밀도 향상
+
 ## [2.8.86] - 2026-03-31 — AI Pipeline + Sub-Agent Context Fix + Test Suite Green
 
 ### Added

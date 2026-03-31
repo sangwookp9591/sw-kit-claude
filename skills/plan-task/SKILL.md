@@ -4,38 +4,6 @@ description: "📋 Able + Klay(+Milla) 다중 관점 계획 수립. 구조화된
 triggers: ["plan", "계획", "기획", "설계"]
 ---
 
-<!-- aing preamble T3 -->
-Agents: Simon(CEO/전략), Sam(CTO/검증), Able(계획), Klay(탐색/리뷰), Milla(보안/검증), Jay(백엔드), Jerry(DB/인프라), Derek(모바일), Iron(프론트엔드), Rowan(모션), Willji(디자인), Jun(성능), Kain(코드분석/LSP)
-
-Commands: /aing plan, /aing auto, /aing team, /aing explore, /aing review, /aing task, /aing debug, /aing test, /aing refactor, /aing do
-
-Voice Directive:
-- 간결하고 기술적으로 답변. 추측 대신 코드를 읽고 확인.
-- 한국어로 응답하되 기술 용어는 영어 유지.
-- 결과물에 근거(파일 경로, 라인 번호) 첨부.
-
-AskUserQuestion Format:
-선택이 필요하면 다음 포맷으로 질문:
-1. {Option A} — {설명}
-2. {Option B} — {설명}
-3. {Option C} — {설명}
-
-Completeness Score:
-작업 완료 시 완성도를 0-100%로 자가 평가. 90% 미만이면 누락 항목 명시.
-
-Search Before Building (3-Layer):
-1. Glob/Grep으로 기존 구현 검색
-2. 패턴/컨벤션 파악 후 일관성 유지
-3. 중복 생성 방지 — 기존 코드 재사용 우선
-
-Team Routing:
-| Complexity | Agent Team              | Model   |
-|------------|-------------------------|---------|
-| low (≤3)   | Derek solo              | haiku   |
-| mid (4-7)  | Derek + Klay review     | sonnet  |
-| high (>7)  | Full team + Milla gate  | opus    |
-<!-- /preamble -->
-
 # /aing plan — Multi-Perspective Task Planning
 
 ## Usage
@@ -44,221 +12,63 @@ Team Routing:
 /aing plan "사용자 인증 API 구현"
 ```
 
-## Step 1: Able Draft (구조화된 초안)
-
-Spawn Able with structured output requirements:
+## Pipeline Overview
 
 ```
-Agent({
-  subagent_type: "aing:able",
-  description: "Able: 작업 계획 수립 — {task}",
-  model: "sonnet",
-  prompt: "다음 작업을 분석하고 PLAN_DRAFT 포맷으로 계획을 수립하세요: {task}
-
-출력 포맷 (PLAN_DRAFT):
-## Meta
-- Feature: {name}
-- Complexity Signals: fileCount={N}, domainCount={N}, hasArchChange={bool}, hasSecurity={bool}
-
-## Goal
-{what to achieve}
-
-## Context
-{codebase facts discovered by reading code}
-
-## Options
-### Option 1: {name}
-- Pros: {list}
-- Cons: {list}
-### Option 2: {name}
-- Pros: {list}
-- Cons: {list}
-
-## Recommended Option
-{name} — {rationale}
-
-## Steps
-1. {step} — files: {paths}, agent: {name}
-2. ...
-
-## Acceptance Criteria
-- [ ] {testable criterion}
-
-## Risks
-- {risk}: {mitigation}
-
-Rules:
-- 최소 2개 이상의 Options를 비교 분석 후 추천안 선택
-- 모든 Step에 파일 경로와 담당 에이전트 명시
-- Acceptance Criteria는 테스트 가능한 것만
-- Meta 섹션의 Complexity Signals를 반드시 포함"
-})
+Able Draft → Complexity Score → Klay Review → [Milla Gap Analysis (high only)] → Able Integration → Persist → Display
 ```
+
+---
+
+## Step 1: Able Draft
+
+Able이 PLAN_DRAFT 포맷으로 구조화된 초안을 생성합니다.
+출력: Meta (complexity signals), Goal, Options (2+), Steps (with files + agents), Acceptance Criteria, Risks.
+→ 프롬프트: `references/agent-prompts.md` Able Draft
 
 ## Step 1.5: Complexity Scoring
 
-After Able returns, extract complexity signals from the `## Meta` section:
-- Parse `fileCount`, `domainCount`, `hasArchChange`, `hasSecurity` from Able's output
-- Apply scoring thresholds:
-  - **low** (score ≤ 3): fileCount ≤ 2, single domain, no arch/security changes
-  - **mid** (score 4-7): moderate file count, 2 domains, or has tests
-  - **high** (score > 7): many files, 3+ domains, or has arch/security changes
+Able의 `## Meta` 섹션에서 complexity signals 추출:
 
-Scoring rules (same as complexity-scorer.mjs):
-- fileCount: ≤2→0, ≤5→1, ≤15→2, >15→3
-- domainCount: 1→0, 2→2, 3→3, >3→4
-- hasArchChange: +2
-- hasSecurity: +2
+| Signal | Score |
+|--------|-------|
+| fileCount: ≤2→0, ≤5→1, ≤15→2, >15→3 | |
+| domainCount: 1→0, 2→2, 3→3, >3→4 | |
+| hasArchChange: +2 | |
+| hasSecurity: +2 | |
+
+| Level | Score |
+|-------|-------|
+| **low** | ≤ 3 |
+| **mid** | 4-7 |
+| **high** | > 7 |
 
 ## Step 2: Klay Architecture Review
 
-Spawn Klay in Plan Review Mode:
+Klay가 REVIEW_FEEDBACK 포맷으로 리뷰. Feasibility, Missing Alternatives, Architecture Risks, Verdict.
+→ 프롬프트: `references/agent-prompts.md` Klay Review
 
-```
-Agent({
-  subagent_type: "aing:klay",
-  description: "Klay: 계획 아키텍처 리뷰 — {feature}",
-  model: "sonnet",   // Note: overrides klay.md default (opus) for cost efficiency
-  prompt: "[PLAN REVIEW MODE]
-다음 계획의 아키텍처 리뷰를 수행하세요.
+## Step 2.5: Milla Gap Analysis (high complexity only)
 
-{Able's PLAN_DRAFT output here}
-
-REVIEW_FEEDBACK 포맷으로 출력하세요:
-## Feasibility
-- {step N}: FEASIBLE / CONCERN — {detail}
-
-## Missing Alternatives
-- {alternative not considered}
-
-## Architecture Risks
-- {risk}: severity={HIGH/MED/LOW}, {detail}
-
-## Verdict
-APPROVE / SUGGEST_CHANGES
-
-## Changes Requested
-- {specific change 1}
-- {specific change 2}
-
-Rules:
-- 코드베이스를 직접 탐색하여 기술적 실현 가능성 검증
-- 최소 1개의 누락된 대안 또는 아키텍처 리스크를 제시
-- Rubber stamp 금지 — 실질적 피드백 필수"
-})
-```
-
-## Step 2.5: Milla Gap Analysis (Conditional — high complexity only)
-
-**Only execute this step if complexity level = high (score > 7).**
-
-Spawn Milla in Plan Critic Mode:
-
-```
-Agent({
-  subagent_type: "aing:milla",
-  description: "Milla: 계획 갭 분석 — {feature}",
-  model: "sonnet",
-  prompt: "[PLAN REVIEW MODE]
-다음 계획과 아키텍처 리뷰를 분석하여 갭을 찾으세요.
-
-=== PLAN_DRAFT ===
-{Able's output}
-
-=== REVIEW_FEEDBACK ===
-{Klay's output}
-
-CRITIC_FEEDBACK 포맷으로 출력하세요:
-## Gap Analysis
-| Severity | Area | Gap | Impact |
-|----------|------|-----|--------|
-| Critical/Major/Minor | {area} | {what's missing} | {consequence} |
-
-## Acceptance Criteria Audit
-- {criterion}: TESTABLE / NOT_TESTABLE — {fix suggestion}
-
-## Dependency/Ordering Issues
-- {issue}
-
-## Verdict
-APPROVE / REQUEST_CHANGES
-
-## Changes Requested
-- {specific change 1}
-- {specific change 2}
-
-Rules:
-- Gap Analysis 테이블에 최소 1개 항목 필수
-- Acceptance Criteria의 테스트 가능성을 각각 검증
-- REQUEST_CHANGES 시 Changes Requested가 비어있으면 안 됨"
-})
-```
-
-**Re-review loop**: If Milla's Verdict is `REQUEST_CHANGES`:
-1. Pass Milla's feedback to Able for integration (Step 3)
-2. After Able integrates, re-submit to Milla for re-review
-3. Maximum 2 total Milla reviews — if still REQUEST_CHANGES after 2nd review, proceed with current version
+**Score > 7일 때만 실행.** Milla가 CRITIC_FEEDBACK 포맷으로 갭 분석.
+- REQUEST_CHANGES → Able에게 피드백 전달 → 재리뷰 (최대 2회)
+→ 프롬프트: `references/agent-prompts.md` Milla Gap Analysis
 
 ## Step 3: Feedback Integration
 
-Spawn Able again to integrate all review feedback:
-
-```
-Agent({
-  subagent_type: "aing:able",
-  description: "Able: 피드백 통합 — {feature}",
-  model: "sonnet",
-  prompt: "다음 리뷰 피드백을 계획에 통합하고 FINAL_PLAN JSON을 생성하세요.
-
-=== ORIGINAL PLAN ===
-{Able's PLAN_DRAFT}
-
-=== KLAY REVIEW ===
-{Klay's REVIEW_FEEDBACK}
-
-=== MILLA REVIEW (if present) ===
-{Milla's CRITIC_FEEDBACK or 'N/A'}
-
-리뷰어의 피드백을 반영하여 최종 계획을 수정하세요. 그리고 다음 JSON 포맷으로 출력하세요:
-
-\`\`\`json
-{
-  \"feature\": \"...\",
-  \"goal\": \"...\",
-  \"steps\": [\"...\"],
-  \"acceptanceCriteria\": [\"...\"],
-  \"risks\": [\"...\"],
-  \"options\": [{ \"name\": \"...\", \"pros\": [\"...\"], \"cons\": [\"...\"] }],
-  \"reviewNotes\": [{ \"reviewer\": \"klay\", \"verdict\": \"...\", \"highlights\": [\"...\"] }],
-  \"complexityScore\": N,
-  \"complexityLevel\": \"low|mid|high\"
-}
-\`\`\`
-
-Rules:
-- 리뷰어가 제시한 변경 사항을 모두 반영
-- 최종 JSON은 반드시 유효한 JSON이어야 함
-- reviewNotes에 각 리뷰어(klay, milla)의 verdict와 핵심 피드백 포함"
-})
-```
+Able이 Klay/Milla 피드백을 통합하여 FINAL_PLAN JSON을 생성합니다.
+→ 프롬프트: `references/agent-prompts.md` Able Integration
 
 ## Step 4: Persist (JSON stdin)
-
-After Able returns the FINAL_PLAN JSON, persist via JSON stdin:
 
 ```bash
 printf '%s' '{FINAL_PLAN_JSON}' | node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/cli/persist.js" plan --stdin --dir "$(pwd)"
 ```
 
-Note: `--dir "$(pwd)"` is **mandatory** — without it, persist.mjs defaults to `process.cwd()` which may differ from the user's project directory when the script is invoked via `${CLAUDE_PLUGIN_ROOT}`. Use `printf '%s'` instead of `echo` to avoid shell quote issues when JSON contains single quotes.
-
-This creates:
-- `.aing/plans/{date}-{feature}.md` — Structured plan with Options, Review Notes, Complexity
-- `.aing/tasks/task-{id}.json` — Task checklist with subtasks
+`--dir "$(pwd)"` **mandatory**. `printf '%s'` 사용 (echo가 아닌).
+Creates: `.aing/plans/{date}-{feature}.md` + `.aing/tasks/task-{id}.json`
 
 ## Step 5: Plan Summary Display
-
-Display the plan summary to the user:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -277,39 +87,25 @@ Display the plan summary to the user:
   Task Breakdown:
   #1  {task title}          → {agent}
   #2  {task title}          → {agent}
-  ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## Step 6: Next Action Selection
 
-**MANDATORY**: Present next-action choices using AskUserQuestion:
+**MANDATORY**: AskUserQuestion:
 
-```
-📋 계획이 완료되었습니다. 다음 액션을 선택하세요:
+1. **/aing team** — 팀 실행 (추천: verify→fix 루프, 품질 보장)
+2. **/aing auto** — 단발 실행 (빠르게, verify 없이)
+3. **저장만** — 계획만 저장하고 나중에 실행
 
-  1. /aing team — 팀 실행 (추천: verify→fix 루프, 품질 보장)
-  2. /aing auto — 단발 실행 (빠르게, verify 없이)
-  3. 저장만 — 계획만 저장하고 나중에 실행
-```
-
-### On Option 1: Team Pipeline (Recommended)
-Invoke `/aing team` with the plan context:
-- Pass the plan file path: `--plan .aing/plans/{date}-{feature}.md`
-- Team will skip team-plan stage and use existing plan directly
-- Staged pipeline: exec → verify → fix 루프 (max 3회)
-
-### On Option 2: Auto (One-shot)
-Invoke `/aing auto` with the plan context
-
-### On Option 3: Save Only
-Confirm save and end flow
+- Option 1 → `/aing team --plan .aing/plans/{date}-{feature}.md`
+- Option 2 → `/aing auto` with plan context
+- Option 3 → Confirm save and end
 
 ## Error Handling
 
-- Klay agent fails → skip review, save Able's draft directly (graceful degradation)
-- Milla agent fails → proceed with Klay review only
-- Milla re-review loop exceeds 2 → save current version
-- persist.mjs stdin fails → fall back to CLI arg mode
-- AskUserQuestion timeout → default to Option 3 (save only)
+- Klay 실패 → skip review, Able draft 직접 저장 (graceful degradation)
+- Milla 실패 → Klay review만으로 진행
+- Milla re-review 2회 초과 → 현재 버전으로 진행
+- persist.js stdin 실패 → CLI arg 모드 fallback
