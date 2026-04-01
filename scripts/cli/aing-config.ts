@@ -3,6 +3,7 @@
  * @module scripts/cli/aing-config
  */
 import { readStateOrDefault, writeState } from '../core/state.js';
+import { resetConfigCache } from '../core/config.js';
 import { join } from 'node:path';
 
 const CONFIG_FILE = '.aing/config.json';
@@ -25,6 +26,55 @@ export function setConfig(key: string, value: unknown, projectDir?: string): voi
   const config = readStateOrDefault(configPath, {}) as Record<string, unknown>;
   setNestedValue(config, key, value);
   writeState(configPath, config);
+  resetConfigCache();
+}
+
+// ---------------------------------------------------------------------------
+// Profile presets
+// ---------------------------------------------------------------------------
+
+const PROFILE_PRESETS: Record<string, Record<string, unknown>> = {
+  light: {
+    costMode: 'budget',
+    maxTeamSize: 2,
+    tokenLimit: 50000,
+    agents: {
+      categories: { leadership: true, backend: true, frontend: false, design: false, aiml: false, special: true },
+      deny: [],
+      allow: [],
+    },
+  },
+  standard: {
+    costMode: 'balanced',
+    maxTeamSize: 4,
+    tokenLimit: null,
+    agents: {
+      categories: { leadership: true, backend: true, frontend: true, design: true, aiml: false, special: true },
+      deny: [],
+      allow: [],
+    },
+  },
+  full: {
+    costMode: 'quality',
+    maxTeamSize: 7,
+    tokenLimit: null,
+    agents: {
+      categories: { leadership: true, backend: true, frontend: true, design: true, aiml: true, special: true },
+      deny: [],
+      allow: [],
+    },
+  },
+};
+
+/**
+ * Apply a named profile preset to config.
+ * Returns true if preset was found and applied, false otherwise.
+ */
+export function applyProfilePreset(presetName: string, projectDir?: string): boolean {
+  const preset = PROFILE_PRESETS[presetName];
+  if (!preset) return false;
+  setConfig('profile', preset, projectDir);
+  return true;
 }
 
 /**

@@ -5,7 +5,8 @@
  */
 import { readStdinJSON } from '../scripts/core/stdin.js';
 import { detectIntent } from '../scripts/i18n/intent-detector.js';
-import { selectTeam, estimateTeamCost } from '../scripts/pipeline/team-orchestrator.js';
+import { selectTeamWithProfile, estimateTeamCost } from '../scripts/pipeline/team-orchestrator.js';
+import { resolveProfile } from '../scripts/routing/profile-resolver.js';
 import { getActiveSession, sanitizeSessionField } from '../scripts/core/session-reader.js';
 import { trackInjection, trimToTokenBudget } from '../scripts/core/context-budget.js';
 import { checkPlanGate } from '../scripts/hooks/plan-gate.js';
@@ -206,7 +207,13 @@ try {
     lineCount: prompt.length > 200 ? 200 : prompt.length > 100 ? 80 : prompt.length > 50 ? 30 : 10,
   };
 
-  const team: TeamSelection = selectTeam(signals as unknown as Record<string, unknown>);
+  let resolvedProfile;
+  try { resolvedProfile = resolveProfile(projectDir); } catch { /* fallback */ }
+
+  const team: TeamSelection = selectTeamWithProfile(
+    signals as unknown as Record<string, unknown>,
+    resolvedProfile
+  );
   const cost: TeamCost = estimateTeamCost(team.preset);
 
   // Always show team recommendation with agent deployment table

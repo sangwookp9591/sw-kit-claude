@@ -5,6 +5,7 @@
  */
 
 import { scoreComplexity, ComplexitySignals, ComplexityLevel } from './complexity-scorer.js';
+import { loadConfig } from '../core/config.js';
 
 export type CostMode = 'quality' | 'balanced' | 'budget';
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';
@@ -174,5 +175,12 @@ function tierIndex(tier: ModelTier): number {
 export function getCostMode(): CostMode {
   const env = process.env.SWKIT_COST_MODE;
   if (env && ['quality', 'balanced', 'budget'].includes(env)) return env as CostMode;
+
+  try {
+    const config = loadConfig();
+    const costMode = (config as Record<string, unknown> & { profile?: { costMode?: string } }).profile?.costMode;
+    if (costMode && ['quality', 'balanced', 'budget'].includes(costMode)) return costMode as CostMode;
+  } catch { /* fallback */ }
+
   return 'balanced';
 }
