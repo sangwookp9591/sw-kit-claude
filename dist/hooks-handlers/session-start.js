@@ -3,7 +3,7 @@
  * Injects harness rules so aing is ALWAYS active without explicit invocation.
  * Detects first-run and prompts for setup via /aing start.
  */
-import { readStateOrDefault } from '../scripts/core/state.js';
+import { readStateOrDefault, writeState } from '../scripts/core/state.js';
 import { loadConfig } from '../scripts/core/config.js';
 import { createLogger } from '../scripts/core/logger.js';
 import { resetBudget, trackInjection, trimToTokenBudget } from '../scripts/core/context-budget.js';
@@ -99,8 +99,7 @@ try {
             const terminalStages = ['completion', 'completed', 'cancelled', 'failed'];
             if (stage && terminalStages.includes(stage)) {
                 // Clear completed team session to prevent stale resume prompts
-                const { writeState: ws } = await import('../scripts/core/state.js');
-                ws(teamSessionPath, {});
+                writeState(teamSessionPath, {});
             }
         }
         // Clear stale plan-state (active:true but older than 24 hours = crashed session)
@@ -109,8 +108,7 @@ try {
         if (planState && planState.active === true && planState.startedAt) {
             const ageMs = Date.now() - new Date(planState.startedAt).getTime();
             if (ageMs > 24 * 60 * 60 * 1000) {
-                const { writeState: ws } = await import('../scripts/core/state.js');
-                ws(planStatePath, { ...planState, active: false, terminated: true, reason: 'session-start-gc: stale >24h', terminatedAt: new Date().toISOString() });
+                writeState(planStatePath, { ...planState, active: false, terminated: true, reason: 'session-start-gc: stale >24h', terminatedAt: new Date().toISOString() });
                 log.info('Stale plan-state auto-deactivated (>24h)');
             }
         }

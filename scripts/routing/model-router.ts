@@ -178,7 +178,7 @@ export function getCostMode(): CostMode {
 
   try {
     const config = loadConfig();
-    const costMode = (config as Record<string, unknown> & { profile?: { costMode?: string } }).profile?.costMode;
+    const costMode = config.profile?.costMode;
     if (costMode && ['quality', 'balanced', 'budget'].includes(costMode)) return costMode as CostMode;
   } catch { /* fallback */ }
 

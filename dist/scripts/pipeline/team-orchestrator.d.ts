@@ -11,13 +11,8 @@
  *
  * @module scripts/pipeline/team-orchestrator
  */
-import type { ResolvedProfile } from '../routing/profile-resolver.js';
-interface Worker {
-    name: string;
-    agent: string;
-    model: 'haiku' | 'sonnet' | 'opus';
-    role: string;
-}
+import type { ResolvedProfile, Worker } from '../routing/profile-resolver.js';
+export type { Worker };
 interface TeamPreset {
     name: string;
     cost: string;

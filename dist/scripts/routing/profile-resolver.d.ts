@@ -6,24 +6,8 @@
  *
  * @module scripts/routing/profile-resolver
  */
-export interface AgentsConfig {
-    categories: {
-        leadership: boolean;
-        backend: boolean;
-        frontend: boolean;
-        design: boolean;
-        aiml: boolean;
-        special: boolean;
-    };
-    deny: string[];
-    allow: string[];
-}
-export interface ProfileConfig {
-    costMode: 'quality' | 'balanced' | 'budget';
-    maxTeamSize: number;
-    tokenLimit: number | null;
-    agents: AgentsConfig;
-}
+import type { AgentsConfig, ProfileConfig } from '../core/config.js';
+export type { AgentsConfig, ProfileConfig };
 export interface AgentEntry {
     name: string;
     teamRole: 'executor' | 'planner' | 'reviewer' | 'sam';
@@ -69,9 +53,7 @@ export declare function isAgentAllowed(agentName: string, profile: AgentsConfig)
 export declare function filterWorkers(workers: Worker[], profile: ResolvedProfile): Worker[];
 /**
  * Check whether token usage has exceeded the configured limit.
- *
- * @param tokenLimit - limit in tokens, or null to disable
- * @param projectDir - optional project directory for telemetry lookup
+ * Delegates to token-tracker's checkSessionTokenLimit (single source of truth).
  */
 export declare function checkTokenLimit(tokenLimit: number | null, projectDir?: string): {
     exceeded: boolean;

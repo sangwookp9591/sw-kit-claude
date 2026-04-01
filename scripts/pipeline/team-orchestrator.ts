@@ -15,16 +15,11 @@
 import { createLogger } from '../core/logger.js';
 import { scoreComplexity } from '../routing/complexity-scorer.js';
 import { filterWorkers } from '../routing/profile-resolver.js';
-import type { ResolvedProfile } from '../routing/profile-resolver.js';
+import type { ResolvedProfile, Worker } from '../routing/profile-resolver.js';
 
 const log = createLogger('team');
 
-interface Worker {
-  name: string;
-  agent: string;
-  model: 'haiku' | 'sonnet' | 'opus';
-  role: string;
-}
+export type { Worker };
 
 interface TeamPreset {
   name: string;

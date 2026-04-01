@@ -40,7 +40,7 @@ interface I18nConfig {
     defaultLocale: string;
     supportedLocales: string[];
 }
-interface AgentsConfig {
+export interface AgentsConfig {
     categories: {
         leadership: boolean;
         backend: boolean;
@@ -52,7 +52,7 @@ interface AgentsConfig {
     deny: string[];
     allow: string[];
 }
-interface ProfileConfig {
+export interface ProfileConfig {
     costMode: 'quality' | 'balanced' | 'budget';
     maxTeamSize: number;
     tokenLimit: number | null;

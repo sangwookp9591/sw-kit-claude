@@ -7,7 +7,7 @@
  * @module scripts/routing/profile-resolver
  */
 import { loadConfig } from '../core/config.js';
-import { getTokenSummary } from '../telemetry/token-tracker.js';
+import { checkSessionTokenLimit } from '../telemetry/token-tracker.js';
 export const AGENT_CATEGORIES = {
     leadership: [
         { name: 'able', teamRole: 'planner' },
@@ -188,20 +188,9 @@ export function filterWorkers(workers, profile) {
 }
 /**
  * Check whether token usage has exceeded the configured limit.
- *
- * @param tokenLimit - limit in tokens, or null to disable
- * @param projectDir - optional project directory for telemetry lookup
+ * Delegates to token-tracker's checkSessionTokenLimit (single source of truth).
  */
 export function checkTokenLimit(tokenLimit, projectDir) {
-    if (tokenLimit === null) {
-        return { exceeded: false, usage: 0, limit: null };
-    }
-    const summary = getTokenSummary(projectDir);
-    const usage = summary.total.tokens;
-    return {
-        exceeded: usage >= tokenLimit,
-        usage,
-        limit: tokenLimit,
-    };
+    return checkSessionTokenLimit(tokenLimit, projectDir);
 }
 //# sourceMappingURL=profile-resolver.js.map

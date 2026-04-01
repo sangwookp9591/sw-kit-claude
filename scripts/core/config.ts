@@ -44,7 +44,7 @@ interface I18nConfig {
   supportedLocales: string[];
 }
 
-interface AgentsConfig {
+export interface AgentsConfig {
   categories: {
     leadership: boolean;
     backend: boolean;
@@ -57,7 +57,7 @@ interface AgentsConfig {
   allow: string[];
 }
 
-interface ProfileConfig {
+export interface ProfileConfig {
   costMode: 'quality' | 'balanced' | 'budget';
   maxTeamSize: number;
   tokenLimit: number | null;
@@ -205,9 +205,12 @@ export function resetConfigCache(): void {
   _cachedMtimes = null;
 }
 
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = { ...target };
   for (const key of Object.keys(source)) {
+    if (DANGEROUS_KEYS.has(key)) continue;
     if (
       source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]) &&
       target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])

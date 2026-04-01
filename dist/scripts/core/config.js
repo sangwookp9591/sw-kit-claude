@@ -122,9 +122,12 @@ export function resetConfigCache() {
     _cachedDir = null;
     _cachedMtimes = null;
 }
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 function deepMerge(target, source) {
     const result = { ...target };
     for (const key of Object.keys(source)) {
+        if (DANGEROUS_KEYS.has(key))
+            continue;
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key]) &&
             target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
             result[key] = deepMerge(target[key], source[key]);
