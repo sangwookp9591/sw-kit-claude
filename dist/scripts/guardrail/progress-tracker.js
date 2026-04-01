@@ -93,7 +93,7 @@ export function getProgressSummary(projectDir) {
         return null;
     const last = history[history.length - 1];
     // Don't inject completed features — they are stale session data
-    const terminalStages = ['completed', 'review', 'done', 'cancelled', 'failed'];
+    const terminalStages = ['completed', 'done', 'cancelled', 'failed'];
     if (terminalStages.includes(last.stage))
         return null;
     // Don't inject entries older than 24 hours

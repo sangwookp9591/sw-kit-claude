@@ -128,6 +128,10 @@ const DEFAULTS: AingConfig = {
 let _configCache: Readonly<AingConfig> | null = null;
 let _cachedDir: string | null = null;
 let _cachedMtimes: string | null = null;
+let _lastStatCheckMs = 0;
+
+/** TTL for mtime stat checks (ms). Avoids 2x statSync on every loadConfig call. */
+const STAT_CHECK_TTL_MS = 5000;
 
 /**
  * Safely read mtime of a file. Returns '0' if file does not exist.
@@ -149,10 +153,17 @@ function safeStatMtime(path: string): string {
 export function loadConfig(projectDir?: string): Readonly<AingConfig> {
   const dir = projectDir || process.cwd();
 
+  // Fast path: return cache if within TTL (avoids 2x statSync per call)
+  const now = Date.now();
+  if (_configCache && _cachedDir === dir && (now - _lastStatCheckMs) < STAT_CHECK_TTL_MS) {
+    return _configCache;
+  }
+
   const aingConfigPath = join(dir, '.aing', 'config.json');
   const legacyConfigPath = join(dir, 'aing.config.json');
 
   const currentMtimes = safeStatMtime(aingConfigPath) + ':' + safeStatMtime(legacyConfigPath);
+  _lastStatCheckMs = now;
 
   if (_configCache && _cachedDir === dir && _cachedMtimes === currentMtimes) {
     return _configCache;
@@ -203,6 +214,7 @@ export function resetConfigCache(): void {
   _configCache = null;
   _cachedDir = null;
   _cachedMtimes = null;
+  _lastStatCheckMs = 0;
 }
 
 const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);

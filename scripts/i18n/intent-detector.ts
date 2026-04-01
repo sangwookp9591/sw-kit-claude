@@ -83,8 +83,11 @@ export function detectIntent(text: string): IntentResult {
   if (bestMatch.startsWith('pdca_')) {
     result.pdcaStage = bestMatch.replace('pdca_', '');
   } else if (bestMatch.startsWith('agent_')) {
-    result.agent = bestMatch.replace('agent_', '') + 'r';
-    if (bestMatch === 'agent_explore') result.agent = 'explorer';
+    const AGENT_NAME_MAP: Record<string, string> = {
+      agent_explore: 'explorer',
+      agent_review: 'reviewer',
+    };
+    result.agent = AGENT_NAME_MAP[bestMatch] || bestMatch.replace('agent_', '');
   } else if (bestMatch === 'wizard') {
     result.isWizardMode = true;
   }

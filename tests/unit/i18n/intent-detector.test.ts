@@ -113,7 +113,7 @@ describe('detectIntent — agent triggers', () => {
   it('detects review intent', () => {
     const result = detectIntent('review this code');
     // Could be pdca_check (review pattern) or agent_review
-    expect(result.pdcaStage === 'check' || result.agent === 'reviewr').toBe(true);
+    expect(result.pdcaStage === 'check' || result.agent === 'reviewer').toBe(true);
   });
 
   it('detects Korean explore 탐색', () => {

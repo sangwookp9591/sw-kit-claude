@@ -259,6 +259,7 @@ describe('mtime-based cache invalidation', () => {
             .mockReturnValueOnce({ mtimeMs: 2000 });
         mockReadState.mockReturnValue({ ok: false, error: 'not found' });
         const first = loadConfig('/tmp/project');
+        resetConfigCache(); // clear TTL cache to force mtime re-check
         const second = loadConfig('/tmp/project');
         expect(first).not.toBe(second); // different reference after reload
         expect(mockReadState).toHaveBeenCalledTimes(4); // 2 files x 2 loads

@@ -210,10 +210,12 @@ export function formatThreeWay(result: ThreeWayResult): string {
 /**
  * Check if path matches any significant word from intent.
  */
+const STOP_WORDS = new Set(['the', 'and', 'for', 'with', 'from', 'that', 'this', 'into', 'all', 'has', 'was', 'are', 'new', 'add', 'use']);
+
 function matchesAnyWord(path: string, intent: string): boolean {
-  const words = intent.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const words = intent.toLowerCase().split(/\s+/).filter(w => w.length > 3 || (!STOP_WORDS.has(w) && w.length > 2));
   const lowerPath = path.toLowerCase();
-  return words.some(word => lowerPath.includes(word));
+  return words.some(word => !STOP_WORDS.has(word) && lowerPath.includes(word));
 }
 
 function matchGlob(str: string, pattern: string): boolean {
