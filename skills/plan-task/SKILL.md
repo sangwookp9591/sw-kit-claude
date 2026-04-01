@@ -211,19 +211,33 @@ Critic Phase 6에서 state 파일을 읽어 검증:
 
 ## Phase 1: Ryan — Foundation (ALL levels)
 
-Ryan(opus)이 **Options 없이** Constraints와 Preferences를 도출한다.
+Ryan(sonnet)이 **Options 없이** Constraints와 Preferences를 도출한다.
 
 **왜 분리하는가**: Able이 원칙과 옵션을 동시에 만들면, 원칙이 결론을 정당화하는 방향으로 편향된다.
-Ryan은 코드베이스를 읽고 제약/선호를 확정한 뒤, 그 결과를 Able에게 넘긴다.
+Ryan은 제약/선호를 확정한 뒤, 그 결과를 Able에게 넘긴다.
+
+**토큰 효율화**: Ryan 호출 전에 오케스트레이터가 다음을 수행한다:
+1. `.aing/context/` 에 관련 캐시가 있으면 읽어서 프롬프트에 포함
+2. 캐시가 없으면 Glob/Grep으로 핵심 구조만 파악하여 컨텍스트로 전달
+3. Ryan은 전달받은 컨텍스트로 바로 원칙 도출 — 자체 탐색 최소화
 
 ```
+# 오케스트레이터: Ryan 호출 전 컨텍스트 수집
+# 1. .aing/context/{관련도메인}.md 캐시 확인
+# 2. 캐시 없으면 Glob으로 관련 파일 목록 + 핵심 파일 Read
+# 3. 수집한 컨텍스트를 프롬프트에 포함
+
 Agent({
   subagent_type: "aing:ryan",
   description: "Ryan: 원칙 도출 — {feature}",
-  model: "opus",
+  model: "sonnet",
   prompt: "다음 작업에 대한 Constraints와 Preferences를 도출하세요: {task}
 
-코드베이스를 직접 탐색하여 현실에 기반한 제약 조건을 식별하세요.
+## 사전 수집된 컨텍스트
+{오케스트레이터가 수집한 코드베이스 컨텍스트 — 파일 구조, 핵심 코드, 패턴}
+
+위 컨텍스트를 기반으로 **추가 탐색 없이** 원칙을 도출하세요.
+컨텍스트가 부족한 경우에만 최소한의 Glob/Grep을 수행하세요 (tool call 10회 이내).
 
 FOUNDATION 포맷으로 출력:
 ## Constraints (불변 — 위반 시 플랜 무효)
@@ -244,7 +258,7 @@ FOUNDATION 포맷으로 출력:
 Rules:
 - Options나 Solutions를 제안하지 마세요 — 원칙만 세웁니다
 - Evidence 없는 Constraint는 Preference로 강등하세요
-- 코드베이스를 읽어서 확인한 사실만 기술하세요"
+- 탐색 결과를 .aing/context/{도메인}.md 에 캐시하세요 (다음 호출에서 재사용)"
 })
 ```
 

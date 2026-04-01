@@ -104,7 +104,34 @@ git commit -m "feat: 설명, bump to vX.Y.Z"   # 또는 fix:, chore:
 git push origin main
 ```
 
-### 8. 사용자 업데이트 확인
+### 8. 사용자 업데이트 알림
+
+#### 자동 알림 (Status Line)
+
+aing은 세션 시작 시 **자동으로 최신 버전을 체크**하여 status line에 `⬆ vX.Y.Z` 알림을 표시합니다.
+
+**동작 방식:**
+```
+세션 시작 → npm registry에서 latest 버전 조회 (캐시: 1시간)
+  ├─ 현재 == latest → 아무것도 안 함
+  └─ 현재 < latest → status line에 "⬆ vX.Y.Z" 표시
+```
+
+**구현 위치:** `scripts/hud/statusline.ts` → `getUpdateInfo()`
+
+**캐시:** `.aing/state/version-check.json`
+```json
+{"latest":"2.9.0","checkedAt":1774488558688}
+```
+
+**버전 소스:** GitHub raw URL (`https://raw.githubusercontent.com/sangwookp9591/ai-ng-kit-claude/main/package.json`)
+- non-blocking background 체크 (Node child process, detached)
+- 네트워크 실패 시 무시 — 캐시된 값 사용
+
+> **주의:** GitHub raw는 최대 5분 캐싱이 있으므로, 푸시 직후 즉시 반영되지 않을 수 있음.
+> npm registry(`https://registry.npmjs.org/ai-ng-kit-claude/latest`)로 전환하면 더 정확함.
+
+#### 사용자 수동 업데이트
 
 푸시 후 사용자들은 아래 명령으로 업데이트 가능:
 
