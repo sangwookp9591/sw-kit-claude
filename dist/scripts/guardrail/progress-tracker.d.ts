@@ -21,6 +21,7 @@ interface ProgressParams {
 export declare function updateProgress(params: ProgressParams, projectDir?: string): void;
 /**
  * Get progress summary for session-start context injection.
+ * Returns null for completed/review features to prevent stale session references.
  */
 export declare function getProgressSummary(projectDir?: string): string | null;
 export {};

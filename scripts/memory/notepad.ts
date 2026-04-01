@@ -82,6 +82,20 @@ export async function writeWorking(content: string, projectDir?: string): Promis
   const notepad = await readNotepad(projectDir);
   // Prune expired on write too
   notepad.working = notepad.working.filter(e => !isExpired(e));
+
+  // Deduplicate: if a compaction entry with the same feature prefix exists, replace it
+  const compactionMatch = content.match(/^\[compaction #\d+\]/);
+  if (compactionMatch) {
+    // Extract feature identifier from content (after the compaction tag)
+    const featureHint = content.slice(0, 80);
+    notepad.working = notepad.working.filter(e => {
+      if (!e.content.startsWith('[compaction #')) return true;
+      // Same feature prefix (first 80 chars minus compaction tag) → replace
+      const existingHint = e.content.slice(0, 80);
+      return existingHint !== featureHint;
+    });
+  }
+
   const now = new Date().toISOString();
   notepad.working.push({ content, createdAt: now, updatedAt: now });
   const result = writeState(getNotepadPath(projectDir), notepad);

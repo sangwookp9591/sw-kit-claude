@@ -90,6 +90,46 @@ try {
         }
     }
     catch (_e) { /* persistent mode check is best-effort */ }
+    // === Session GC: cleanup stale state files ===
+    try {
+        const teamSessionPath = join(projectDir, '.aing', 'state', 'team-session.json');
+        const teamSession = readStateOrDefault(teamSessionPath, null);
+        if (teamSession) {
+            const stage = teamSession.currentStage;
+            const terminalStages = ['completion', 'completed', 'cancelled', 'failed'];
+            if (stage && terminalStages.includes(stage)) {
+                // Clear completed team session to prevent stale resume prompts
+                const { writeState: ws } = await import('../scripts/core/state.js');
+                ws(teamSessionPath, {});
+            }
+        }
+        // Clear stale plan-state (active:true but older than 24 hours = crashed session)
+        const planStatePath = join(projectDir, '.aing', 'state', 'plan-state.json');
+        const planState = readStateOrDefault(planStatePath, null);
+        if (planState && planState.active === true && planState.startedAt) {
+            const ageMs = Date.now() - new Date(planState.startedAt).getTime();
+            if (ageMs > 24 * 60 * 60 * 1000) {
+                const { writeState: ws } = await import('../scripts/core/state.js');
+                ws(planStatePath, { ...planState, active: false, terminated: true, reason: 'session-start-gc: stale >24h', terminatedAt: new Date().toISOString() });
+                log.info('Stale plan-state auto-deactivated (>24h)');
+            }
+        }
+        const persistentModePath = join(projectDir, '.aing', 'state', 'persistent-mode.json');
+        const persistMode = readStateOrDefault(persistentModePath, null);
+        if (persistMode && persistMode.active) {
+            const startedAt = persistMode.startedAt;
+            if (startedAt) {
+                const ageMs = Date.now() - new Date(startedAt).getTime();
+                // Auto-deactivate persistent mode after 30 minutes
+                if (ageMs > 30 * 60 * 1000) {
+                    const { writeState: ws } = await import('../scripts/core/state.js');
+                    ws(persistentModePath, { ...persistMode, active: false, deactivatedAt: new Date().toISOString(), reason: 'session-start-gc: 30min timeout' });
+                    log.info('Persistent mode auto-deactivated (30min timeout)');
+                }
+            }
+        }
+    }
+    catch (_e) { /* session GC is best-effort */ }
     // === Previous session ===
     const progress = getProgressSummary(projectDir);
     if (progress) {

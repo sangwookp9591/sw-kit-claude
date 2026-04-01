@@ -83,6 +83,7 @@ export function updateProgress(params, projectDir) {
 }
 /**
  * Get progress summary for session-start context injection.
+ * Returns null for completed/review features to prevent stale session references.
  */
 export function getProgressSummary(projectDir) {
     const dir = projectDir || process.cwd();
@@ -91,6 +92,14 @@ export function getProgressSummary(projectDir) {
     if (history.length === 0)
         return null;
     const last = history[history.length - 1];
+    // Don't inject completed features — they are stale session data
+    const terminalStages = ['completed', 'review', 'done', 'cancelled', 'failed'];
+    if (terminalStages.includes(last.stage))
+        return null;
+    // Don't inject entries older than 24 hours
+    const ageMs = Date.now() - new Date(last.ts).getTime();
+    if (ageMs > 24 * 60 * 60 * 1000)
+        return null;
     const stageIcons = { plan: '📋', do: '⚡', check: '🔍', act: '🔄', review: '✅', completed: '🎉' };
     const icon = stageIcons[last.stage] || '📌';
     return `[이전 세션] ${icon} ${last.feature} — ${last.stage} 단계, ${last.step} 진행. ${last.action || ''}`;
