@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.8.97] - 2026-04-01 — Codebase Intelligence Skills
+
+외부 스킬 3종(codebase-analysis, project-analyzer, lsp-code-analysis)을 분석하여 aing 에이전트 체계에 맞게 커스텀한 프로젝트 탐색 스킬 추가.
+
+### Added
+
+- **aing-scan**: project-analyzer 기반 Quick Project Profiling — 프로젝트 타입/프레임워크/구조/기술부채 자동 탐지 (Klay + Kain)
+- **aing-deep-explore**: codebase-analysis 기반 6-Phase 증거 기반 심층 분석 — file:line 증거 수집 (Klay + Kain + Sam)
+- **aing-lsp-nav**: lsp-code-analysis 기반 시맨틱 코드 네비게이션 — 정의/참조/흐름/계층/의존성 추적 (Kain)
+- **`.agents/skills/README.md`**: 탐색 스킬 사용 가이드 및 라우팅 연동 문서
+
 ## [2.8.96] - 2026-04-01 — Session Hygiene + Code Quality
 
 세션 간 stale data 유출 방지 + 코드 리뷰 기반 품질 강화.

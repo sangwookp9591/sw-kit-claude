@@ -1,10 +1,25 @@
 {
   "version": 1,
   "skills": {
+    "codebase-analysis": {
+      "source": "solatis/claude-config",
+      "sourceType": "github",
+      "computedHash": "22c3ce1dc97fc7d8eec04d93ae367d8b7b07743902600c215a562b2762ca883a"
+    },
     "flutter-architecting-apps": {
       "source": "flutter/skills",
       "sourceType": "github",
       "computedHash": "ac8212aa825c75d468c216ffada34302d0ab6e8ffc8e99d789848aba4acd30ed"
+    },
+    "lsp-code-analysis": {
+      "source": "lsp-client/lsp-skill",
+      "sourceType": "github",
+      "computedHash": "b9e9b7fe4129e71fc2403ae86113b6292533e54ffe8484aeff46e94603d22b78"
+    },
+    "project-analyzer": {
+      "source": "oimiragieo/agent-studio",
+      "sourceType": "github",
+      "computedHash": "75a49ac6a3e858cf8b1573613fe21dc6de1cc108b36068fc870b5ee1325607eb"
     }
   }
 }
