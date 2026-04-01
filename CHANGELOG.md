@@ -1,5 +1,43 @@
 # Changelog
 
+## [2.8.92] - 2026-04-01 — v3.0 Foundation: 6-Phase Implementation
+
+AING-DR 합의 계획(Ryan→Able→Klay→Peter→Critic)으로 설계, Hybrid Parallel 3-iteration으로 실행.
+6개 Phase 완료, 187 신규 테스트 추가 (전체 1,285 tests).
+
+### Added
+
+- **Project Rules Engine** (`scripts/rules/`): `.aing/rules/*.json` 프로젝트별 커스텀 리뷰 규칙
+  - `rule-types.ts`: ProjectRule 인터페이스
+  - `rule-loader.ts`: JSON schema 검증 + 파일 시스템 로더
+  - `rule-engine.ts`: regex 패턴 매칭 엔진
+- **QA 고도화** (`scripts/qa/`):
+  - `perf-benchmark.ts`: threshold 기반 성능 regression 감지
+  - `flaky-detector.ts`: 비결정적 테스트 실패 감지
+- **Agent Intelligence** (`scripts/agent-intelligence/`):
+  - `feedback-loop.ts`: 에이전트 성과 기록 + JSONL 피드백 루프
+  - `specialization-scorer.ts`: 도메인 적합도 스코어링 (0-100)
+- **Review 고도화** (`scripts/review/`):
+  - `cross-file-analyzer.ts`: regex 기반 import graph + 순환 참조 감지 (depth limit 3)
+  - `incremental-review.ts`: git diff 기반 변경 파일만 리뷰
+- **Harness Architect** (`scripts/harness/`):
+  - `pattern-transfer.ts`: cross-project 패턴 export/import
+  - `harness-evolution.ts`: suggestEvolution() 자동 진화 제안
+  - `harness-composer.ts`: autoCompose() task 기반 자동 구성
+- **AING-DR 테스트** (103 tests):
+  - `plan-task-pipeline.test.mjs`: 8단계 파이프라인 E2E (43 tests)
+  - `plan-state-edge.test.mjs`: REVISE/ITERATE 루프, max iteration (34 tests)
+  - `quality-gate.test.mjs`: evidence 80%, testability 90% threshold (26 tests)
+
+### Changed
+
+- `guardrail-engine.ts`: `GuardrailRule` interface export 추가
+- `telemetry-engine.ts`: `TELEMETRY_DIR`, `USAGE_FILE` export 추가
+- `review-checklist.ts`: `injectProjectRules()` 동적 카테고리 주입
+- `review-engine.ts`: `mode` (full/incremental) + `crossFileEnabled` 옵션
+- `qa-orchestrator.ts`: `perfBenchmark`, `flakyReport` 통합
+- `adaptive-architect.ts`: `feedbackData` 파라미터 (specialization 기반 재정렬)
+
 ## [2.8.91] - 2026-04-01 — Code-Enforced Direct Routing
 
 `/aing do` 직접 라우팅 7개를 프롬프트 의존에서 코드 강제로 전환.
