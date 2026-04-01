@@ -23,6 +23,10 @@ TeamCreate({
   Derek        Frontend / Build  sonnet   UI 컴포넌트 구현
   (verify 대기: Milla + Sam)
 
+  Parallel Groups:
+  [Group 1] Jay#1, Derek#2 — parallel
+  [Group 2] Jay#3 — sequential (file overlap: src/api/auth.ts)
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -50,18 +54,34 @@ team-verify uses the same complexity-based review scaling as `/aing review`:
 
 **하네스 엔지니어링 원칙**: 각 task 완료마다 자동 review gate를 통과해야 다음 task로 진행합니다. "리뷰할까요?"라고 묻지 않습니다. **무조건 실행**합니다.
 
-**실행 패턴: Task → TDD → Review Gate → Next Task**
+**실행 패턴: Task → TDD → Gate (build+test) → Next Task**
 
 ```
-Task #1 exec → TDD 확인 → Milla mini-review → PASS → Task #2 exec → ...
-                                              → FAIL → 즉시 fix → re-review → Task #2 exec → ...
+Task #1 exec → TDD 확인 → Gate (build+test) → PASS → Task #2 exec → ...
+                                              → FAIL → 즉시 fix → re-gate → Task #2 exec → ...
 ```
 
-### 독립 task는 병렬, 의존 task는 순차+게이트
+### 파일 겹침 기반 병렬/순차 실행
 
-1. **의존성 분석**: plan의 steps에서 의존 관계 파악
-2. **독립 task 그룹**: 동시 실행 가능 → 병렬 스폰
-3. **의존 task**: 선행 task 완료 + review gate 통과 후 실행
+team-plan에서 생성한 `parallelGroups`를 사용합니다:
+
+1. **parallelGroups 읽기**: stage-plan에서 전달된 파일 겹침 분석 결과
+2. **parallel 그룹**: 동시 실행 → 병렬 스폰
+3. **sequential 그룹**: 선행 그룹 완료 + gate 통과 후 실행
+
+```
+예시:
+parallelGroups: [
+  { group: 1, tasks: [1, 3], mode: "parallel" },
+  { group: 2, tasks: [2], mode: "sequential_after_1", reason: "file overlap" }
+]
+
+실행 순서:
+  Task#1 + Task#3 동시 스폰 → 둘 다 GATE_PASS → Task#2 스폰
+```
+
+**parallelGroups 없는 경우** (legacy plan 또는 --plan 외부 파일):
+기존 방식 — plan의 steps에서 의존 관계 파악하여 병렬/순차 결정.
 
 ### Worker Spawn
 
@@ -87,39 +107,60 @@ Agent({
 4. 증거 수집 요구사항
 5. `@{Name}❯` 프리픽스 커뮤니케이션 포맷
 6. SendMessage to "team-lead" on completion
+7. **할당된 파일 목록** — scope 초과 시 경고 기준
 
-## Step 2-4: Review Gate (Task 완료마다 자동 실행)
+### Worker Timeout
+
+각 워커에 **5분 timeout** 적용:
+- 초과 시: 워커 결과를 수집 시도 → 부분 결과라도 사용
+- 결과 없음: 해당 task를 INCOMPLETE 상태로 → 다음 task 진행 가능 여부 판단 (의존성 확인)
+- INCOMPLETE task는 team-fix에서 재시도
+
+## Step 2-4: Gate Review (Task 완료마다 자동 실행)
 
 **MANDATORY — 묻지 않고 실행합니다.**
 
-각 exec task가 완료되면 즉시 Milla mini-review를 실행합니다:
+Gate review는 **build + test only** — 코드 품질/보안은 team-verify에서 수행합니다.
 
 ```
 Agent({
   subagent_type: "aing:milla",
-  description: "Milla: Task #{N} gate review",
-  model: "haiku",   ← task-level gate는 haiku로 빠르게
-  prompt: "[GATE REVIEW]
+  description: "Milla: Task #{N} gate",
+  model: "haiku",
+  prompt: "[GATE REVIEW — BUILD + TEST ONLY]
 Task #{N} '{task_title}' 완료 후 gate review입니다.
 
-수행:
-1. 변경된 파일의 git diff 확인
-2. 컴파일/타입 에러 확인 (build or tsc)
-3. 관련 테스트 실행 및 통과 확인
-4. 명백한 보안 이슈 확인
+수행 (30초 이내):
+1. 컴파일/타입 에러 확인 (build or tsc)
+2. 관련 테스트 실행 및 통과 확인
+3. test 파일 존재 여부 확인 (TDD 준수 검증)
+
+수행하지 않음 (team-verify에서 처리):
+- 코딩 스타일, 네이밍
+- 보안 리뷰
+- 코드 품질 평가
 
 출력:
-## Gate Review: Task #{N}
+## Gate: Task #{N}
 - Build: PASS/FAIL
 - Tests: PASS/FAIL ({N}/{N})
-- Security: PASS/CONCERN
+- Test Files Exist: YES/NO
 - Verdict: GATE_PASS / GATE_FAIL — {사유}
 
 Rules:
-- 이것은 경량 게이트입니다. 전체 리뷰가 아닌 통과/차단 판정만.
-- GATE_FAIL 시 구체적 수정 필요 사항 1-3개만 명시.
-- 코딩 스타일, 네이밍 등 minor 이슈는 GATE_PASS + 메모로 처리."
+- build + test 통과가 유일한 GATE_PASS 조건
+- test 파일이 없으면 GATE_FAIL (TDD 미준수)
+- 30초 timeout — 초과 시 결과 없이 GATE_PASS (verify에서 재확인)"
 })
+```
+
+### Scope 초과 감지
+
+Gate review에서 추가로 확인:
+```
+변경된 파일 (git diff --name-only) vs 할당된 파일 목록 비교
+→ 할당 외 파일 변경 시: GATE_PASS + ⚠️ SCOPE_WARNING
+→ 경고만 — 차단하지 않음. completion report에 기록.
 ```
 
 ### Gate 결과 처리
@@ -155,10 +196,11 @@ Gate review에서 다음 이슈가 발견되었습니다:
 ├──────────┼───────────────────────────┼───────────────────────┤
 │ Derek    │ #2 Frontend UI            │ 🔄 실행 중            │
 ├──────────┼───────────────────────────┼───────────────────────┤
-│ Jay      │ #3 Integration            │ ⏳ gate #2 대기       │
+│ Jay      │ #3 Integration            │ ⏳ group 2 대기       │
 └──────────┴───────────────────────────┴───────────────────────┘
 ```
 
 ## 전환 조건 → team-verify
 - 모든 exec task가 `completed` + `GATE_PASS`
 - gate fail이 2회 이상 반복되면 team-verify로 escalate (전체 검증)
+- INCOMPLETE task가 있으면 team-verify에 미완료 목록 전달
