@@ -47,11 +47,11 @@ try {
         pdcaState: stateResult.ok ? stateResult.data : null,
     });
     if (session.active) {
-        const safeFeature = sanitizeSessionField(session.feature);
+        const safeFeature = sanitizeSessionField(session.feature ?? 'unknown');
         const result = writeStageHandoff({
             feature: safeFeature,
             stage: 'session-stop',
-            summary: `Session stopped at stage: ${sanitizeSessionField(session.currentStage)}`,
+            summary: `Session stopped at stage: ${sanitizeSessionField(session.currentStage ?? 'unknown')}`,
             decisions: [`Mode: ${session.mode}`, `Resume with /aing team or /aing auto`],
             nextStage: session.currentStage,
         }, projectDir);

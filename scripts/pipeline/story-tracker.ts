@@ -5,7 +5,7 @@
  * @module scripts/pipeline/story-tracker
  */
 
-import { readState, writeState, updateState } from '../core/state.js';
+import { readState, writeState, updateState, deleteState } from '../core/state.js';
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.js';
 
@@ -185,7 +185,6 @@ export function revertStory(projectDir: string, storyId: string, reason: string)
  * Delete PRD tracking state (cleanup after completion).
  */
 export function deletePRD(projectDir: string): void {
-  const { deleteState } = require('../core/state.js');
   deleteState(prdPath(projectDir));
   log.info('PRD tracking cleared');
 }

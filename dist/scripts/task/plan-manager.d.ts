@@ -14,6 +14,60 @@ interface ReviewNote {
     verdict: string;
     highlights: string[];
 }
+interface Constraint {
+    name: string;
+    source: string;
+    evidence: string;
+    violationImpact: string;
+}
+interface Preference {
+    name: string;
+    priority: string;
+    tradeoffThreshold: string;
+    why: string;
+}
+interface Driver {
+    name: string;
+    status: string;
+    source?: string;
+}
+interface Steelman {
+    antithesis: string;
+    tradeoffs: string[];
+    newDrivers: string[];
+    synthesisPath: string | null;
+}
+interface PeterVerdict {
+    verdict: string;
+    absorbed: number;
+    rebutted: number;
+    acknowledged: number;
+    ignored: number;
+    reflectionScore: number;
+    deltaScore: number | null;
+    confidence: string;
+}
+interface CriticVerdict {
+    verdict: string;
+    mode: string;
+    critical: number;
+    major: number;
+    minor: number;
+    selfAuditDowngrades: number;
+    constraintCompliance: string;
+    criteriaTestability: string;
+    evidenceCoverage: string;
+}
+interface ADR {
+    decision: string;
+    confidence: string;
+    constraintsHonored: string[];
+    alternativesRejected: string[];
+    consequences: {
+        positive: string[];
+        negative: string[];
+    };
+}
 interface CreatePlanParams {
     feature: string;
     goal: string;
@@ -24,6 +78,13 @@ interface CreatePlanParams {
     reviewNotes?: ReviewNote[];
     complexityScore?: number;
     complexityLevel?: string;
+    constraints?: Constraint[];
+    preferences?: Preference[];
+    drivers?: Driver[];
+    steelman?: Steelman;
+    peterVerdict?: PeterVerdict;
+    criticVerdict?: CriticVerdict;
+    adr?: ADR;
 }
 interface CreatePlanResult {
     ok: boolean;

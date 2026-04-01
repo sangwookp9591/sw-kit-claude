@@ -4,7 +4,7 @@
  * Stories are only marked complete when ALL criteria are verified with evidence.
  * @module scripts/pipeline/story-tracker
  */
-import { readState, writeState, updateState } from '../core/state.js';
+import { readState, writeState, updateState, deleteState } from '../core/state.js';
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.js';
 const log = createLogger('story-tracker');
@@ -121,7 +121,6 @@ export function revertStory(projectDir, storyId, reason) {
  * Delete PRD tracking state (cleanup after completion).
  */
 export function deletePRD(projectDir) {
-    const { deleteState } = require('../core/state.js');
     deleteState(prdPath(projectDir));
     log.info('PRD tracking cleared');
 }

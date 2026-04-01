@@ -3,7 +3,7 @@
  * Tracks repeated failures and forces alternative approaches after threshold.
  * @module scripts/hooks/error-recovery
  */
-import { readState, writeState } from '../core/state.js';
+import { readState, writeState, deleteState } from '../core/state.js';
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.js';
 const log = createLogger('error-recovery');
@@ -102,7 +102,6 @@ export function clearToolErrors(projectDir, toolName) {
  * Clear all error tracking state.
  */
 export function clearAllErrors(projectDir) {
-    const { deleteState } = require('../core/state.js');
     deleteState(errorPath(projectDir));
 }
 //# sourceMappingURL=error-recovery.js.map

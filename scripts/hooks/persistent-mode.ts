@@ -4,7 +4,7 @@
  * @module scripts/hooks/persistent-mode
  */
 
-import { readState, writeState } from '../core/state.js';
+import { readState, writeState, updateState } from '../core/state.js';
 import { join } from 'node:path';
 
 export interface PersistentModeState {
@@ -76,8 +76,9 @@ export async function getPersistentModeState(
 // Unbounded Persistence (ralph-style soft cap)
 // ---------------------------------------------------------------------------
 
-const REINFORCEMENT_MAX = 20;
-const REINFORCEMENT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const REINFORCEMENT_MAX = 8;
+const REINFORCEMENT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_PERSISTENT_DURATION_MS = 30 * 60 * 1000; // 30 min hard time limit
 
 /**
  * Increment iteration and extend maxIterations if soft cap reached.
@@ -87,32 +88,40 @@ export async function incrementIteration(projectDir: string): Promise<boolean> {
   const state = await getPersistentModeState(projectDir);
   if (!state?.active) return false;
 
-  const iteration = (state.iteration ?? 0) + 1;
-  let maxIterations = state.maxIterations ?? 10;
-
-  // Soft cap: extend by 3 instead of stopping
-  if (iteration >= maxIterations) {
-    maxIterations += 3;
-  }
-
-  const result = writeState(statePath(projectDir), {
-    ...state,
-    iteration,
-    maxIterations,
-  });
+  const result = updateState(
+    statePath(projectDir),
+    state,
+    (data: unknown) => {
+      const s = data as PersistentModeState;
+      const iteration = (s.iteration ?? 0) + 1;
+      let maxIterations = s.maxIterations ?? 10;
+      if (iteration >= maxIterations) {
+        maxIterations += 3;
+      }
+      return { ...s, iteration, maxIterations };
+    }
+  );
   return result.ok;
 }
 
 /**
  * Record a reinforcement (stop hook blocking a stop attempt).
- * Returns false if circuit breaker tripped (too many reinforcements — allow stop).
+ * Returns false if circuit breaker tripped (too many reinforcements or time limit — allow stop).
  */
 export async function recordReinforcement(projectDir: string): Promise<boolean> {
   const state = await getPersistentModeState(projectDir);
   if (!state?.active) return false;
 
   const now = Date.now();
-  const lastReinforced = state.lastReinforcedAt ? new Date(state.lastReinforcedAt).getTime() : 0;
+
+  // Time-based circuit breaker: hard limit on total persistent duration
+  const startedAt = state.startedAt ? Date.parse(state.startedAt) : now;
+  if (!isNaN(startedAt) && (now - startedAt) > MAX_PERSISTENT_DURATION_MS) {
+    return false; // 30 min hard limit — allow stop
+  }
+
+  const lastTs = state.lastReinforcedAt ? Date.parse(state.lastReinforcedAt) : 0;
+  const lastReinforced = isNaN(lastTs) ? now : lastTs;
 
   // Reset counter if outside window
   let count = (state.reinforcementCount ?? 0);
@@ -121,16 +130,21 @@ export async function recordReinforcement(projectDir: string): Promise<boolean> 
   }
   count += 1;
 
-  // Circuit breaker: if too many reinforcements, allow stop (fail-safe)
+  // Count-based circuit breaker
   if (count > REINFORCEMENT_MAX) {
     return false; // caller should allow stop
   }
 
-  const result = writeState(statePath(projectDir), {
-    ...state,
-    reinforcementCount: count,
-    lastReinforcedAt: new Date().toISOString(),
-  });
+  // Use updateState to prevent race conditions
+  const result = updateState(
+    statePath(projectDir),
+    state,
+    (data: unknown) => ({
+      ...(data as PersistentModeState),
+      reinforcementCount: count,
+      lastReinforcedAt: new Date().toISOString(),
+    })
+  );
   return result.ok;
 }
 

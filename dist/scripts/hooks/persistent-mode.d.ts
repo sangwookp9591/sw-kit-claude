@@ -34,7 +34,7 @@ export declare function getPersistentModeState(projectDir: string): Promise<Pers
 export declare function incrementIteration(projectDir: string): Promise<boolean>;
 /**
  * Record a reinforcement (stop hook blocking a stop attempt).
- * Returns false if circuit breaker tripped (too many reinforcements — allow stop).
+ * Returns false if circuit breaker tripped (too many reinforcements or time limit — allow stop).
  */
 export declare function recordReinforcement(projectDir: string): Promise<boolean>;
 /**

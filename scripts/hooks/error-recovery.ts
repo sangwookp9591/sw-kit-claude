@@ -4,7 +4,7 @@
  * @module scripts/hooks/error-recovery
  */
 
-import { readState, writeState } from '../core/state.js';
+import { readState, writeState, deleteState } from '../core/state.js';
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.js';
 
@@ -145,6 +145,5 @@ export function clearToolErrors(projectDir: string, toolName: string): void {
  * Clear all error tracking state.
  */
 export function clearAllErrors(projectDir: string): void {
-  const { deleteState } = require('../core/state.js');
   deleteState(errorPath(projectDir));
 }

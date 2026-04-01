@@ -70,15 +70,15 @@ describe('Code-Level Enforcement', () => {
         mode: 'team',
         startedAt: new Date().toISOString(),
         reason: 'test',
-        reinforcementCount: 19,
+        reinforcementCount: 7,
         lastReinforcedAt: new Date().toISOString(),
       });
 
-      // 20th reinforcement — still OK
+      // 8th reinforcement — still OK
       const ok = await mod.recordReinforcement(TEST_DIR);
       assert.equal(ok, true);
 
-      // 21st — circuit breaker trips
+      // 9th — circuit breaker trips (max=8)
       const tripped = await mod.recordReinforcement(TEST_DIR);
       assert.equal(tripped, false);
     });

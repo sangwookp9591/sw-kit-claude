@@ -62,6 +62,14 @@ const projectDir = getArg('dir') || process.cwd();
                         reviewNotes: Array.isArray(data.reviewNotes) && data.reviewNotes.length > 0 ? data.reviewNotes : undefined,
                         complexityScore: data.complexityScore,
                         complexityLevel: data.complexityLevel,
+                        // AING-DR fields pass-through
+                        constraints: Array.isArray(data.constraints) && data.constraints.length > 0 ? data.constraints : undefined,
+                        preferences: Array.isArray(data.preferences) && data.preferences.length > 0 ? data.preferences : undefined,
+                        drivers: Array.isArray(data.drivers) && data.drivers.length > 0 ? data.drivers : undefined,
+                        steelman: data.steelman || undefined,
+                        peterVerdict: data.peterVerdict || undefined,
+                        criticVerdict: data.criticVerdict || undefined,
+                        adr: data.adr || undefined,
                     }, projectDir);
                 }
                 else {
