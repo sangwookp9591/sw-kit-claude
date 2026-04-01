@@ -1,5 +1,54 @@
 # Changelog
 
+## [2.8.9] - 2026-04-01 — AING-DR Consensus Planning Framework
+
+plan-task를 AING-DR(6자 합의 계획 시스템)으로 전면 재설계.
+omc ralplan 대비 설계 우위 11개 차원 확보, 실전 강건성 동등 이상 달성.
+
+### Added
+
+- **Ryan 에이전트** (`agents/ryan.md`): Deliberation Facilitator (opus)
+  - Options 없이 Constraints/Preferences 도출 — Confirmation bias 구조적 차단
+  - Constraints (불변, 위반 시 REJECT) vs Preferences (가변, 트레이드오프 가능) 분리
+  - 코드베이스 Glob/Grep 기반 증거 수집, read-only
+- **Peter 에이전트** (`agents/peter.md`): Synthesis Verifier (sonnet)
+  - Steelman 반론 반영 검증 — ABSORBED / REBUTTED / ACKNOWLEDGED / IGNORED 4단계 분류
+  - Delta Score: `(Resolved - New Issues) / Total Objections` — 2연속 정체 시 조기 종료
+  - Confidence Level 판정: HIGH / MED / LOW (최종 ADR에 반영)
+- **Critic 에이전트** (`agents/critic.md`): Deliberation Critic (opus)
+  - 5-Phase Investigation Protocol: Pre-commitment → 9-Step Verification → Multi-perspective → Gap Analysis + Self-audit → Synthesis
+  - Adaptive Harshness: THOROUGH → ADVERSARIAL 에스컬레이션 (CRITICAL 1개 또는 MAJOR 3개+)
+  - Self-audit + Realist Check — 과잉 판정/과소 판정 모두 방지
+  - Failure Modes 13항목 + Final Checklist 21항목 (omc Critic 수준 흡수)
+- **Quality Standards (Hard Gates)**: 80%+ claims cite file/line, 90%+ criteria testable, 100% Constraints, 0 FRAGILE unaddressed, 0 IGNORED steelman
+- **Phase 0: Pre-execution Gate**: 모호 요청 차단 — 구체적 앵커 없으면 스코핑 강제, `force:` bypass
+- **State Management**: `.aing/state/plan-state.json` — phase 추적, lifecycle, 세션 복원, 5 Mandatory Rules, Critic의 State Integrity Check
+- **Interactive mode** (`--interactive`): 2개 User Review Point (초안 확인 + 최종 승인), 5개 선택지
+- **Living ADR**: Confidence Level + Drivers 변경 이력(Initial→Final) + Rejection Evidence(Constraint 기반) + Critic Assessment + Rollback Plan
+
+### Changed
+
+- **plan-task SKILL.md** 전면 재설계 (111줄 → 453줄)
+  - 3자(Able/Klay/Milla) → 6자(Ryan/Able/Klay/Peter/Critic) 합의
+  - RALPLAN-DR → AING-DR (Constraints/Preferences/Drivers/Options)
+  - 7-Phase Pipeline + Consensus Loop (low 3회, mid-high 5회)
+  - 복잡도별 DR 분화: Lite(low) / Standard(mid) / Deep(high+deliberate)
+- **able.md**: sonnet → **opus** 업그레이드, AING-DR 출력 구조, Drivers 가변화, Rejection Evidence, Living ADR 생성
+- **klay.md**: Plan Review Mode → **Steelman Deliberation** — 반론(antithesis), Tradeoff Tension, Constraint-Option Consistency, New Driver Proposal, Synthesis Path
+- **milla.md**: Plan Review Mode **삭제** — 보안 전문가 본연의 역할로 복원. 심의 품질은 전용 Critic이 담당.
+
+### Design Decisions (vs omc ralplan)
+
+| AING-DR 고유 강점 | 설명 |
+|---|---|
+| Confirmation bias 차단 | Ryan이 Options 없이 원칙 확정 (Planner 단독 도출의 편향 제거) |
+| Synthesis 검증 | Peter가 반론 반영을 항목별 정량 추적 (형식적 언급 방지) |
+| 수렴 측정 | Delta Score로 무의미한 반복 감지 + 조기 종료 |
+| Driver 가변화 | Klay가 새 Driver 제안, 변경 이력 Living ADR에 기록 |
+| Rejection Evidence | 기각 옵션마다 Constraint/Driver 충돌 근거 필수 |
+| 복잡도 분화 | low에서 과잉 의식 방지 (DR Lite), high에서 Pre-mortem + Rollback |
+| Living ADR | Confidence + Driver 이력 + Critic 결과 + Steelman 대응 통합 |
+
 ## [2.8.87] - 2026-03-31 — Skill Progressive Disclosure Refactor
 
 ### Changed
