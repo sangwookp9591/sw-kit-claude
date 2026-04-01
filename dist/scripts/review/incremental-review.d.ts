@@ -1,28 +1,17 @@
-export interface ChangedFile {
-    path: string;
-    status: 'added' | 'modified' | 'deleted' | 'renamed';
-    additions: number;
-    deletions: number;
-}
-export interface IncrementalScope {
-    files: ChangedFile[];
-    totalAdditions: number;
-    totalDeletions: number;
-    suggestedTiers: string[];
+export interface IncrementalResult {
+    changedFiles: string[];
+    reviewedFiles: string[];
+    skippedFiles: string[];
+    mode: 'incremental' | 'full';
 }
 /**
- * Get changed files from git diff.
- * @param base - Base ref to compare against (default: HEAD~1)
- * @param cwd - Working directory
+ * Get list of changed files relative to baseBranch (default: HEAD~1).
+ * Returns empty array on error (e.g., first commit or clean tree).
  */
-export declare function getChangedFiles(base?: string, cwd?: string): ChangedFile[];
+export declare function getChangedFiles(projectDir: string, baseBranch?: string): string[];
 /**
- * Determine review scope from changed files.
- * Suggests review tiers based on file types and change patterns.
+ * Filter the full file list to only those that changed.
+ * If no changed files found, falls back to full mode.
  */
-export declare function determineScope(files: ChangedFile[]): IncrementalScope;
-/**
- * Filter review to only changed files.
- */
-export declare function filterToChangedPaths(allPaths: string[], changedFiles: ChangedFile[]): string[];
+export declare function filterReviewScope(allFiles: string[], changedFiles: string[]): IncrementalResult;
 //# sourceMappingURL=incremental-review.d.ts.map

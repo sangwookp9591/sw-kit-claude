@@ -23,6 +23,9 @@ export interface ReviewPromptContext {
     branch?: string;
     diffSummary?: string;
     planPath?: string;
+    mode?: 'full' | 'incremental';
+    crossFileEnabled?: boolean;
+    reviewedFiles?: string[];
 }
 export interface TierOptions {
     hasUI?: boolean;

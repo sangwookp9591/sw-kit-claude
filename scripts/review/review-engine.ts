@@ -48,6 +48,9 @@ export interface ReviewPromptContext {
   branch?: string;
   diffSummary?: string;
   planPath?: string;
+  mode?: 'full' | 'incremental';
+  crossFileEnabled?: boolean;
+  reviewedFiles?: string[];
 }
 
 export interface TierOptions {
@@ -195,11 +198,21 @@ export function getReviewPrompt(tier: string, context: ReviewPromptContext): str
   const header = `## ${tier.replace('-', ' ').toUpperCase()} — ${config.description}`;
   const focusItems = config.focus.map(f => `- ${f}`).join('\n');
 
+  const modeLabel = context.mode === 'incremental' ? 'INCREMENTAL (changed files only)' : 'FULL';
+  const scopeSection =
+    context.mode === 'incremental' && context.reviewedFiles && context.reviewedFiles.length > 0
+      ? `\n### Review Scope (Incremental)\nOnly reviewing changed files:\n${context.reviewedFiles.map(f => `- ${f}`).join('\n')}\n`
+      : '';
+  const crossFileSection = context.crossFileEnabled
+    ? '\n### Cross-File Analysis\nEnabled: check import consistency, circular dependencies, and unused exports across reviewed files.\n'
+    : '';
+
   return `${header}
 
 Feature: ${context.feature || 'unknown'}
 Branch: ${context.branch || 'unknown'}
-
+Mode: ${modeLabel}
+${scopeSection}${crossFileSection}
 ### Focus Areas
 ${focusItems}
 
