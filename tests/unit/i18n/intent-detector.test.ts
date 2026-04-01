@@ -38,7 +38,7 @@ describe('detectIntent — PDCA stages (English)', () => {
   });
 
   it('detects act/improve intent', () => {
-    const result = detectIntent('fix the broken tests');
+    const result = detectIntent('fix the broken logic');
     expect(result.pdcaStage).toBe('act');
   });
 

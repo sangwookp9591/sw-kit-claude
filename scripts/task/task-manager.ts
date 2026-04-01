@@ -66,6 +66,8 @@ interface AddSubtaskResult {
   subtaskId: string;
 }
 
+let _taskIdCounter = 0;
+
 function getTaskDir(projectDir?: string): string {
   const dir = join(projectDir || process.cwd(), '.aing', 'tasks');
   mkdirSync(dir, { recursive: true });
@@ -80,7 +82,7 @@ function getTaskPath(taskId: string, projectDir?: string): string {
  * Create a main task with sub-tasks.
  */
 export function createTask(params: CreateTaskParams, projectDir?: string): CreateTaskResult {
-  const taskId = `task-${Date.now()}`;
+  const taskId = `task-${Date.now()}-${++_taskIdCounter}`;
   const task: Task = {
     id: taskId,
     title: params.title,
