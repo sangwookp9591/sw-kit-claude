@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.8.93] - 2026-04-01 — Token Tracker: Hook-Enforced Usage Tracking
+
+PostToolUse hook에서 Agent 완료 시 `<usage>` 태그를 자동 파싱하여 토큰 사용량을 기록.
+SKILL.md 프롬프트 의존 없이 코드 수준 강제.
+
+### Added
+
+- **token-tracker** (`scripts/telemetry/token-tracker.ts`): 에이전트별 + 단계별 토큰 추적
+  - `logTokenUsage()`: `.aing/telemetry/token-usage.jsonl`에 JSONL append
+  - `getTokenSummary()`: stage별/agent별 집계
+  - `formatTokenReport()`: k 단위 사용자 표시 텍스트
+- **PostToolUse hook 토큰 캡처** (`hooks-handlers/post-tool-use.ts`):
+  - `detectStage()`: team-session.json에서 plan/exec/verify/fix 자동 감지
+  - `<usage>` 태그 regex 파싱 → `logTokenUsage()` 자동 호출
+- **SKILL.md Token Tracking 지시**: auto/team 스킬에 Completion Report Token Summary 포맷 추가
+
 ## [2.8.92] - 2026-04-01 — v3.0 Foundation: 6-Phase Implementation
 
 AING-DR 합의 계획(Ryan→Able→Klay→Peter→Critic)으로 설계, Hybrid Parallel 3-iteration으로 실행.
