@@ -56,28 +56,39 @@ triggers: ["team", "팀", "팀 실행", "team run"]
 
 **NOTE**: Milla와 Sam은 exec 단계에 참여하지 않습니다. verify 단계에서만 투입됩니다.
 
-## Staged Pipeline (PDCA 매핑)
+## Staged Pipeline (PDCA + Unbounded Persistence)
 
 ```
-team-plan   [Plan]   → Able(PM/sonnet) 계획 수립
-team-exec   [Do]     → 사용자 지정 에이전트 병렬 실행
-team-verify [Check]  → Milla(sonnet) + Sam(haiku) 검증
-team-fix    [Act]    → 실패 태스크 담당자 재투입 (max 3회)
-completion  [Review] → 보고서 + 학습 저장
+team-plan      [Plan]      → Able(PM) 계획 수립 + PRD 스토리 생성
+team-exec      [Do]        → 사용자 지정 에이전트 병렬 실행
+team-verify    [Check]     → Milla(sonnet) + Sam(haiku) 검증
+team-architect [Architect] → Klay(opus) 아키텍트 이중 검증 (코드 강제)
+team-fix       [Act]       → 실패 태스크 담당자 재투입 (unbounded — cancel만 종료)
+completion     [Review]    → 보고서 + 학습 저장
 ```
+
+**Unbounded Persistence**: fix 루프에 하드 제한 없음. stop hook이 세션 종료를 차단하며,
+circuit breaker(20회/5분)만이 fail-safe로 존재. 명시적 cancel 또는 PRD 전체 완료 + architect 승인만 종료.
+
+**코드 수준 강제** (프롬프트가 아닌 hook이 실행):
+- `scripts/hooks/persistent-mode.ts` — iteration soft cap (+3 확장), circuit breaker
+- `scripts/pipeline/story-tracker.ts` — PRD 스토리 acceptance criteria 추적
+- `scripts/hooks/architect-verify.ts` — architect 검증 대기 강제
+- `scripts/hooks/error-recovery.ts` — 동일 에러 5회+ 시 대안 접근 강제
+- `hooks-handlers/stop.ts` — 위 모듈 통합, stop 차단
 
 ### Stage Transition Rules
 
 | From | To | Condition |
 |------|-----|-----------|
-| team-plan | team-exec | Plan 파일 존재 + Tasks 생성됨 |
+| team-plan | team-exec | Plan 파일 존재 + Tasks 생성됨 + PRD 생성됨 |
 | team-exec | team-verify | 모든 exec task `completed` + `GATE_PASS` |
-| team-verify | completion | PASS — 모든 증거 체인 통과 |
-| team-verify | team-fix | FAIL — fix 루프 카운트 < 3 |
-| team-verify | completion | FAIL + fix 루프 카운트 ≥ 3 (강제, FAIL verdict) |
-| team-fix | team-verify | Fix 완료 → 재검증 |
-| team-fix | team-fix | Fix 실패 + attempt < 3 |
-| team-fix | completion | Fix 실패 + attempt ≥ 3 |
+| team-verify | team-architect | PASS — Klay architect 이중 검증 |
+| team-architect | completion | Architect APPROVED |
+| team-architect | team-fix | Architect REJECTED (feedback 포함) |
+| team-verify | team-fix | FAIL |
+| team-fix | team-verify | Fix 완료 → 재검증 (unbounded) |
+| *(any)* | completion | 명시적 cancel 또는 circuit breaker |
 
 ---
 
@@ -109,19 +120,33 @@ Milla(sonnet) + Sam(haiku) 병렬 스폰. QA Loop 통합.
 
 **핵심 규칙**:
 - "검증할까요?" 같은 질문 금지 — 자동 판정 + 자동 전환
-- PASS → completion, FAIL → team-fix
+- PASS → team-architect, FAIL → team-fix
 
 → 상세: `references/stage-verify.md` 참조
 
 ---
 
-## Stage 4: team-fix
+## Stage 3.5: team-architect (이중 검증)
 
-Max 3회 반복. 실패한 태스크의 원래 담당 에이전트 재스폰.
+Milla/Sam PASS 후, Klay(opus)가 아키텍트 관점에서 독립 검증.
+**코드 강제**: `architect-verify.ts`가 상태 추적, stop hook이 승인 전까지 종료 차단.
+
+- APPROVED → completion
+- REJECTED → feedback와 함께 team-fix로 복귀 (architect feedback를 fix agent에 전달)
+- Max 3 attempts → 소진 시 최선 버전으로 완료
+
+→ 상세: `references/stage-verify.md` 참조
+
+---
+
+## Stage 4: team-fix (Unbounded)
+
+**제한 없음** — cancel만 종료. stop hook이 세션 종료를 차단.
 
 **핵심 규칙**:
 - 이전 handoff 읽어서 실패 컨텍스트 전달 (같은 실수 반복 방지)
-- 3회 초과 + 동일 에러 → `/aing debug` 제안
+- **error-recovery.ts**: 동일 에러 5회+ 시 대안 접근 강제 (코드 수준)
+- 동일 에러 지속 시 `/aing debug` 자동 제안
 
 → 상세: `references/stage-fix.md` 참조
 

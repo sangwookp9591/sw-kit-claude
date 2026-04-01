@@ -11,7 +11,9 @@ import { norchSessionEnd } from '../scripts/core/norch-bridge.js';
 import { getBudgetStatus } from '../scripts/core/context-budget.js';
 import { getActiveSession, sanitizeSessionField } from '../scripts/core/session-reader.js';
 import { writeHandoff as writeStageHandoff } from '../scripts/pipeline/handoff-manager.js';
-import { getPersistentModeState } from '../scripts/hooks/persistent-mode.js';
+import { getPersistentModeState, recordReinforcement } from '../scripts/hooks/persistent-mode.js';
+import { getPRDStatus } from '../scripts/pipeline/story-tracker.js';
+import { getVerifyState, generateArchitectPrompt } from '../scripts/hooks/architect-verify.js';
 import { join } from 'node:path';
 
 const log = createLogger('stop');
@@ -98,9 +100,51 @@ try {
 
   if (persistentMode?.active) {
     const modeLabel = persistentMode.mode || 'persistent';
-    ctx.push(`[aing:persistent-mode] Mode: ${modeLabel}`);
-    ctx.push(`\uD83D\uDD04 [${modeLabel}] \uBAA8\uB4DC \uD65C\uC131 \u2014 \uC791\uC5C5 \uC9C4\uD589 \uC911. \uACC4\uC18D\uD558\uC138\uC694.`);
-    log.info('Persistent mode active on stop', { mode: modeLabel });
+    const iteration = persistentMode.iteration ?? 0;
+    const maxIter = persistentMode.maxIterations ?? 10;
+
+    // Circuit breaker: too many reinforcements → allow stop (fail-safe)
+    const canBlock = await recordReinforcement(projectDir);
+    if (!canBlock) {
+      log.info('Circuit breaker tripped — allowing stop', { mode: modeLabel, reinforcements: persistentMode.reinforcementCount });
+      ctx.push(`[aing:persistent-mode] Circuit breaker — 세션 종료를 허용합니다.`);
+    } else {
+      // --- Priority 1: Architect verification pending ---
+      const archVerify = getVerifyState(projectDir);
+      if (archVerify?.pending) {
+        const archPrompt = generateArchitectPrompt(archVerify);
+        ctx.push(archPrompt);
+        log.info('Architect verification blocking stop', { feature: archVerify.feature, attempt: archVerify.verificationAttempts });
+      }
+      // --- Priority 2: PRD stories incomplete ---
+      else {
+        const prdStatus = getPRDStatus(projectDir);
+        if (prdStatus.total > 0 && !prdStatus.allComplete) {
+          ctx.push(`[aing:persistent-mode] Mode: ${modeLabel} | Iteration ${iteration}/${maxIter}`);
+          ctx.push(`[aing:prd] 스토리 진행: ${prdStatus.completed}/${prdStatus.total} 완료`);
+          if (prdStatus.nextStory) {
+            ctx.push(`다음 스토리: ${prdStatus.nextStory.id} "${prdStatus.nextStory.title}"`);
+          }
+          ctx.push(`작업이 완료되지 않았습니다. 계속하세요.`);
+          ctx.push(`완료 후 /aing team --complete 또는 cancel로 종료하세요.`);
+          log.info('PRD incomplete — blocking stop', {
+            mode: modeLabel,
+            completed: prdStatus.completed,
+            total: prdStatus.total,
+            next: prdStatus.nextStory?.id,
+          });
+        }
+        // --- Priority 3: General persistent mode ---
+        else {
+          ctx.push(`[aing:persistent-mode] Mode: ${modeLabel} | Iteration ${iteration}/${maxIter}`);
+          ctx.push(`작업 진행 중. 계속하세요.`);
+          if (persistentMode.fixLoopCount && persistentMode.fixLoopCount > 0) {
+            ctx.push(`Fix loop: ${persistentMode.fixLoopCount}회 (unbounded — cancel만 종료)`);
+          }
+          log.info('Persistent mode active on stop', { mode: modeLabel, iteration, fixLoop: persistentMode.fixLoopCount });
+        }
+      }
+    }
   }
 
   // Append compact cost summary

@@ -50,10 +50,30 @@ After team-verify agents complete their review, if implementation tests exist:
 
 **하네스 원칙**: "검증할까요?" / "리뷰 먼저 할까요?" 같은 질문은 금지입니다. 파이프라인이 자동으로 판정하고 전환합니다.
 
-- **PASS**: 모든 증거 체인 통과 → 자동으로 `completion` 단계로
+- **PASS**: 모든 증거 체인 통과 → **team-architect** (Klay 이중 검증)
 - **FAIL**: 실패 항목 + 구체적 사유 → 자동으로 `team-fix` 단계로
 
+## Architect 이중 검증 (team-architect)
+
+Milla/Sam PASS 후 자동 실행. Klay(opus)가 아키텍트 관점에서 독립 검증:
+
+```
+Agent({
+  subagent_type: "aing:klay",
+  description: "Klay: Architect 이중 검증 — 완료 claim 검증",
+  model: "opus",
+  prompt: "[ARCHITECT VERIFY] ... (architect-verify.ts가 상태 관리)"
+})
+```
+
+**코드 수준 강제** (`scripts/hooks/architect-verify.ts`):
+- `startVerification()` → state 파일에 pending=true 기록
+- stop hook이 pending 상태에서 세션 종료 차단
+- APPROVED → `recordApproval()` → completion
+- REJECTED → `recordRejection(feedback)` → team-fix (max 3 attempts)
+
 ## 전환 조건
-- PASS → completion
-- FAIL → team-fix (fix 루프 카운트 < 3인 경우)
-- FAIL + fix 루프 카운트 ≥ 3 → 강제 completion (FAIL verdict 포함)
+- Milla/Sam PASS → team-architect (Klay 검증)
+- Klay APPROVED → completion
+- Klay REJECTED → team-fix
+- Milla/Sam FAIL → team-fix (unbounded — cancel만 종료)

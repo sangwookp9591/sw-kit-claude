@@ -8,6 +8,12 @@ export interface PersistentModeState {
     mode: string;
     startedAt: string;
     reason: string;
+    iteration?: number;
+    maxIterations?: number;
+    feature?: string;
+    fixLoopCount?: number;
+    reinforcementCount?: number;
+    lastReinforcedAt?: string;
 }
 /**
  * Activate persistent mode. Subsequent stop hooks will inject advisory context.
@@ -21,4 +27,18 @@ export declare function deactivatePersistentMode(projectDir: string): Promise<vo
  * Read current persistent mode state. Returns null if not set.
  */
 export declare function getPersistentModeState(projectDir: string): Promise<PersistentModeState | null>;
+/**
+ * Increment iteration and extend maxIterations if soft cap reached.
+ * Returns false if circuit breaker tripped (allow stop).
+ */
+export declare function incrementIteration(projectDir: string): Promise<boolean>;
+/**
+ * Record a reinforcement (stop hook blocking a stop attempt).
+ * Returns false if circuit breaker tripped (too many reinforcements — allow stop).
+ */
+export declare function recordReinforcement(projectDir: string): Promise<boolean>;
+/**
+ * Update fix loop count in persistent mode state.
+ */
+export declare function updateFixLoop(projectDir: string, fixCount: number): Promise<void>;
 //# sourceMappingURL=persistent-mode.d.ts.map

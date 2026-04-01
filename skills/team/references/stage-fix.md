@@ -1,17 +1,26 @@
-# Stage 4: team-fix (= PDCA Act)
+# Stage 4: team-fix (= PDCA Act) — Unbounded Persistence
 
-**Max 3회 반복**. 초과 시 FAIL verdict로 completion 진행.
+**Unbounded** — cancel만 종료. stop hook(`persistent-mode.ts`)이 세션 종료를 차단.
+iteration soft cap에 도달하면 +3 확장. circuit breaker(20회/5분)만이 fail-safe.
+
+## Error Recovery (코드 강제)
+
+`scripts/hooks/error-recovery.ts`가 동일 에러를 추적:
+- **4회 반복**: 대안 접근 제안 (advisory)
+- **6회 반복**: 대안 접근 **강제** (같은 도구/명령 사용 금지)
+- 성공 시 자동 리셋
 
 ## Fix with Context
 
 When entering team-fix, read the latest handoff to understand what was tried:
 1. Read `.aing/handoffs/{feature}/team-verify-*.md` for verification findings
-2. Pass findings to fix agents so they don't repeat failed approaches
-3. After fix, write a team-fix handoff documenting what was changed
+2. Read `.aing/handoffs/{feature}/team-architect-*.md` for architect feedback (있으면)
+3. Pass findings to fix agents so they don't repeat failed approaches
+4. After fix, write a team-fix handoff documenting what was changed
 
-If fix loop reaches max (3) AND same error persists:
-- Suggest `/aing debug` for scientific debugging
-- Include error signature in the debug handoff
+에러가 지속되면 (`error-recovery.ts` 감지):
+- `/aing debug` 로 전환하여 근본 원인 분석 제안
+- error signature를 debug handoff에 포함
 
 ## 실행
 
@@ -39,7 +48,7 @@ Agent({
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 You are {Name} in team "{feature-slug}".
-This is retry #{attempt} of 3.
+This is fix attempt #{attempt} (unbounded — cancel만 종료).
 
 ORIGINAL TASK: {원래 태스크 설명}
 
@@ -61,6 +70,7 @@ PROTOCOL:
 ```
 
 ## 전환 조건
-- Fix 완료 → team-verify (재검증)
-- Fix 실패 + attempt < 3 → team-fix (재시도)
-- Fix 실패 + attempt ≥ 3 → completion (FAIL)
+- Fix 완료 → team-verify (재검증) → team-architect (이중 검증)
+- Fix 실패 → team-fix (재시도, unbounded)
+- 명시적 cancel → completion
+- Circuit breaker (20회/5분) → completion (fail-safe)

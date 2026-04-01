@@ -17,6 +17,10 @@ interface HandoffParams {
   stage: string;
   summary: string;
   decisions: string[];
+  rejected?: string[];           // Alternatives considered and rejected (omc-style)
+  risks?: string[];              // Identified risks for next stage
+  filesChanged?: string[];       // Key files created or modified
+  remaining?: string[];          // Items left for next stage
   artifacts?: string[];
   openIssues?: string[];
   agentOutputs?: Record<string, string>;
@@ -76,6 +80,34 @@ export function writeHandoff(params: HandoffParams, projectDir?: string): Handof
 
   for (const decision of params.decisions) {
     md.push(`- ${decision}`);
+  }
+
+  if (params.rejected && params.rejected.length > 0) {
+    md.push(``, `## Rejected Alternatives`);
+    for (const item of params.rejected) {
+      md.push(`- ${item}`);
+    }
+  }
+
+  if (params.risks && params.risks.length > 0) {
+    md.push(``, `## Risks for Next Stage`);
+    for (const risk of params.risks) {
+      md.push(`- ${risk}`);
+    }
+  }
+
+  if (params.filesChanged && params.filesChanged.length > 0) {
+    md.push(``, `## Files Changed`);
+    for (const file of params.filesChanged) {
+      md.push(`- ${file}`);
+    }
+  }
+
+  if (params.remaining && params.remaining.length > 0) {
+    md.push(``, `## Remaining Items`);
+    for (const item of params.remaining) {
+      md.push(`- ${item}`);
+    }
   }
 
   if (params.artifacts && params.artifacts.length > 0) {

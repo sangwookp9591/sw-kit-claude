@@ -8,6 +8,10 @@ interface HandoffParams {
     stage: string;
     summary: string;
     decisions: string[];
+    rejected?: string[];
+    risks?: string[];
+    filesChanged?: string[];
+    remaining?: string[];
     artifacts?: string[];
     openIssues?: string[];
     agentOutputs?: Record<string, string>;
