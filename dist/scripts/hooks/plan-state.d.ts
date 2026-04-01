@@ -61,6 +61,33 @@ export declare function validatePhaseSequence(history: string[]): {
     issues: string[];
 };
 /**
+ * Check if an agent spawn is allowed in the current phase.
+ * Called by pre-tool-use hook to block out-of-order agent spawns.
+ *
+ * Returns { allowed: true } if no active plan or agent is permitted.
+ * Returns { allowed: false, reason } if agent spawn violates phase ordering.
+ */
+export declare function checkAgentAllowed(projectDir: string, agentName: string): {
+    allowed: boolean;
+    reason?: string;
+    phase?: PlanPhase;
+};
+/**
+ * Auto-advance phase after an agent completes.
+ * Called by post-tool-use hook when an aing: agent finishes.
+ *
+ * Returns the new phase, or null if no advancement needed.
+ */
+export declare function autoAdvancePhase(projectDir: string, completedAgent: string): PlanPhase | null;
+/**
+ * Get the expected agent(s) for the current phase.
+ * Used by hooks to inject guidance when phase doesn't match.
+ */
+export declare function getExpectedAgent(projectDir: string): {
+    phase: PlanPhase;
+    agents: string[];
+} | null;
+/**
  * Get resume info for session restart.
  */
 export declare function getResumeInfo(projectDir: string): {

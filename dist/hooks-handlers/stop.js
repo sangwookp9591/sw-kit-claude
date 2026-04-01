@@ -11,6 +11,7 @@ import { getBudgetStatus } from '../scripts/core/context-budget.js';
 import { getActiveSession, sanitizeSessionField } from '../scripts/core/session-reader.js';
 import { writeHandoff as writeStageHandoff } from '../scripts/pipeline/handoff-manager.js';
 import { getPersistentModeState, recordReinforcement } from '../scripts/hooks/persistent-mode.js';
+import { readPlanState } from '../scripts/hooks/plan-state.js';
 import { getPRDStatus } from '../scripts/pipeline/story-tracker.js';
 import { getVerifyState, generateArchitectPrompt } from '../scripts/hooks/architect-verify.js';
 import { join } from 'node:path';
@@ -62,9 +63,28 @@ try {
             log.error('Failed to write session handoff', { feature: session.feature });
         }
     }
+    // Check for active AING-DR planning session (blocks stop during consensus)
+    const planState = readPlanState(projectDir);
+    const ctx = [];
+    if (planState?.active && planState.phase !== 'completed' && planState.phase !== 'terminated') {
+        const phaseNames = {
+            'gate': 'Pre-execution Gate',
+            'foundation': 'Ryan — Constraints/Preferences',
+            'option-design': 'Able — Option Design',
+            'steelman': 'Klay — Steelman Deliberation',
+            'synthesis': 'Able — Synthesis',
+            'synthesis-check': 'Peter — Verification',
+            'critique': 'Critic — Assessment',
+            'adr': 'Able — Living ADR',
+        };
+        const phaseName = phaseNames[planState.phase] || planState.phase;
+        ctx.push(`[aing:plan-gate] AING-DR 합의 진행 중 — 중단할 수 없습니다.`);
+        ctx.push(`Feature: "${planState.feature}" | Phase: ${phaseName} | Iteration: ${planState.iteration}/${planState.maxIterations}`);
+        ctx.push(`합의 완료 후 자동 종료됩니다. 강제 종료: /aing cancel`);
+        log.info('Plan active — blocking stop', { feature: planState.feature, phase: planState.phase, iteration: planState.iteration });
+    }
     // Check for active persistent mode (enables "don't stop" / ralph-like behavior)
     const persistentMode = await getPersistentModeState(projectDir);
-    const ctx = [];
     if (persistentMode?.active) {
         const modeLabel = persistentMode.mode || 'persistent';
         const iteration = persistentMode.iteration ?? 0;

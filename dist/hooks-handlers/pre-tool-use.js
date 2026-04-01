@@ -6,16 +6,32 @@ import { norchToolUse, norchAgentSpawn } from '../scripts/core/norch-bridge.js';
 import { checkBashCommand, checkFilePath, formatViolations } from '../scripts/guardrail/guardrail-engine.js';
 import { checkStepLimit, checkFileChangeLimit, checkForbiddenPath } from '../scripts/guardrail/safety-invariants.js';
 import { isDryRunActive, queueChange, formatPreview } from '../scripts/guardrail/dry-run.js';
+import { checkAgentAllowed, getExpectedAgent } from '../scripts/hooks/plan-state.js';
 const parsed = await readStdinJSON();
 try {
     const toolName = parsed.tool_name || '';
     const toolInput = parsed.tool_input || {};
     const projectDir = process.env.PROJECT_DIR || process.cwd();
     const ctx = [];
-    // Agent/Task spawn
+    // Agent/Task spawn — AING-DR phase enforcement
     if ((toolName === 'Agent' || toolName === 'Task') && toolInput.subagent_type) {
         const agentKey = toolInput.name || toolInput.subagent_type.replace('aing:', '');
         norchAgentSpawn('session', agentKey, toolInput.description);
+        // Phase gate: block agent spawns that violate AING-DR phase ordering
+        const subagentType = toolInput.subagent_type;
+        if (subagentType.startsWith('aing:')) {
+            const phaseCheck = checkAgentAllowed(projectDir, subagentType);
+            if (!phaseCheck.allowed) {
+                const expected = getExpectedAgent(projectDir);
+                const guidance = expected
+                    ? `Current phase "${expected.phase}" expects: ${expected.agents.map(a => `aing:${a}`).join(' or ')}. Spawn the correct agent first.`
+                    : phaseCheck.reason || 'Agent not allowed in current phase.';
+                process.stdout.write(JSON.stringify({
+                    hookSpecificOutput: { decision: 'block', reason: `[aing:phase-gate] ${guidance}` }
+                }));
+                process.exit(0);
+            }
+        }
     }
     else if (toolName === 'SendMessage' && toolInput.to) {
         const agentKey = toolInput.to.replace('aing:', '');

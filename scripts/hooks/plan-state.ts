@@ -58,6 +58,35 @@ const DEFAULT_MAX_ITERATIONS: Record<string, number> = {
   high: 5,
 };
 
+/**
+ * Phase → allowed agent mapping.
+ * Hook enforcement: pre-tool-use blocks agent spawns that don't match current phase.
+ */
+const PHASE_AGENT_MAP: Record<string, string[]> = {
+  'foundation':      ['ryan'],
+  'option-design':   ['able'],
+  'steelman':        ['klay'],
+  'synthesis':       ['able'],
+  'synthesis-check': ['peter'],
+  'critique':        ['critic'],
+  'adr':             ['able'],
+};
+
+/**
+ * Phase → next phase mapping (normal forward flow).
+ * Loops (REVISE/ITERATE) are handled separately.
+ */
+const PHASE_NEXT: Record<string, PlanPhase> = {
+  'gate':            'foundation',
+  'foundation':      'option-design',
+  'option-design':   'steelman',
+  'steelman':        'synthesis',
+  'synthesis':       'synthesis-check',
+  'synthesis-check': 'critique',   // PASS → critique; REVISE → synthesis (handled by caller)
+  'critique':        'adr',        // APPROVE → adr; ITERATE → option-design (handled by caller)
+  'adr':             'completed',
+};
+
 // ---------------------------------------------------------------------------
 // Path
 // ---------------------------------------------------------------------------
@@ -235,6 +264,109 @@ export function validatePhaseSequence(history: string[]): { valid: boolean; issu
   }
 
   return { valid: issues.length === 0, issues };
+}
+
+// ---------------------------------------------------------------------------
+// Hook Enforcement API
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if an agent spawn is allowed in the current phase.
+ * Called by pre-tool-use hook to block out-of-order agent spawns.
+ *
+ * Returns { allowed: true } if no active plan or agent is permitted.
+ * Returns { allowed: false, reason } if agent spawn violates phase ordering.
+ */
+export function checkAgentAllowed(
+  projectDir: string,
+  agentName: string
+): { allowed: boolean; reason?: string; phase?: PlanPhase } {
+  const state = readPlanState(projectDir);
+
+  // No active plan → don't interfere
+  if (!state?.active) return { allowed: true };
+
+  const phase = state.phase;
+  const allowedAgents = PHASE_AGENT_MAP[phase];
+
+  // gate phase → no agents allowed (orchestrator sets up state)
+  if (phase === 'gate') {
+    return { allowed: false, reason: `Plan is in gate phase — run Phase 0 checks before spawning agents`, phase };
+  }
+
+  // completed/terminated → don't interfere
+  if (phase === 'completed' || phase === 'terminated') return { allowed: true };
+
+  // No mapping for this phase → allow (safety fallback)
+  if (!allowedAgents) return { allowed: true };
+
+  // Normalize agent name: "aing:ryan" → "ryan", "Ryan" → "ryan"
+  const normalized = agentName.replace(/^aing:/, '').toLowerCase();
+
+  if (allowedAgents.includes(normalized)) {
+    return { allowed: true, phase };
+  }
+
+  return {
+    allowed: false,
+    phase,
+    reason: `Phase "${phase}" expects agent [${allowedAgents.join('/')}], got "${normalized}". ` +
+            `Complete the current phase before spawning "${normalized}".`,
+  };
+}
+
+/**
+ * Auto-advance phase after an agent completes.
+ * Called by post-tool-use hook when an aing: agent finishes.
+ *
+ * Returns the new phase, or null if no advancement needed.
+ */
+export function autoAdvancePhase(
+  projectDir: string,
+  completedAgent: string
+): PlanPhase | null {
+  const state = readPlanState(projectDir);
+  if (!state?.active) return null;
+
+  const phase = state.phase;
+  const allowedAgents = PHASE_AGENT_MAP[phase];
+  const normalized = completedAgent.replace(/^aing:/, '').toLowerCase();
+
+  // Only advance if the completed agent matches the current phase
+  if (!allowedAgents || !allowedAgents.includes(normalized)) return null;
+
+  const nextPhase = PHASE_NEXT[phase];
+  if (!nextPhase) return null;
+
+  // Don't auto-advance from synthesis-check or critique — verdict determines next phase
+  if (phase === 'synthesis-check' || phase === 'critique') {
+    // These need verdict-based routing, not auto-advance
+    // The orchestrator (SKILL.md / LLM) reads the agent output and calls advancePhase explicitly
+    log.info('Phase requires verdict-based routing — skipping auto-advance', { phase, agent: normalized });
+    return null;
+  }
+
+  const result = advancePhase(projectDir, nextPhase);
+  if (result) {
+    log.info('Auto-advanced phase', { from: phase, to: nextPhase, agent: normalized });
+    return nextPhase;
+  }
+
+  return null;
+}
+
+/**
+ * Get the expected agent(s) for the current phase.
+ * Used by hooks to inject guidance when phase doesn't match.
+ */
+export function getExpectedAgent(projectDir: string): { phase: PlanPhase; agents: string[] } | null {
+  const state = readPlanState(projectDir);
+  if (!state?.active) return null;
+
+  const agents = PHASE_AGENT_MAP[state.phase];
+  if (!agents) return null;
+
+  return { phase: state.phase, agents };
 }
 
 /**

@@ -4,6 +4,38 @@ description: "📋 AING-DR 6자 합의 계획. Ryan(원칙) → Able(설계) →
 triggers: ["plan", "계획", "기획", "설계"]
 ---
 
+<!-- aing preamble T3 -->
+Agents: Simon(CEO/전략), Sam(CTO/검증), Able(계획), Klay(탐색/리뷰), Milla(보안/검증), Jay(백엔드), Jerry(DB/인프라), Derek(모바일), Iron(프론트엔드), Rowan(모션), Willji(디자인), Jun(성능), Kain(코드분석/LSP)
+
+Commands: /aing plan, /aing auto, /aing team, /aing explore, /aing review, /aing task, /aing debug, /aing test, /aing refactor, /aing do
+
+Voice Directive:
+- 간결하고 기술적으로 답변. 추측 대신 코드를 읽고 확인.
+- 한국어로 응답하되 기술 용어는 영어 유지.
+- 결과물에 근거(파일 경로, 라인 번호) 첨부.
+
+AskUserQuestion Format:
+선택이 필요하면 다음 포맷으로 질문:
+1. {Option A} — {설명}
+2. {Option B} — {설명}
+3. {Option C} — {설명}
+
+Completeness Score:
+작업 완료 시 완성도를 0-100%로 자가 평가. 90% 미만이면 누락 항목 명시.
+
+Search Before Building (3-Layer):
+1. Glob/Grep으로 기존 구현 검색
+2. 패턴/컨벤션 파악 후 일관성 유지
+3. 중복 생성 방지 — 기존 코드 재사용 우선
+
+Team Routing:
+| Complexity | Agent Team              | Model   |
+|------------|-------------------------|---------|
+| low (≤3)   | Derek solo              | haiku   |
+| mid (4-7)  | Derek + Klay review     | sonnet  |
+| high (>7)  | Full team + Milla gate  | opus    |
+<!-- /preamble -->
+
 # /aing plan — AING-DR Consensus Planning
 
 6자 역할 분담 합의 시스템. 품질 우선 — 비용보다 결정의 정확성을 우선한다.
@@ -184,12 +216,38 @@ Ryan(opus)이 **Options 없이** Constraints와 Preferences를 도출한다.
 **왜 분리하는가**: Able이 원칙과 옵션을 동시에 만들면, 원칙이 결론을 정당화하는 방향으로 편향된다.
 Ryan은 코드베이스를 읽고 제약/선호를 확정한 뒤, 그 결과를 Able에게 넘긴다.
 
-출력: **FOUNDATION** format
-- **Constraints** (불변): 위반 시 플랜 무효. 각각 Source + Evidence + Violation Impact
-- **Preferences** (가변): 트레이드오프 가능. 각각 Priority + Tradeoff Threshold + Why
-- **Context Summary**: 의사결정에 필요한 코드베이스 사실
+```
+Agent({
+  subagent_type: "aing:ryan",
+  description: "Ryan: 원칙 도출 — {feature}",
+  model: "opus",
+  prompt: "다음 작업에 대한 Constraints와 Preferences를 도출하세요: {task}
 
-→ 에이전트: `aing:ryan` (opus), read-only
+코드베이스를 직접 탐색하여 현실에 기반한 제약 조건을 식별하세요.
+
+FOUNDATION 포맷으로 출력:
+## Constraints (불변 — 위반 시 플랜 무효)
+### C1: {name}
+- Source: {어디서 온 제약인가}
+- Evidence: {file:line 또는 문서}
+- Violation Impact: {위반 시 결과}
+
+## Preferences (가변 — 트레이드오프 가능)
+### P1: {name}
+- Priority: HIGH/MED/LOW
+- Tradeoff Threshold: {어디까지 양보 가능}
+- Why: {이유}
+
+## Context Summary
+{의사결정에 필요한 코드베이스 사실}
+
+Rules:
+- Options나 Solutions를 제안하지 마세요 — 원칙만 세웁니다
+- Evidence 없는 Constraint는 Preference로 강등하세요
+- 코드베이스를 읽어서 확인한 사실만 기술하세요"
+})
+```
+
 → State: `phase: "foundation"`
 
 ## Phase 2: Able — Option Design (ALL levels)
@@ -217,7 +275,72 @@ Able(opus)이 Ryan의 FOUNDATION 기반으로 AING-DR Draft를 생성한다.
 **DR Standard (mid)**: Full AING-DR. Constraints/Preferences 반영. Drivers 3개(가변). Constraint 충족 여부 명시.
 **DR Deep (high/deliberate)**: Standard + Pre-mortem 3개 + Rollback Plan + Expanded Test Plan.
 
-→ 에이전트: `aing:able` (opus)
+```
+Agent({
+  subagent_type: "aing:able",
+  description: "Able: AING-DR 설계 — {feature}",
+  model: "opus",
+  prompt: "Ryan의 FOUNDATION을 기반으로 AING-DR Draft를 생성하세요.
+
+=== RYAN FOUNDATION ===
+{Ryan's output}
+
+=== TASK ===
+{task description}
+
+=== COMPLEXITY LEVEL ===
+{low|mid|high}
+
+PLAN_DRAFT 포맷으로 출력 (complexity level에 따라 깊이 조절):
+## Meta
+- Feature: {name}
+- Complexity Signals: fileCount={N}, domainCount={N}, hasArchChange={bool}, hasSecurity={bool}
+- Complexity Score: {N}/15
+- Complexity Level: {low|mid|high}
+
+## Constraints Honored (Ryan의 Constraints 인용)
+- C1 {name}: ✓ 충족 방법 / ✗ 불가능 사유
+
+## Decision Drivers (mid+: 3개, low: 1개)
+1. {driver}
+
+## Options
+### Option A: {name}
+- Constraint Compliance: {C1: ✓, C2: ✓}  (mid+)
+- Pros: {list}
+- Cons: {list}
+### Option B: {name}
+- Constraint Compliance: {C1: ✓, C2: ✗ — reason}
+- Pros: {list}
+- Cons: {list}
+
+## Recommended: {name}
+Rejection Evidence: {왜 다른 옵션이 탈락했는지}
+
+## Steps
+1. {step} — files: {paths}, completeness: {X}/10
+
+## Acceptance Criteria
+- [ ] {testable criterion}
+
+## Risks
+- {risk}: {mitigation}
+
+{high/deliberate only:}
+## Pre-mortem
+1. {실패 시나리오}: {원인} → {대응}
+
+## Rollback Plan
+{되돌리는 구체적 방법}
+
+Rules:
+- 최소 2개 Options 비교
+- 모든 Step에 파일 경로 명시
+- Constraint 위반 Option은 반드시 탈락 사유 기술
+- Evidence는 file:line 형태"
+})
+```
+
 → State: `phase: "option-design"`
 
 ### Interactive User Review Point 1 (`--interactive` only)
@@ -243,64 +366,216 @@ Options: {N}개 → 추천: {name}
 
 Klay(opus)가 모든 플랜에 대해 STEELMAN_REVIEW를 수행:
 
-1. **Feasibility**: 각 step의 실현 가능성 (file:line)
-2. **Steelman Antithesis**: 추천 옵션을 뒤집을 수 있는 가장 강력한 반론 (필수)
-3. **Tradeoff Tension**: 무시 불가능한 트레이드오프 (최소 1개)
-4. **Constraint-Option Consistency**: 추천 옵션이 Ryan의 Constraints를 모두 충족하는지
-5. **New Driver Proposal**: 리뷰에서 발견된 새로운 Decision Driver 제안 (가변 Drivers)
-6. **Synthesis Path**: 경쟁 옵션의 장점을 결합하는 제3의 경로 (가능한 경우)
+```
+Agent({
+  subagent_type: "aing:klay",
+  description: "Klay: steelman 리뷰 — {feature}",
+  model: "opus",
+  prompt: "[PLAN REVIEW MODE]
+다음 AING-DR Draft의 steelman 리뷰를 수행하세요.
 
-→ 에이전트: `aing:klay` (opus), `[PLAN REVIEW MODE]`
+=== RYAN FOUNDATION ===
+{Ryan's output}
+
+=== ABLE PLAN_DRAFT ===
+{Able's output}
+
+STEELMAN_REVIEW 포맷으로 출력:
+## Feasibility
+- Step {N}: FEASIBLE / CONCERN — {detail, file:line}
+
+## Steelman Antithesis (필수)
+추천 옵션을 뒤집을 수 있는 가장 강력한 반론:
+{antithesis}
+
+## Tradeoff Tension (최소 1개)
+- {tension}: {detail}
+
+## Constraint-Option Consistency (mid+)
+| Constraint | Option A | Option B |
+|-----------|----------|----------|
+| C1 | ✓ | ✗ — {reason} |
+
+## New Driver Proposal
+- {new driver}: {why this matters}
+
+## Synthesis Path (optional)
+{경쟁 옵션의 장점을 결합하는 제3의 경로}
+
+## Architecture Risks
+- {risk}: severity={HIGH/MED/LOW}, {detail}
+
+## Verdict
+APPROVE / SUGGEST_CHANGES
+
+Rules:
+- Steelman Antithesis와 최소 1개 Tradeoff Tension은 필수
+- Rubber stamp 금지
+- 코드베이스를 직접 탐색하여 file:line 증거 제시
+- Constraint-Option Consistency 테이블은 mid+ 필수"
+})
+```
+
 → State: `phase: "steelman"`
 
 ## Phase 4: Able — Synthesis (ALL levels)
 
 Able(opus)이 Klay의 STEELMAN_REVIEW를 받아 플랜을 수정:
 
-1. 각 반론에 대해 **명시적 대응** (수용 또는 반박 근거)
-2. Klay가 제안한 새 Driver를 Drivers 목록에 반영 (또는 거부 근거)
-3. Rejection Evidence 강화
+```
+Agent({
+  subagent_type: "aing:able",
+  description: "Able: 반론 통합 — {feature}",
+  model: "opus",
+  prompt: "Klay의 steelman 반론을 통합하여 플랜을 수정하세요.
 
-→ 에이전트: `aing:able` (opus)
+=== RYAN FOUNDATION ===
+{Ryan's output}
+
+=== ORIGINAL PLAN_DRAFT ===
+{Able's Phase 2 output}
+
+=== KLAY STEELMAN_REVIEW ===
+{Klay's output}
+
+각 반론에 대해 명시적으로 대응하세요:
+1. 수용 (ABSORBED): 플랜에 반영하고 변경 내용 기술
+2. 반박 (REBUTTED): 구체적 증거로 반박 근거 제시
+3. Klay가 제안한 새 Driver를 Drivers 목록에 반영 (또는 거부 근거)
+
+수정된 전체 PLAN_DRAFT를 다시 출력하세요.
+변경된 부분은 [CHANGED] 태그로 표시.
+
+Rules:
+- 모든 Klay 반론에 명시적 대응 필수 (무시 금지)
+- ABSORBED면 플랜이 실제로 변경되어야 함 (형식적 언급 금지)
+- REBUTTED면 file:line 증거 필수"
+})
+```
+
 → State: `phase: "synthesis"`
 
 ## Phase 5: Peter — Synthesis Verification (ALL levels)
 
 Peter(sonnet)가 Able의 synthesis 품질을 검증:
 
-1. **Steelman Reflection Audit**: ABSORBED/REBUTTED/ACKNOWLEDGED/IGNORED
-2. **Driver Changes Tracking**: 초기→현재 변경 이력
-3. **Delta Score** (iteration 2+): 이전 대비 진전 측정
+```
+Agent({
+  subagent_type: "aing:peter",
+  description: "Peter: 합의 검증 — {feature}",
+  model: "sonnet",
+  prompt: "Able의 synthesis가 Klay의 steelman 반론을 실제로 반영했는지 검증하세요.
 
-Verdict: **PASS** / **REVISE**
-- IGNORED 1개 → 자동 REVISE → Phase 4로 복귀
-- REVISE 시 무엇을 반영해야 하는지 명시
+=== KLAY STEELMAN_REVIEW ===
+{Klay's output}
 
-→ 에이전트: `aing:peter` (sonnet), read-only
+=== ABLE SYNTHESIS (수정된 플랜) ===
+{Able's Phase 4 output}
+
+{iteration > 1인 경우:}
+=== PREVIOUS SYNTHESIS ===
+{이전 iteration의 Able output}
+
+SYNTHESIS_CHECK 포맷으로 출력:
+## Steelman Reflection Audit
+| # | Klay Point | Able Response | Status |
+|---|-----------|---------------|--------|
+| 1 | {point} | {response} | ABSORBED/REBUTTED/ACKNOWLEDGED/IGNORED |
+
+## Reflection Score
+- ABSORBED: {N} ({percent}%)
+- REBUTTED: {N} ({percent}%)
+- ACKNOWLEDGED: {N} ({percent}%)
+- IGNORED: {N} ({percent}%)
+
+## Delta Score (iteration 2+)
+{(Resolved - New Issues) / Total}
+
+## Driver Changes
+- [unchanged] {driver}
+- [added by Klay] {driver}
+- [modified] {driver}: {before} → {after}
+
+## Verdict: PASS / REVISE
+## Confidence: HIGH / MED / LOW
+
+Rules:
+- IGNORED 1개 → 자동 REVISE
+- ACKNOWLEDGED (형식적 언급, 실질 변경 없음) ≠ ABSORBED
+- REVISE 시 무엇을 반영해야 하는지 명시"
+})
+```
+
+**Peter REVISE** → Phase 4로 복귀 (Able 재synthesis)
+**Peter PASS** → Phase 6 진행
+
 → State: `phase: "synthesis-check"`
 
 ## Phase 6: Critic — 5-Phase Deliberation Critique (ALL levels)
 
 **Peter PASS 후에만 실행** (sequential).
 
-Critic(opus)이 5-Phase 프로토콜로 심의 품질을 비평:
+```
+Agent({
+  subagent_type: "aing:critic",
+  description: "Critic: 심의 비평 — {feature}",
+  model: "opus",
+  prompt: "AING-DR 심의의 품질을 5-Phase 프로토콜로 비평하세요.
 
-1. **Pre-commitment**: 플랜 읽기 전 잠재 문제 3-5개 예측
-2. **Verification**: Constraint Compliance, Alternative Fairness, Criteria Testability, Risk Clarity, Pre-mortem/Rollback Quality
-3. **Multi-perspective**: Executor / Stakeholder / Skeptic 3자 관점
-4. **Gap Analysis + Self-audit**: 누락 식별 + 자기 발견 검증 (과잉 판정 방지)
-5. **Synthesis**: Pre-commitment 예측 vs 실제 발견 비교
+=== RYAN FOUNDATION ===
+{Ryan's output}
 
-**Adaptive Harshness**:
-- low/mid: THOROUGH mode (기본)
-- high/deliberate: CRITICAL 1개 또는 MAJOR 3개+ → ADVERSARIAL mode 에스컬레이션
+=== ABLE FINAL PLAN ===
+{Able's latest output}
 
-Verdict: **APPROVE** / **ITERATE** / **REJECT**
-- APPROVE: Constraints 충족, CRITICAL 0개, MAJOR 0개 (confirmed)
-- ITERATE: CRITICAL 0개, MAJOR 1-2개 (수정 가능) → Phase 2로 복귀
-- REJECT: Constraint 위반 (자동) / CRITICAL 1개+ / MAJOR 3개+ (시스템적) → 중단
+=== KLAY STEELMAN_REVIEW ===
+{Klay's output}
 
-→ 에이전트: `aing:critic` (opus)
+=== PETER SYNTHESIS_CHECK ===
+{Peter's output}
+
+=== STATE FILE ===
+{.aing/state/plan-state.json 내용}
+
+5-Phase 프로토콜:
+1. Pre-commitment: 플랜 읽기 전 잠재 문제 3-5개 예측
+2. Verification: Constraint Compliance, Alternative Fairness, Criteria Testability, Risk Clarity
+3. Multi-perspective: Executor / Stakeholder / Skeptic 3자 관점
+4. Gap Analysis + Self-audit: 누락 식별 + 자기 발견 검증
+5. Synthesis: Pre-commitment 예측 vs 실제 발견 비교
+
+CRITIC_VERDICT 포맷으로 출력:
+## Constraint Compliance
+| Constraint | Status | Evidence |
+|-----------|--------|----------|
+
+## Findings
+| Severity | Area | Finding | Evidence |
+|----------|------|---------|----------|
+| CRITICAL/MAJOR/MINOR | {area} | {finding} | {file:line} |
+
+## Quality Metrics
+- Evidence Coverage: {N}% (claims citing file:line)
+- Criteria Testability: {N}% (testable acceptance criteria)
+- Constraint Compliance: {N}% (constraints honored)
+
+## Self-audit
+- {N}건 다운그레이드 (과잉 판정 → MINOR로 조정)
+
+## Verdict: APPROVE / ITERATE / REJECT
+- APPROVE: CRITICAL 0, MAJOR 0 (confirmed), Constraints 100%
+- ITERATE: CRITICAL 0, MAJOR 1-2 (수정 가능) → Phase 2로 복귀
+- REJECT: Constraint 위반 / CRITICAL 1+ / MAJOR 3+ → 중단
+
+## Mode: THOROUGH / ADVERSARIAL
+
+Rules:
+- Adaptive Harshness: CRITICAL 1+ 또는 MAJOR 3+ → ADVERSARIAL 에스컬레이션
+- 거짓 승인은 거짓 거부보다 10배 비싸다
+- State 파일의 phase 연속성도 검증"
+})
+```
+
 → State: `phase: "critique"`
 
 ## Consensus Loop (ALL levels)
@@ -347,42 +622,96 @@ Critic: APPROVE ({THOROUGH/ADVERSARIAL} mode)
 
 ## Phase 7: Able — Living ADR + Persist
 
-### Living ADR 생성 (모든 플랜에 포함)
+### Living ADR 생성
 
-**ADR Lite (low)**:
-```
-Decision / Confidence / Why Chosen / Rejected Alternative + Reason
-```
+Able이 최종 결과를 FINAL_PLAN JSON으로 생성:
 
-**Living ADR (mid+)**:
 ```
-## ADR — Architecture Decision Record
-### Decision: {선택된 옵션}
-### Confidence: {Peter 판정 — HIGH / MED / LOW}
-### Constraints Honored:
-  - C1 {name}: ✓ — {충족 증거}
-  - C2 {name}: ✓ — {충족 증거}
-### Drivers (Initial → Final):
-  - [unchanged] {driver 1}
-  - [added by Klay] {driver 2} — source: STEELMAN_REVIEW
-  - [modified] {driver 3}: "{before}" → "{after}"
-### Alternatives Rejected:
-  - {Option B}: violates Constraint C{N} — evidence: {file:line}
-  - {Option C}: conflicts with Driver #{N} — {근거}
-### Steelman & Response:
-  - Antithesis: {Klay 반론}
-  - Response: {Able 대응}
-  - Peter Verification: {ABSORBED/REBUTTED} — {근거}
-### Critic Assessment:
-  - Mode: {THOROUGH/ADVERSARIAL}
-  - Findings: {CRITICAL 0, MAJOR 0, MINOR N}
-  - Self-audit: {N}건 다운그레이드
-### Consequences: {긍정/부정}
-### Rollback Plan (deep only): {되돌리는 구체적 방법}
-### Follow-ups: {후속 작업, 보류된 결정}
-```
+Agent({
+  subagent_type: "aing:able",
+  description: "Able: Living ADR 생성 — {feature}",
+  model: "sonnet",
+  prompt: "모든 심의 결과를 종합하여 FINAL_PLAN JSON을 생성하세요.
 
-→ State: `phase: "adr"` → 완료 후 `active: false`
+=== RYAN FOUNDATION ===
+{Ryan's output}
+
+=== FINAL PLAN (Critic APPROVE된 버전) ===
+{Able's latest output}
+
+=== KLAY STEELMAN_REVIEW ===
+{Klay's output}
+
+=== PETER SYNTHESIS_CHECK ===
+{Peter's output}
+
+=== CRITIC VERDICT ===
+{Critic's output}
+
+다음 JSON 포맷으로 출력하세요:
+
+\`\`\`json
+{
+  \"feature\": \"...\",
+  \"goal\": \"...\",
+  \"steps\": [\"...\"],
+  \"acceptanceCriteria\": [\"...\"],
+  \"risks\": [\"...\"],
+  \"options\": [{ \"name\": \"...\", \"pros\": [\"...\"], \"cons\": [\"...\"] }],
+  \"constraints\": [{ \"name\": \"...\", \"source\": \"...\", \"evidence\": \"...\", \"violationImpact\": \"...\" }],
+  \"preferences\": [{ \"name\": \"...\", \"priority\": \"...\", \"tradeoffThreshold\": \"...\", \"why\": \"...\" }],
+  \"drivers\": [{ \"name\": \"...\", \"status\": \"unchanged|added|modified\", \"source\": \"...\" }],
+  \"steelman\": {
+    \"antithesis\": \"...\",
+    \"tradeoffs\": [\"...\"],
+    \"newDrivers\": [\"...\"],
+    \"synthesisPath\": \"...\"
+  },
+  \"peterVerdict\": {
+    \"verdict\": \"PASS\",
+    \"absorbed\": N,
+    \"rebutted\": N,
+    \"acknowledged\": N,
+    \"ignored\": N,
+    \"reflectionScore\": N,
+    \"deltaScore\": N,
+    \"confidence\": \"HIGH|MED|LOW\"
+  },
+  \"criticVerdict\": {
+    \"verdict\": \"APPROVE\",
+    \"mode\": \"THOROUGH|ADVERSARIAL\",
+    \"critical\": N,
+    \"major\": N,
+    \"minor\": N,
+    \"selfAuditDowngrades\": N,
+    \"constraintCompliance\": \"N%\",
+    \"criteriaTestability\": \"N%\",
+    \"evidenceCoverage\": \"N%\"
+  },
+  \"adr\": {
+    \"decision\": \"...\",
+    \"confidence\": \"HIGH|MED|LOW\",
+    \"constraintsHonored\": [\"C1: ✓ — ...\"],
+    \"alternativesRejected\": [\"Option B: ... — ...\"],
+    \"consequences\": { \"positive\": [\"...\"], \"negative\": [\"...\"] }
+  },
+  \"reviewNotes\": [
+    { \"reviewer\": \"ryan\", \"verdict\": \"FOUNDATION\", \"highlights\": [\"...\"] },
+    { \"reviewer\": \"klay\", \"verdict\": \"...\", \"highlights\": [\"...\"] },
+    { \"reviewer\": \"peter\", \"verdict\": \"PASS\", \"highlights\": [\"...\"] },
+    { \"reviewer\": \"critic\", \"verdict\": \"APPROVE\", \"highlights\": [\"...\"] }
+  ],
+  \"complexityScore\": N,
+  \"complexityLevel\": \"low|mid|high\"
+}
+\`\`\`
+
+Rules:
+- 모든 필드를 빠짐없이 채우세요
+- Evidence는 file:line 형태
+- JSON은 반드시 유효해야 합니다"
+})
+```
 
 ### Persist
 
@@ -392,6 +721,8 @@ printf '%s' '{FINAL_PLAN_JSON}' | node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/cli/p
 
 `--dir "$(pwd)"` **mandatory**. `printf '%s'` 사용 (echo가 아닌).
 Creates: `.aing/plans/{date}-{feature}.md` + `.aing/tasks/task-{id}.json`
+
+→ State: `phase: "adr"` → 완료 후 `active: false`
 
 ## Plan Summary Display
 

@@ -8,6 +8,7 @@ import { recordToolError, clearToolErrors } from '../scripts/hooks/error-recover
 import { resetErrorCount } from '../scripts/guardrail/safety-invariants.js';
 import { norchToolUse, norchAgentDone } from '../scripts/core/norch-bridge.js';
 import { detectLearnablePattern, recordPatternUse } from '../scripts/hooks/learnable-pattern.js';
+import { autoAdvancePhase } from '../scripts/hooks/plan-state.js';
 const parsed = await readStdinJSON();
 const projectDir = process.env.PROJECT_DIR || process.cwd();
 try {
@@ -21,6 +22,17 @@ try {
             const agentName = toolInput.name || toolInput.subagent_type.replace('aing:', '');
             recordToolUse(toolName, { ...toolInput, _agentName: agentName }, toolResponse, projectDir);
             norchAgentDone('session', agentKey, toolInput.description);
+            // AING-DR phase auto-advance: when an aing: agent completes, advance to next phase
+            const subagentType = toolInput.subagent_type;
+            if (subagentType.startsWith('aing:')) {
+                try {
+                    const newPhase = autoAdvancePhase(projectDir, subagentType);
+                    if (newPhase) {
+                        process.stderr.write(`[aing:phase-gate] Phase advanced → ${newPhase}\n`);
+                    }
+                }
+                catch { /* phase advance is best-effort */ }
+            }
         }
         else if (toolName === 'SendMessage' && toolInput.to) {
             const agentKey = toolInput.to.replace('aing:', '');
