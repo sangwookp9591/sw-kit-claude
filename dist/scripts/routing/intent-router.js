@@ -48,6 +48,50 @@ const TEAM_KEYWORDS = [
     '팀', '전체', '대규모', '시스템 전체', '마이그레이션', '리팩토링 전체',
     'team', 'large scale', 'full system', 'migration', 'entire',
 ];
+const DIRECT_ROUTES = [
+    {
+        route: 'debug',
+        keywords: ['버그', '에러', '오류', '고쳐', '안 돼', '안돼', '안됨', 'bug', 'error', 'fix bug', 'debug', '디버그', '500 에러', '404', 'crash', '크래시'],
+        confidence: 0.90,
+        reason: '디버그 키워드 감지',
+    },
+    {
+        route: 'review-pipeline',
+        keywords: ['리뷰', '봐줘', '확인해', '코드 리뷰', 'code review', 'review', 'PR 리뷰'],
+        confidence: 0.88,
+        reason: '리뷰 키워드 감지',
+    },
+    {
+        route: 'review-cso',
+        keywords: ['보안', '취약점', 'OWASP', 'security audit', '보안 감사', 'STRIDE', '보안 리뷰', 'security review', '취약성'],
+        confidence: 0.92,
+        reason: '보안 감사 키워드 감지',
+    },
+    {
+        route: 'explore',
+        keywords: ['구조', '설명해', '이해', '어떻게 동작', '분석해', 'explain', 'how does', 'explore', '탐색', '코드베이스'],
+        confidence: 0.85,
+        reason: '탐색/설명 키워드 감지',
+    },
+    {
+        route: 'perf',
+        keywords: ['느려', '느리', '성능', '최적화', 'slow', 'performance', 'optimize', '프로파일', 'profil', '병목', 'bottleneck', '메모리 누수', 'memory leak'],
+        confidence: 0.90,
+        reason: '성능 키워드 감지',
+    },
+    {
+        route: 'refactor',
+        keywords: ['리팩토링', '정리', '개선', 'refactor', 'cleanup', 'restructure', '구조 개선', '코드 정리'],
+        confidence: 0.85,
+        reason: '리팩토링 키워드 감지',
+    },
+    {
+        route: 'tdd',
+        keywords: ['테스트', 'TDD', '커버리지', 'test', 'coverage', '테스트 작성', 'write test', 'spec', 'jest', 'vitest'],
+        confidence: 0.88,
+        reason: 'TDD/테스트 키워드 감지',
+    },
+];
 /**
  * 입력 텍스트에서 구체적 앵커가 있는지 탐지합니다.
  */
@@ -154,6 +198,22 @@ export function routeIntent(input) {
         };
     }
     const anchorInfo = detectAnchors(safeInput);
+    const inputLower = safeInput.toLowerCase();
+    // ── 최우선: 직접 라우팅 (코드 강제) ──
+    for (const dr of DIRECT_ROUTES) {
+        if (dr.keywords.some(kw => inputLower.includes(kw.toLowerCase()))) {
+            const complexityScore = estimateComplexity(safeInput, anchorInfo);
+            const preset = resolvePreset('auto', complexityScore, false);
+            log.info(`직접 라우팅: "${safeInput.slice(0, 40)}..." → ${dr.route}, confidence=${dr.confidence}`);
+            return {
+                route: dr.route,
+                preset,
+                confidence: dr.confidence,
+                reason: dr.reason,
+                originalInput,
+            };
+        }
+    }
     const isDesign = detectDesign(safeInput);
     const isPlanIntent = detectPlanIntent(safeInput);
     const isTeamIntent = detectTeamIntent(safeInput);

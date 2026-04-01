@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.8.91] - 2026-04-01 — Code-Enforced Direct Routing
+
+`/aing do` 직접 라우팅 7개를 프롬프트 의존에서 코드 강제로 전환.
+41개 스킬 전수 점검 완료 (참조 무결성, 트리거 충돌, 에이전트 등록 — 이상 0건).
+
+### Changed
+
+- **intent-router.ts**: Route 타입 4개 → 11개 확장 (`debug`, `review-pipeline`, `review-cso`, `explore`, `perf`, `refactor`, `tdd` 추가)
+- **DIRECT_ROUTES 배열**: 7개 직접 라우팅을 코드 레벨 키워드 매칭으로 구현 — 일반 라우팅보다 최우선 적용
+- 한국어 변형 커버리지 보강 (`느리` 등 활용형 추가)
+
+### Fixed
+
+- "느리지" 등 어간 변형이 `perf` 라우팅으로 연결되지 않던 문제 수정
+
 ## [2.8.9] - 2026-04-01 — AING-DR Consensus Planning Framework
 
 plan-task를 AING-DR(6자 합의 계획 시스템)으로 전면 재설계.
