@@ -21,7 +21,7 @@
 
 ---
 
-<h2 id="team">Agent Team (18 named agents)</h2>
+<h2 id="team">Agent Team (21 named agents)</h2>
 
 <table>
 <tr>
@@ -33,8 +33,9 @@
 |:---:|------|------|:-----:|
 | <img src="images/simon.svg" width="18"> | **Simon** | CEO / Product Strategy | `opus` |
 | <img src="images/sam.svg" width="18"> | **Sam** | CTO / Lead | `opus` |
-| <img src="images/able.svg" width="18"> | **Able** | PM / Planning | `sonnet` |
+| <img src="images/able.svg" width="18"> | **Able** | PM / Planning | `opus` |
 | <img src="images/klay.svg" width="18"> | **Klay** | Architect / Explorer | `opus` |
+| | **Ryan** | Deliberation Facilitator | `opus` |
 
 ### Design
 
@@ -52,6 +53,8 @@
 | <img src="images/jay.svg" width="18"> | **Jay** | API Development | `sonnet` |
 | <img src="images/jerry.svg" width="18"> | **Jerry** | DB / Infrastructure | `sonnet` |
 | <img src="images/milla.svg" width="18"> | **Milla** | Security / Auth | `sonnet` |
+| | **Critic** | Deliberation Critic | `opus` |
+| | **Peter** | Synthesis Verifier | `sonnet` |
 | | **Jun** | Performance / Optimization | `sonnet` |
 | <img src="images/kain.svg" width="18"> | **Kain** | Code Intelligence | `sonnet` |
 
@@ -89,11 +92,11 @@
 
 <h2 id="why">Why aing</h2>
 
-**18 agents, 41 skills, 60 browse commands, 1,098 tests, AST grep.**
+**21 agents, 41 skills, 60 browse commands, 1,098 tests, AING-DR Consensus Planning.**
 
 | Feature | Spec |
 |:--------|:-----|
-| Named Agents | **18** (role, personality, model tier) |
+| Named Agents | **21** (role, personality, model tier) |
 | Skills | **41** (debug, review, ship, TDD, perf, CSO, harness, ai-pipeline...) |
 | Browse Commands | **60** (MCP Playwright) |
 | PDCA Lifecycle | **auto-scaling** (complexity 0-15) |
