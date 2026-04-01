@@ -1,3 +1,5 @@
+import { type BenchmarkSuite } from './perf-benchmark.js';
+import { type FlakyReport } from './flaky-detector.js';
 export interface QAResult {
     healthScore: number;
     grade: string;
@@ -5,12 +7,16 @@ export interface QAResult {
     findings: string[];
     allFixed: boolean;
     healthHistory?: HealthScoreEntry[];
+    perfBenchmark?: BenchmarkSuite;
+    flakyReport?: FlakyReport;
 }
 export interface QAOptions {
     feature: string;
     testCommand?: string;
     fixMode?: boolean;
     projectDir?: string;
+    runPerf?: boolean;
+    runFlaky?: boolean;
 }
 interface HealthScoreEntry {
     cycle: number;

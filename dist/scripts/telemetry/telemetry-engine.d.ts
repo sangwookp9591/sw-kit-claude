@@ -1,3 +1,5 @@
+export declare const TELEMETRY_DIR = ".aing/telemetry";
+export declare const USAGE_FILE = "skill-usage.jsonl";
 /**
  * Telemetry tiers.
  */

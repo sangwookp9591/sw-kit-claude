@@ -17,8 +17,8 @@ import { appendFileSync, readFileSync, existsSync, mkdirSync, unlinkSync, readdi
 import { join } from 'node:path';
 import { createLogger } from '../core/logger.js';
 const log = createLogger('telemetry');
-const TELEMETRY_DIR = '.aing/telemetry';
-const USAGE_FILE = 'skill-usage.jsonl';
+export const TELEMETRY_DIR = '.aing/telemetry';
+export const USAGE_FILE = 'skill-usage.jsonl';
 const SESSION_FILE = 'sessions.jsonl';
 const ROTATION_SIZE_BYTES = 1_048_576; // 1 MB
 const ROTATION_AGE_MS = 30 * 24 * 60 * 60 * 1_000; // 30 days

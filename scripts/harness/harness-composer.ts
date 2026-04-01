@@ -11,6 +11,7 @@ import type {
   PipelineStage,
   DataFlowEdge,
 } from './harness-types.js';
+import type { TransferablePattern } from './pattern-transfer.js';
 
 const log = createLogger('harness-composer');
 
@@ -77,6 +78,51 @@ function estimateAgentCount(stageName: string): number {
   if (/qa|테스트|test/.test(lower)) return 2;
   if (/design|설계/.test(lower)) return 2;
   return 2; // default
+}
+
+// ─── Auto-compose ───────────────────────────────────────────────
+
+const DEFAULT_STAGES = ['plan', 'build', 'test', 'review'];
+
+/**
+ * Automatically compose a pipeline from a task description.
+ * If matching patterns are provided, uses the best match's agent list as stage names.
+ * Falls back to the default 4-stage pipeline.
+ */
+export function autoCompose(
+  task: string,
+  _projectDir: string,
+  patterns?: TransferablePattern[],
+): ComposedPipeline {
+  log.info('Auto-composing pipeline', { task: task.slice(0, 60) });
+
+  // Extract keywords from task description
+  const lower = task.toLowerCase();
+
+  // If patterns provided, pick the best match
+  if (patterns && patterns.length > 0) {
+    const best = patterns[0]; // already sorted by applicability
+    const stageNames = best.pattern.agents.length > 0
+      ? best.pattern.agents
+      : DEFAULT_STAGES;
+    log.info('Auto-compose using pattern', { patternId: best.id, stages: stageNames.length });
+    return composeHarnesses(stageNames);
+  }
+
+  // Keyword-driven stage selection
+  const stages: string[] = [];
+
+  if (/research|조사|분석|survey|report/.test(lower)) stages.push('research');
+  if (/design|설계|architect|blueprint/.test(lower)) stages.push('design');
+  stages.push('build');
+  if (/test|테스트|qa|quality/.test(lower)) stages.push('test');
+  if (/review|리뷰|audit|check/.test(lower)) stages.push('review');
+  if (/deploy|배포|ship|release/.test(lower)) stages.push('deploy');
+
+  // Ensure at least 2 stages
+  const finalStages = stages.length >= 2 ? stages : DEFAULT_STAGES;
+  log.info('Auto-compose stages resolved', { stages: finalStages });
+  return composeHarnesses(finalStages);
 }
 
 // ─── Validate Composition ───────────────────────────────────────

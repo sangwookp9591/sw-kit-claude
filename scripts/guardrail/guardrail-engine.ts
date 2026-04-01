@@ -10,7 +10,7 @@ import { createLogger } from '../core/logger.js';
 
 const log = createLogger('guardrail');
 
-interface GuardrailRule {
+export interface GuardrailRule {
   id: string;
   type: 'bash' | 'file';
   pattern: RegExp;

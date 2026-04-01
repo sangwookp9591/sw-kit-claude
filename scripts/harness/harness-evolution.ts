@@ -160,6 +160,119 @@ export function compareVersions(
   return { v1, v2, structureDiff, metricsDelta, verdict };
 }
 
+// ─── Auto-evolution Suggestions ─────────────────────────────────
+
+export interface EvolutionSuggestion {
+  area: string;           // 'agents' | 'routing' | 'pipeline'
+  suggestion: string;
+  evidence: string;       // metrics diff
+  confidence: number;     // 0-100
+}
+
+export function suggestEvolution(
+  feature: string,
+  projectDir: string,
+): EvolutionSuggestion[] {
+  const versions = getVersionList(projectDir, feature);
+
+  // Need at least 2 versions with metrics to compare
+  const withMetrics = versions.filter(v => v.metrics !== undefined);
+  if (withMetrics.length < 2) {
+    log.info('Not enough versioned metrics for evolution suggestion', { feature, count: withMetrics.length });
+    return [];
+  }
+
+  // Use the two most recent metric-bearing versions
+  const v1 = withMetrics[withMetrics.length - 2];
+  const v2 = withMetrics[withMetrics.length - 1];
+  const m1 = v1.metrics!;
+  const m2 = v2.metrics!;
+
+  const suggestions: EvolutionSuggestion[] = [];
+
+  const qualityDelta = m2.quality - m1.quality;
+  const tokensDelta = m2.tokens - m1.tokens;
+  const durationDelta = m2.duration - m1.duration;
+
+  // quality 상승 + tokens 감소 → "이 패턴 유지" 제안
+  if (qualityDelta > 0 && tokensDelta < 0) {
+    suggestions.push({
+      area: 'agents',
+      suggestion: `v${v2.version} 에이전트 구성을 유지하세요. 품질 향상과 토큰 절감이 동시에 달성되었습니다.`,
+      evidence: `quality: +${qualityDelta}, tokens: ${Math.round(tokensDelta / 1000)}k`,
+      confidence: Math.min(95, 60 + qualityDelta * 2 + Math.abs(tokensDelta) / 1000),
+    });
+  }
+
+  // quality 하락 → "이전 버전 에이전트 구성으로 롤백" 제안
+  if (qualityDelta < 0) {
+    suggestions.push({
+      area: 'agents',
+      suggestion: `v${v1.version} 에이전트 구성으로 롤백하세요. 품질이 하락했습니다.`,
+      evidence: `quality: ${qualityDelta}, v${v1.version} quality=${m1.quality} → v${v2.version} quality=${m2.quality}`,
+      confidence: Math.min(95, 50 + Math.abs(qualityDelta) * 3),
+    });
+  }
+
+  // routing 제안: duration 증가가 크면 병렬화 추천
+  if (durationDelta > 5000) {
+    suggestions.push({
+      area: 'routing',
+      suggestion: '실행 시간이 증가했습니다. 에이전트를 병렬 실행 모드(fanout)로 전환을 고려하세요.',
+      evidence: `duration: +${Math.round(durationDelta / 1000)}s (v${v1.version}→v${v2.version})`,
+      confidence: 60,
+    });
+  }
+
+  // pipeline 제안: tokens 급증 시 파이프라인 최적화 추천
+  if (tokensDelta > 50000) {
+    suggestions.push({
+      area: 'pipeline',
+      suggestion: '토큰 소비가 급증했습니다. 중간 결과물 캐싱 또는 스테이지 분리를 고려하세요.',
+      evidence: `tokens: +${Math.round(tokensDelta / 1000)}k (v${v1.version}→v${v2.version})`,
+      confidence: 55,
+    });
+  }
+
+  log.info('Evolution suggestions generated', { feature, count: suggestions.length });
+  return suggestions;
+}
+
+// ─── Auto-Compare ──────────────────────────────────────────────
+
+export interface AutoCompareResult {
+  comparison: VersionComparison | null;
+  suggestions: EvolutionSuggestion[];
+  verdict: 'improved' | 'regressed' | 'neutral' | 'insufficient-data';
+}
+
+/**
+ * Auto-compare latest two versions and generate improvement suggestions.
+ * Combines compareVersions + suggestEvolution into a single call.
+ */
+export function autoCompare(feature: string, projectDir: string): AutoCompareResult {
+  const versions = getVersionList(projectDir, feature);
+
+  if (versions.length < 2) {
+    return {
+      comparison: null,
+      suggestions: [],
+      verdict: 'insufficient-data',
+    };
+  }
+
+  const latest = versions[versions.length - 1];
+  const previous = versions[versions.length - 2];
+  const comparison = compareVersions(feature, previous.version, latest.version, projectDir);
+  const suggestions = suggestEvolution(feature, projectDir);
+
+  const verdict = comparison?.verdict ?? 'neutral';
+
+  log.info('Auto-compare complete', { feature, verdict, suggestions: suggestions.length });
+
+  return { comparison, suggestions, verdict };
+}
+
 // ─── History ────────────────────────────────────────────────────
 
 export function getVersionList(projectDir: string, feature: string): HarnessVersion[] {

@@ -118,6 +118,11 @@ export const REVIEW_AGENTS = {
  * Determine which review tiers to run based on complexity.
  */
 export function selectTiers(complexityLevel, options = {}) {
+    // Incremental mode: use suggested tiers from diff analysis
+    if (options.mode === 'incremental' && options.incrementalTiers?.length) {
+        return options.incrementalTiers;
+    }
+    // Full mode (existing logic)
     const tiers = ['eng-review']; // Always run
     if (complexityLevel === 'mid' || complexityLevel === 'high') {
         if (options.hasUI)

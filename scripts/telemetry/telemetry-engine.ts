@@ -19,8 +19,8 @@ import { createLogger } from '../core/logger.js';
 
 const log = createLogger('telemetry');
 
-const TELEMETRY_DIR = '.aing/telemetry';
-const USAGE_FILE = 'skill-usage.jsonl';
+export const TELEMETRY_DIR = '.aing/telemetry';
+export const USAGE_FILE = 'skill-usage.jsonl';
 const SESSION_FILE = 'sessions.jsonl';
 
 const ROTATION_SIZE_BYTES = 1_048_576; // 1 MB

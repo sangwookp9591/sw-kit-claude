@@ -5,7 +5,8 @@
  */
 import { type ComplexitySignals } from '../routing/complexity-scorer.js';
 import type { ArchitectureRecommendation, HarnessBlueprint } from './harness-types.js';
-export declare function analyzeTask(taskDescription: string, signals?: ComplexitySignals): ArchitectureRecommendation;
+import type { AgentPerformance } from '../agent-intelligence/feedback-loop.js';
+export declare function analyzeTask(taskDescription: string, signals?: ComplexitySignals, feedbackData?: AgentPerformance[]): ArchitectureRecommendation;
 export declare function generateBlueprint(rec: ArchitectureRecommendation, projectDir: string): HarnessBlueprint;
 export declare function formatRecommendation(rec: ArchitectureRecommendation): string;
 //# sourceMappingURL=adaptive-architect.d.ts.map

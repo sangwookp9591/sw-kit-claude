@@ -181,6 +181,33 @@ export const CATEGORIES = {
     },
 };
 /**
+ * Inject project-specific rules into CATEGORIES.
+ * Rules with a matching category field extend that category's patterns.
+ * Rules without category (or unknown category) go into 'project-rules'.
+ */
+export function injectProjectRules(rules) {
+    for (const rule of rules) {
+        let regex;
+        try {
+            regex = new RegExp(rule.pattern, 'gi');
+        }
+        catch {
+            continue;
+        }
+        const pattern = { regex, desc: rule.message };
+        const targetKey = rule.category && CATEGORIES[rule.category] ? rule.category : 'project-rules';
+        if (!CATEGORIES[targetKey]) {
+            CATEGORIES[targetKey] = {
+                pass: 2,
+                severity: rule.severity.toUpperCase(),
+                name: 'Project Rules',
+                patterns: [],
+            };
+        }
+        CATEGORIES[targetKey].patterns.push(pattern);
+    }
+}
+/**
  * Run all checklist categories against diff content.
  */
 export function runChecklist(diffContent) {

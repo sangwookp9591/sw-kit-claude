@@ -27,6 +27,8 @@ export interface ReviewPromptContext {
 export interface TierOptions {
     hasUI?: boolean;
     hasProductChange?: boolean;
+    mode?: 'full' | 'incremental';
+    incrementalTiers?: string[];
 }
 /**
  * Review passes (two-pass review system).

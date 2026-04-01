@@ -13,6 +13,8 @@ import { addEvidence } from '../evidence/evidence-chain.js';
 import { writeState } from '../core/state.js';
 import { join } from 'node:path';
 import { logSkillUsage } from '../telemetry/telemetry-engine.js';
+import { runBenchmark, loadBaseline } from './perf-benchmark.js';
+import { detectFlaky, saveFlakyReport } from './flaky-detector.js';
 const log = createLogger('qa-orchestrator');
 const MAX_FIX_CYCLES = 5;
 const SAME_ERROR_THRESHOLD = 3;
@@ -20,7 +22,7 @@ const SAME_ERROR_THRESHOLD = 3;
  * Run a complete QA cycle.
  */
 export function runQACycle(options) {
-    const { feature, testCommand = detectTestCommand(options.projectDir), fixMode = true, projectDir, } = options;
+    const { feature, testCommand = detectTestCommand(options.projectDir), fixMode = true, projectDir, runPerf = false, runFlaky = false, } = options;
     const dir = projectDir || process.cwd();
     const startTime = Date.now();
     const statePath = join(dir, '.aing', 'state', 'qa-state.json');
@@ -105,6 +107,31 @@ export function runQACycle(options) {
     const durationS = Math.round((Date.now() - startTime) / 1000);
     logSkillUsage({ skill: 'qa-loop', duration_s: durationS, outcome: testResult.passed ? 'success' : 'error' }, dir);
     writeState(statePath, qaState);
+    // Optional perf benchmark
+    let perfBenchmark;
+    if (runPerf) {
+        const baseline = loadBaseline(dir);
+        if (Object.keys(baseline).length > 0) {
+            perfBenchmark = runBenchmark({}, baseline);
+            log.info(`Perf benchmark: ${perfBenchmark.summary}`);
+        }
+        else {
+            log.info('No perf baseline found, skipping benchmark.');
+        }
+    }
+    // Optional flaky detection (re-run tests to detect flakiness)
+    let flakyReport;
+    if (runFlaky) {
+        const run1 = runTests(testCommand, dir);
+        const run2 = runTests(testCommand, dir);
+        const allRuns = [
+            run1.errors.map(e => ({ name: e, passed: false })),
+            run2.errors.map(e => ({ name: e, passed: false })),
+        ];
+        flakyReport = detectFlaky(allRuns);
+        saveFlakyReport(dir, flakyReport);
+        log.info(`Flaky detection: ${flakyReport.flakyCount} flaky tests found`);
+    }
     return {
         healthScore: health.overall,
         grade: health.grade,
@@ -112,6 +139,8 @@ export function runQACycle(options) {
         findings: testResult.errors,
         allFixed: testResult.passed,
         healthHistory: qaState.healthScores,
+        ...(perfBenchmark !== undefined && { perfBenchmark }),
+        ...(flakyReport !== undefined && { flakyReport }),
     };
 }
 /**

@@ -4,7 +4,7 @@
  * Harness Engineering: Constrain axis — define boundaries.
  * @module scripts/guardrail/guardrail-engine
  */
-interface GuardrailRule {
+export interface GuardrailRule {
     id: string;
     type: 'bash' | 'file';
     pattern: RegExp;

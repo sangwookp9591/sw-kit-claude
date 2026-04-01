@@ -14,6 +14,8 @@ import type {
   HarnessBlueprint,
   DataFlowEdge,
 } from './harness-types.js';
+import type { AgentPerformance } from '../agent-intelligence/feedback-loop.js';
+import { scoreSpecialization } from '../agent-intelligence/specialization-scorer.js';
 
 const log = createLogger('adaptive-architect');
 
@@ -114,10 +116,18 @@ const DOMAIN_PROFILES: DomainProfile[] = [
 export function analyzeTask(
   taskDescription: string,
   signals: ComplexitySignals = {},
+  feedbackData?: AgentPerformance[],
 ): ArchitectureRecommendation {
   const complexity = scoreComplexity(signals);
   const profile = matchDomain(taskDescription);
-  const agents = selectAgents(profile, complexity.score);
+  let agents = selectAgents(profile, complexity.score);
+
+  // If feedback data is provided, re-rank agents by specialization score for the matched domain
+  if (feedbackData && feedbackData.length > 0) {
+    const domain = inferDomainFromProfile(profile);
+    agents = reorderAgentsByFeedback(agents, feedbackData, domain);
+  }
+
   const teamSize = mapTeamSize(agents.length);
   const dataFlow = buildDataFlow(profile.pattern, agents);
 
@@ -126,6 +136,7 @@ export function analyzeTask(
     pattern: profile.pattern,
     complexity: complexity.score,
     agents: agents.length,
+    feedbackApplied: !!feedbackData,
   });
 
   return {
@@ -137,6 +148,36 @@ export function analyzeTask(
     reasoning: buildReasoning(profile, complexity, agents),
     dataFlow,
   };
+}
+
+function inferDomainFromProfile(profile: DomainProfile): string {
+  const kws = profile.keywords;
+  if (kws.some(k => k.includes('리서치') || k.includes('research'))) return 'research';
+  if (kws.some(k => k.includes('review') || k.includes('리뷰'))) return 'review';
+  if (kws.some(k => k.includes('build') || k.includes('빌드') || k.includes('구현'))) return 'build';
+  if (kws.some(k => k.includes('migration') || k.includes('마이그레이션') || k.includes('refactor'))) return 'migration';
+  if (kws.some(k => k.includes('generate') || k.includes('생성') || k.includes('write') || k.includes('작성'))) return 'generate';
+  return 'general';
+}
+
+function reorderAgentsByFeedback(
+  agents: AgentRecommendation[],
+  feedbackData: AgentPerformance[],
+  domain: string,
+): AgentRecommendation[] {
+  // Build a score map: agentName → specialization score
+  const scoreMap = new Map<string, number>();
+  for (const perf of feedbackData) {
+    const spec = scoreSpecialization(perf, domain);
+    scoreMap.set(perf.agent, spec.score);
+  }
+
+  // Sort agents by feedback score (descending), preserving original order for ties
+  return [...agents].sort((a, b) => {
+    const scoreA = scoreMap.get(a.name) ?? -1;
+    const scoreB = scoreMap.get(b.name) ?? -1;
+    return scoreB - scoreA;
+  });
 }
 
 function matchDomain(task: string): DomainProfile {

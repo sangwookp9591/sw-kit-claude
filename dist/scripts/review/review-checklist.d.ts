@@ -46,6 +46,12 @@ export interface ClassifiedResults {
  */
 export declare const CATEGORIES: Record<string, CheckCategory>;
 /**
+ * Inject project-specific rules into CATEGORIES.
+ * Rules with a matching category field extend that category's patterns.
+ * Rules without category (or unknown category) go into 'project-rules'.
+ */
+export declare function injectProjectRules(rules: import('../rules/rule-types.js').ProjectRule[]): void;
+/**
  * Run all checklist categories against diff content.
  */
 export declare function runChecklist(diffContent: string): CheckResult[];

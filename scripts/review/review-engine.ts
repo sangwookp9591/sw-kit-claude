@@ -53,6 +53,8 @@ export interface ReviewPromptContext {
 export interface TierOptions {
   hasUI?: boolean;
   hasProductChange?: boolean;
+  mode?: 'full' | 'incremental';
+  incrementalTiers?: string[];  // from determineScope().suggestedTiers
 }
 
 /**
@@ -163,6 +165,12 @@ export const REVIEW_AGENTS: Record<string, ReviewAgentConfig> = {
  * Determine which review tiers to run based on complexity.
  */
 export function selectTiers(complexityLevel: 'low' | 'mid' | 'high', options: TierOptions = {}): string[] {
+  // Incremental mode: use suggested tiers from diff analysis
+  if (options.mode === 'incremental' && options.incrementalTiers?.length) {
+    return options.incrementalTiers;
+  }
+
+  // Full mode (existing logic)
   const tiers = ['eng-review'];  // Always run
 
   if (complexityLevel === 'mid' || complexityLevel === 'high') {
