@@ -4,7 +4,7 @@ description: "빠른 계획. 에이전트 없이 오케스트레이터가 직접
 triggers: ["plan-only", "빠른계획", "quick plan"]
 ---
 
-# /aing plan-only — 에이전트 없는 경량 플래닝
+# /aing:plan-only — 에이전트 없는 경량 플래닝
 
 에이전트 호출 0회. 오케스트레이터(당신)가 직접 플랜을 작성하고 persist한다.
 plan-task의 AING-DR 합의 파이프라인이 과잉일 때 사용.
@@ -22,9 +22,9 @@ plan-task의 AING-DR 합의 파이프라인이 과잉일 때 사용.
 ## Usage
 
 ```
-/aing plan-only <task-description>
-/aing plan-only "사용자 프로필 API 추가"
-/aing plan-only "로그인 버그 수정"
+/aing:plan-only <task-description>
+/aing:plan-only "사용자 프로필 API 추가"
+/aing:plan-only "로그인 버그 수정"
 ```
 
 ## Step 1: 코드베이스 탐색 (직접 수행)
@@ -101,6 +101,18 @@ Creates: `.aing/plans/{date}-{feature}.md` + `.aing/tasks/task-{id}.json`
 ```
 
 AskUserQuestion:
-1. **/aing auto** — 바로 실행
-2. **/aing team** — 팀 실행 (verify→fix 루프)
-3. **저장만** — 나중에 실행
+1. **/aing:auto** — 바로 실행
+2. **/aing:team** — 팀 실행 (verify→fix 루프)
+3. **/aing:task** — Steps를 체크리스트로 변환 (수동 추적용)
+4. **저장만** — 나중에 실행
+
+### Option 3 선택 시: Task 체크리스트 생성
+
+플랜의 Steps를 `/aing:task create`로 변환한다:
+
+```bash
+# 플랜의 Steps를 쉼표 구분 서브태스크로 변환
+/aing:task create "{feature}" --subtasks "{step1}, {step2}, {step3}"
+```
+
+생성 후 체크리스트를 표시하고 종료. 사용자가 나중에 `/aing:task check`로 진행 추적.
