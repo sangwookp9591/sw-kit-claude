@@ -94,6 +94,7 @@ Gate BLOCK 시 AskUserQuestion:
 /aing plan "데이터 마이그레이션" --deliberate       # 고위험: pre-mortem + rollback 강제
 /aing plan "API 리팩토링" --interactive             # 사용자 개입 포인트 활성화
 /aing plan "결제 시스템" --deliberate --interactive  # 고위험 + 사용자 개입
+/aing plan "기능 추가" --max 1                      # 최대 iteration 횟수 지정 (기본: complexity별 자동)
 ```
 
 ## Agent Roles (역할 분담)

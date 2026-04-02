@@ -62,6 +62,7 @@ try {
                     const totalTokensMatch = usageText.match(/total_tokens:\s*(\d+)/);
                     const toolUsesMatch = usageText.match(/tool_uses:\s*(\d+)/);
                     const durationMsMatch = usageText.match(/duration_ms:\s*(\d+)/);
+                    const durationMs = durationMsMatch ? parseInt(durationMsMatch[1], 10) : null;
                     const { logTokenUsage } = await import('../scripts/telemetry/token-tracker.js');
                     logTokenUsage({
                         ts: new Date().toISOString(),
@@ -70,8 +71,12 @@ try {
                         model: toolInput.model || 'sonnet',
                         totalTokens: totalTokensMatch ? parseInt(totalTokensMatch[1], 10) : null,
                         toolUses: toolUsesMatch ? parseInt(toolUsesMatch[1], 10) : null,
-                        durationMs: durationMsMatch ? parseInt(durationMsMatch[1], 10) : null,
+                        durationMs,
                     }, projectDir);
+                    // Slow agent warning: flag agents that took > 5 min
+                    if (durationMs && durationMs > 5 * 60 * 1000) {
+                        process.stderr.write(`[aing:slow-agent] ${agentName} took ${Math.round(durationMs / 1000)}s (>${Math.round(5 * 60)}s threshold). Consider using sonnet model or reducing prompt size.\n`);
+                    }
                 }
             }
             catch { /* token tracking is best-effort */ }

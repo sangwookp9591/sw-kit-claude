@@ -17,6 +17,7 @@ export interface PlanState {
     confidence?: string;
     verdict?: string;
     phaseHistory: string[];
+    agentCallCount: number;
     terminated?: boolean;
     terminateReason?: string;
 }
@@ -26,6 +27,7 @@ export interface PlanState {
 export declare function initPlanState(projectDir: string, feature: string, opts?: {
     complexity?: string;
     deliberate?: boolean;
+    maxIterations?: number;
 }): PlanState;
 /**
  * Read current plan state. Returns null if no active plan.
@@ -46,6 +48,12 @@ export declare function incrementIteration(projectDir: string): boolean;
  * Called by hooks to force early termination of stuck iterations.
  */
 export declare function isIterationTimedOut(projectDir: string): boolean;
+/**
+ * Increment agent call counter and check if cap is reached.
+ * Called by pre-tool-use hook on every aing: agent spawn.
+ * Returns false if agent cap exceeded (caller should block).
+ */
+export declare function trackAgentCall(projectDir: string): boolean;
 /**
  * Complete the plan (Phase 7 done).
  */

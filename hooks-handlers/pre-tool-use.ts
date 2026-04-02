@@ -6,7 +6,7 @@ import { norchToolUse, norchAgentSpawn } from '../scripts/core/norch-bridge.js';
 import { checkBashCommand, checkFilePath, formatViolations } from '../scripts/guardrail/guardrail-engine.js';
 import { checkStepLimit, checkFileChangeLimit, checkForbiddenPath } from '../scripts/guardrail/safety-invariants.js';
 import { isDryRunActive, queueChange, formatPreview } from '../scripts/guardrail/dry-run.js';
-import { checkAgentAllowed, getExpectedAgent, isIterationTimedOut } from '../scripts/hooks/plan-state.js';
+import { checkAgentAllowed, getExpectedAgent, isIterationTimedOut, trackAgentCall } from '../scripts/hooks/plan-state.js';
 
 interface ParsedInput {
   tool_name?: string;
@@ -36,12 +36,14 @@ try {
     // Phase gate: only enforce AING-DR phase ordering when a plan session is actively running
     const subagentType = toolInput.subagent_type as string;
     if (subagentType.startsWith('aing:')) {
-      // Iteration timeout guard: block agent spawns when iteration budget is exceeded
+      // Iteration timeout guard: warn (not block) when iteration budget is exceeded
       if (isIterationTimedOut(projectDir)) {
-        process.stdout.write(JSON.stringify({
-          hookSpecificOutput: { decision: 'block', reason: '[aing:iteration-timeout] Iteration time budget (3min) exceeded. Use current best plan version and proceed to persist.' }
-        }));
-        process.exit(0);
+        ctx.push('[aing:iteration-timeout] Iteration time budget (3min) exceeded. Consider using current best plan version and proceeding to persist.');
+      }
+
+      // Agent call cap: warn when approaching/exceeding limit
+      if (!trackAgentCall(projectDir)) {
+        ctx.push('[aing:agent-cap] Agent call limit (10) exceeded for this plan session. Consider finalizing with current best version.');
       }
 
       const phaseCheck = checkAgentAllowed(projectDir, subagentType);

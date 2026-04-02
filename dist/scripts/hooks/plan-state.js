@@ -67,10 +67,11 @@ export function initPlanState(projectDir, feature, opts) {
         startedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         iteration: 0,
-        maxIterations: DEFAULT_MAX_ITERATIONS[complexity] ?? 5,
+        maxIterations: opts?.maxIterations ?? DEFAULT_MAX_ITERATIONS[complexity] ?? 3,
         complexity,
         deliberate: opts?.deliberate ?? false,
         phaseHistory: ['gate'],
+        agentCallCount: 0,
     };
     const result = writeState(statePath(projectDir), state);
     if (!result.ok)
@@ -119,6 +120,8 @@ export function advancePhase(projectDir, nextPhase) {
 const MAX_PLAN_DURATION_MS = 15 * 60 * 1000;
 /** Max iteration duration in milliseconds (3 min per iteration). */
 const MAX_ITERATION_DURATION_MS = 3 * 60 * 1000;
+/** Max agent calls per plan session. */
+const MAX_AGENT_CALLS = 10;
 /**
  * Increment iteration (on Critic ITERATE).
  * Returns false if max iterations reached or time budget exceeded.
@@ -152,6 +155,25 @@ export function isIterationTimedOut(projectDir) {
         return false;
     const sinceUpdate = Date.now() - new Date(state.updatedAt).getTime();
     return sinceUpdate > MAX_ITERATION_DURATION_MS;
+}
+/**
+ * Increment agent call counter and check if cap is reached.
+ * Called by pre-tool-use hook on every aing: agent spawn.
+ * Returns false if agent cap exceeded (caller should block).
+ */
+export function trackAgentCall(projectDir) {
+    const state = readPlanState(projectDir);
+    if (!state?.active)
+        return true; // no active plan, don't interfere
+    state.agentCallCount = (state.agentCallCount ?? 0) + 1;
+    state.updatedAt = new Date().toISOString();
+    if (state.agentCallCount > MAX_AGENT_CALLS) {
+        log.info('Agent call cap exceeded', { count: state.agentCallCount, max: MAX_AGENT_CALLS });
+        writeState(statePath(projectDir), state);
+        return false;
+    }
+    writeState(statePath(projectDir), state);
+    return true;
 }
 /**
  * Complete the plan (Phase 7 done).
