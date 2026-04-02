@@ -37,12 +37,22 @@ PROTOCOL:
 6. TaskUpdate status="completed"
 7. SendMessage "@{Name}❯ Task #{id} 완료: {summary}. Evidence: {results}"
 
+LIVE MONITOR (파일 수정/생성 시 1줄 기록):
+파일을 Read/Write/Edit할 때마다 아래 명령으로 활동을 기록하세요:
+  Bash: node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "{name}" "{action}" "{file_path}" "{detail}" --dir "$(pwd)"
+action: read | write | edit | bash | test | status | done | error
+예시:
+  node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "jay" "write" "src/api/auth.ts" "JWT middleware 추가" --dir "$(pwd)"
+  node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "jay" "test" "tests/auth.test.ts" "3/3 pass" --dir "$(pwd)"
+  node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "jay" "done" "Task #1" "완료" --dir "$(pwd)"
+
 RULES:
 - Do NOT spawn sub-agents
 - Do NOT run team commands
 - MUST follow TDD
 - MUST report evidence
 - MUST use "@{Name}❯" prefix on ALL messages
+- MUST write live events on file changes (above)
 ```
 
 ## Completion Report Format
