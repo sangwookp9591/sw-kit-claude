@@ -22,6 +22,9 @@ vi.mock('../../../scripts/core/logger.js', () => ({
         error: vi.fn(),
     })),
 }));
+vi.mock('../../../scripts/guardrail/denial-tracker.js', () => ({
+    recordDenial: vi.fn(),
+}));
 import { checkBashCommand, checkFilePath, loadRules, formatViolations, } from '../../../scripts/guardrail/guardrail-engine.js';
 import { getConfig } from '../../../scripts/core/config.js';
 const mockGetConfig = vi.mocked(getConfig);

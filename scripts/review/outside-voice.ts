@@ -20,12 +20,6 @@ export interface OutsideVoiceResult {
   source?: string;
 }
 
-export interface MultiAIReviewPlan {
-  available: string[];
-  voterCount: number;
-  prompt: string;
-}
-
 /**
  * Build the adversarial review prompt for a subagent.
  */
@@ -68,11 +62,12 @@ export function recordOutsideVoice(result: OutsideVoiceResult, projectDir?: stri
 
 // ── Multi-AI integration ───────────────────────────────────────────────
 
-import { codex, gemini } from '../multi-ai/cli-bridge.js';
+import { codex, gemini, detectCodexTier, type CodexTier } from '../multi-ai/cli-bridge.js';
 
 /**
  * Build a review plan that includes all available AI voters.
  * Claude is always included; Codex and Gemini are added when their CLIs are on $PATH.
+ * When codex-plugin-cc is installed, the plan includes plugin command hints.
  */
 export function buildMultiAIReviewPlan(context: AdversarialPromptContext): MultiAIReviewPlan {
   const available: string[] = ['claude'];
@@ -83,5 +78,16 @@ export function buildMultiAIReviewPlan(context: AdversarialPromptContext): Multi
     available,
     voterCount: available.length,
     prompt: buildAdversarialPrompt(context),
+    codexTier: detectCodexTier().tier,
   };
+}
+
+/**
+ * Extended review plan with Codex integration tier info.
+ */
+export interface MultiAIReviewPlan {
+  available: string[];
+  voterCount: number;
+  prompt: string;
+  codexTier?: CodexTier;
 }

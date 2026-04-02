@@ -43,10 +43,11 @@ export function recordOutsideVoice(result, projectDir) {
     log.info(`Outside voice recorded: ${result.source} → ${result.findings?.length || 0} findings`);
 }
 // ── Multi-AI integration ───────────────────────────────────────────────
-import { codex, gemini } from '../multi-ai/cli-bridge.js';
+import { codex, gemini, detectCodexTier } from '../multi-ai/cli-bridge.js';
 /**
  * Build a review plan that includes all available AI voters.
  * Claude is always included; Codex and Gemini are added when their CLIs are on $PATH.
+ * When codex-plugin-cc is installed, the plan includes plugin command hints.
  */
 export function buildMultiAIReviewPlan(context) {
     const available = ['claude'];
@@ -58,6 +59,7 @@ export function buildMultiAIReviewPlan(context) {
         available,
         voterCount: available.length,
         prompt: buildAdversarialPrompt(context),
+        codexTier: detectCodexTier().tier,
     };
 }
 //# sourceMappingURL=outside-voice.js.map

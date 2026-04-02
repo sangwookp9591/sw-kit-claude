@@ -104,6 +104,98 @@ export const codex: Bridge = createBridge('codex', 'codex');
 /** Google Gemini CLI bridge */
 export const gemini: Bridge = createBridge('gemini', 'gemini');
 
+// ── Codex Plugin Detection ────────────────────────────────────────────
+
+/**
+ * Codex integration tier — determines the best available Codex path.
+ *
+ * 'plugin'  — codex-plugin-cc installed as Claude Code plugin
+ *             → structured JSON output, background jobs, review gate
+ * 'cli'     — codex CLI on $PATH (used by cli-bridge)
+ *             → raw text output via -p flag
+ * 'none'    — no Codex integration available
+ */
+export type CodexTier = 'plugin' | 'cli' | 'none';
+
+interface CodexDetectionResult {
+  tier: CodexTier;
+  hasPlugin: boolean;
+  hasCli: boolean;
+  pluginCommands: string[];
+}
+
+// Cache detection result for the session (avoids repeated filesystem checks)
+let _cachedDetection: CodexDetectionResult | null = null;
+
+/**
+ * Detect the best available Codex integration tier.
+ * Checks for codex-plugin-cc first (structured output), then CLI fallback.
+ */
+export function detectCodexTier(): CodexDetectionResult {
+  if (_cachedDetection) return _cachedDetection;
+
+  const hasCli = codex.isAvailable();
+  let hasPlugin = false;
+
+  // Check for codex-plugin-cc by probing its companion script
+  try {
+    execFileSync('which', ['codex'], { stdio: 'pipe' });
+    // Plugin detection: check if codex-companion.mjs is accessible
+    // The plugin registers /codex:review, /codex:adversarial-review, /codex:rescue
+    const pluginMarkers = [
+      `${process.env.HOME}/.claude/plugins/codex`,
+      `${process.env.HOME}/.claude/plugins/codex-plugin-cc`,
+    ];
+    for (const marker of pluginMarkers) {
+      try {
+        execFileSync('test', ['-d', marker], { stdio: 'pipe' });
+        hasPlugin = true;
+        break;
+      } catch { /* not found, try next */ }
+    }
+  } catch { /* codex not installed at all */ }
+
+  const tier: CodexTier = hasPlugin ? 'plugin' : hasCli ? 'cli' : 'none';
+  const pluginCommands = hasPlugin
+    ? ['/codex:review', '/codex:adversarial-review', '/codex:rescue']
+    : [];
+
+  _cachedDetection = { tier, hasPlugin, hasCli, pluginCommands };
+  log.info(`Codex detection: tier=${tier}`, { hasPlugin, hasCli });
+
+  return _cachedDetection;
+}
+
+/**
+ * Reset cached detection (for testing or after plugin install).
+ */
+export function resetCodexDetection(): void {
+  _cachedDetection = null;
+}
+
+/**
+ * Build a delegation suggestion message when Codex is available.
+ * Returns null if Codex is not available.
+ */
+export function buildCodexDelegationSuggestion(taskType: 'review' | 'adversarial-review' | 'rescue'): string | null {
+  const detection = detectCodexTier();
+
+  if (detection.tier === 'none') return null;
+
+  if (detection.tier === 'plugin') {
+    const commandMap: Record<string, string> = {
+      'review': '/codex:review',
+      'adversarial-review': '/codex:adversarial-review',
+      'rescue': '/codex:rescue',
+    };
+    const cmd = commandMap[taskType] || '/codex:review';
+    return `[aing:codex-delegation] Codex plugin이 감지되었습니다. ${cmd} 명령으로 Codex에 위임할 수 있습니다.`;
+  }
+
+  // CLI tier — use cli-bridge
+  return `[aing:codex-delegation] Codex CLI가 감지되었습니다. 리뷰를 Codex에 위임하면 독립적인 second opinion을 받을 수 있습니다.`;
+}
+
 // ── Utilities ──────────────────────────────────────────────────────────
 
 /**

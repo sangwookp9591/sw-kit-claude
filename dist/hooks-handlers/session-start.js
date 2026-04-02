@@ -265,6 +265,28 @@ try {
             }
         }
     }
+    // === External AI Detection ===
+    try {
+        const { detectCodexTier, getAvailableBridges } = await import('../scripts/multi-ai/cli-bridge.js');
+        const codexInfo = detectCodexTier();
+        const bridges = getAvailableBridges();
+        if (codexInfo.tier !== 'none' || bridges.length > 0) {
+            ctx.push(`## External AI`);
+            if (codexInfo.tier === 'plugin') {
+                ctx.push(`Codex: plugin installed (${codexInfo.pluginCommands.join(', ')})`);
+                ctx.push(`Review/기획 리뷰 시 Codex 위임을 제안합니다.`);
+            }
+            else if (codexInfo.tier === 'cli') {
+                ctx.push(`Codex: CLI available (cli-bridge)`);
+            }
+            const otherBridges = bridges.filter(b => b.name !== 'codex');
+            for (const b of otherBridges) {
+                ctx.push(`${b.name}: CLI available`);
+            }
+            ctx.push('');
+        }
+    }
+    catch (_e) { /* external AI detection is best-effort */ }
     // === Commands ===
     ctx.push(`## Commands`);
     ctx.push(`/aing start|status|next|reset|auto|tdd|task|explore|plan|execute|review|verify|wizard|rollback|learn|help`);

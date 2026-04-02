@@ -21,8 +21,10 @@ const log = createLogger('compaction');
  */
 const PRIORITY: Record<string, number> = {
   PDCA_STATE: 100,       // Always preserve — PDCA progress
+  AGENT_STATE: 95,       // Active agent spawns and team pipeline
   PROGRESS: 90,          // Session continuity
   SAFETY_INVARIANTS: 85, // Guardrail state
+  DENIAL_SUMMARY: 82,    // Guardrail denial audit trail
   EVIDENCE_CHAIN: 80,    // Verification evidence
   PROJECT_MEMORY: 70,    // Learned patterns
   ROUTING_HISTORY: 40,   // Nice to have
@@ -81,6 +83,39 @@ export function buildCompactionContext(projectDir?: string): CompactionResult {
       priority: PRIORITY.PDCA_STATE,
       label: 'PDCA State',
       content: `PDCA: ${pdcaState.activeFeature} — ${feat?.currentStage || 'unknown'} (iter ${feat?.iteration || 0})`
+    });
+  }
+
+  // Active agent/team state (spawned agents, pipeline stage)
+  const agentState = readStateOrDefault(join(dir, '.aing', 'state', 'agent-tracker.json'), null) as {
+    activeAgents?: Array<{ name: string; status: string; spawnedAt: string }>;
+    teamStage?: string;
+    teamPreset?: string;
+  } | null;
+  if (agentState?.activeAgents?.length) {
+    const running = agentState.activeAgents.filter(a => a.status === 'running');
+    const parts: string[] = [];
+    if (running.length > 0) parts.push(`Running: ${running.map(a => a.name).join(', ')}`);
+    if (agentState.teamStage) parts.push(`Team stage: ${agentState.teamStage}`);
+    if (agentState.teamPreset) parts.push(`Preset: ${agentState.teamPreset}`);
+    sections.push({
+      priority: PRIORITY.AGENT_STATE,
+      label: 'Agents',
+      content: parts.join(' | ')
+    });
+  }
+
+  // Denial audit summary (guardrail denials in this session)
+  const denialState = readStateOrDefault(join(dir, '.aing', 'state', 'denial-audit.json'), null) as {
+    sessionDenials?: number;
+    topRules?: Array<{ ruleId: string; count: number }>;
+  } | null;
+  if (denialState?.sessionDenials && denialState.sessionDenials > 0) {
+    const topRules = denialState.topRules?.slice(0, 3).map(r => `${r.ruleId}(${r.count})`).join(', ') || 'n/a';
+    sections.push({
+      priority: PRIORITY.DENIAL_SUMMARY,
+      label: 'Denials',
+      content: `${denialState.sessionDenials} guardrail denials this session. Top: ${topRules}`
     });
   }
 

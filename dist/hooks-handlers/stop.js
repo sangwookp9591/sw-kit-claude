@@ -14,6 +14,7 @@ import { getPersistentModeState, recordReinforcement } from '../scripts/hooks/pe
 import { readPlanState } from '../scripts/hooks/plan-state.js';
 import { getPRDStatus } from '../scripts/pipeline/story-tracker.js';
 import { getVerifyState, generateArchitectPrompt } from '../scripts/hooks/architect-verify.js';
+import { getDenialSummary } from '../scripts/guardrail/denial-tracker.js';
 import { join } from 'node:path';
 const log = createLogger('stop');
 try {
@@ -133,6 +134,10 @@ try {
             }
         }
     }
+    // Append denial audit summary
+    const denialLine = getDenialSummary(projectDir);
+    if (denialLine)
+        ctx.push(denialLine);
     // Append compact cost summary
     const costLine = formatCompactSummary(projectDir);
     if (costLine)

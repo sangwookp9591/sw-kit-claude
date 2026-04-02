@@ -6,6 +6,34 @@
 import { scoreComplexity } from './complexity-scorer.js';
 import { loadConfig } from '../core/config.js';
 /**
+ * Model registry — maps canonical names and aliases to provider metadata.
+ * Single source of truth for model capabilities and costs.
+ */
+export const MODEL_REGISTRY = {
+    // Anthropic Claude models
+    'claude-opus-4-6': { provider: 'anthropic', modelId: 'claude-opus-4-6', tier: 'opus', maxTokens: 32000, pricing: { input: 15, output: 75 } },
+    'claude-sonnet-4-6': { provider: 'anthropic', modelId: 'claude-sonnet-4-6', tier: 'sonnet', maxTokens: 64000, pricing: { input: 3, output: 15 } },
+    'claude-haiku-4-5': { provider: 'anthropic', modelId: 'claude-haiku-4-5-20251001', tier: 'haiku', maxTokens: 64000, pricing: { input: 1, output: 5 } },
+    // Aliases
+    'opus': { provider: 'anthropic', modelId: 'claude-opus-4-6', tier: 'opus', maxTokens: 32000, pricing: { input: 15, output: 75 } },
+    'sonnet': { provider: 'anthropic', modelId: 'claude-sonnet-4-6', tier: 'sonnet', maxTokens: 64000, pricing: { input: 3, output: 15 } },
+    'haiku': { provider: 'anthropic', modelId: 'claude-haiku-4-5-20251001', tier: 'haiku', maxTokens: 64000, pricing: { input: 1, output: 5 } },
+};
+/**
+ * Resolve a model name (or alias) to its provider metadata.
+ * Returns null if model is not in the registry.
+ */
+export function resolveModel(modelName) {
+    return MODEL_REGISTRY[modelName] || null;
+}
+/**
+ * Get pricing info for a model tier.
+ */
+export function getTierPricing(tier) {
+    const entry = MODEL_REGISTRY[tier];
+    return entry ? entry.pricing : { input: 3, output: 15 }; // sonnet fallback
+}
+/**
  * Model tiers ordered by capability.
  */
 const TIERS = ['haiku', 'sonnet', 'opus'];

@@ -109,6 +109,23 @@ try {
     for (const msg of keywordMatches) {
         parts.push(msg);
     }
+    // --- Codex delegation suggestion (plan/review only, when Codex available) ---
+    const isPlanOrReview = ['plan', '계획', '기획', '설계', 'review', '리뷰', '코드리뷰'].some(kw => lower.includes(kw));
+    if (isPlanOrReview) {
+        try {
+            const { detectCodexTier } = await import('../scripts/multi-ai/cli-bridge.js');
+            const codexInfo = detectCodexTier();
+            if (codexInfo.tier !== 'none') {
+                const isReview = ['review', '리뷰', '코드리뷰'].some(kw => lower.includes(kw));
+                const taskLabel = isReview ? '코드 리뷰' : '기획 리뷰';
+                const codexCmd = codexInfo.tier === 'plugin'
+                    ? (isReview ? '/codex:review 또는 /codex:adversarial-review' : '/codex:adversarial-review')
+                    : 'Codex CLI';
+                parts.push(`[aing:codex] Codex가 감지되었습니다. ${taskLabel}를 Codex와 협업하시겠습니까? (${codexCmd} 사용 가능)`);
+            }
+        }
+        catch { /* codex detection is best-effort */ }
+    }
     // --- Active session injection ---
     const session = getActiveSession(projectDir);
     if (session.active) {

@@ -6,6 +6,38 @@
 import { ComplexitySignals } from './complexity-scorer.js';
 export type CostMode = 'quality' | 'balanced' | 'budget';
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';
+export type ProviderKind = 'anthropic' | 'openai' | 'google' | 'xai';
+/**
+ * Provider metadata for model routing.
+ * Inspired by claw-code-main's MODEL_REGISTRY pattern.
+ */
+export interface ProviderMeta {
+    provider: ProviderKind;
+    modelId: string;
+    tier: ModelTier;
+    maxTokens: number;
+    pricing: {
+        input: number;
+        output: number;
+    };
+}
+/**
+ * Model registry — maps canonical names and aliases to provider metadata.
+ * Single source of truth for model capabilities and costs.
+ */
+export declare const MODEL_REGISTRY: Record<string, ProviderMeta>;
+/**
+ * Resolve a model name (or alias) to its provider metadata.
+ * Returns null if model is not in the registry.
+ */
+export declare function resolveModel(modelName: string): ProviderMeta | null;
+/**
+ * Get pricing info for a model tier.
+ */
+export declare function getTierPricing(tier: ModelTier): {
+    input: number;
+    output: number;
+};
 interface RoutingResult {
     model: string;
     reason: string;

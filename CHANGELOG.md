@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.8.98] - 2026-04-02 — claw-code-main 기술 이식 + Codex Plugin 연동
+
+claw-code-main 프로젝트 심층 분석 후 현실적으로 적용 가능한 기술 4건 이식. OpenAI codex-plugin-cc 연동 기반 구축.
+
+### Added
+
+- **Denial Audit Trail**: 가드레일 거부 이력을 `.aing/logs/denials.jsonl`에 구조화 기록, 세션 종료 시 요약 출력 (`denial-tracker.ts`)
+- **AllowList Freeze**: 단일 디렉토리 외에 복수 경로 허용 리스트 모드 추가 (`setFreezeAllowList()`, 3-mode: off/single/allowlist)
+- **Provider Registry**: 모델명/별칭 -> {provider, modelId, tier, maxTokens, pricing} 매핑 레지스트리 (`MODEL_REGISTRY`, `resolveModel()`, `getTierPricing()`)
+- **Codex Plugin 감지**: 3-tier Codex 감지 (plugin > cli > none) + plan/review 시 "Codex와 협업하시겠습니까?" 위임 제안 (`detectCodexTier()`)
+- **Compaction 보존 확장**: 에이전트 스폰 상태(AGENT_STATE p95) + 거부 요약(DENIAL_SUMMARY p82) 컨텍스트 보존
+- **신규 테스트 42건**: denial-tracker(12), freeze-engine(19), model-registry(11)
+
+### Changed
+
+- **guardrail-engine**: bash/file 체크 시 자동으로 denial-tracker에 기록
+- **stop.ts**: 세션 종료 시 denial 요약을 cost 요약 앞에 출력
+- **session-start.ts**: External AI 섹션에 Codex/Gemini 감지 결과 표시
+- **user-prompt-submit.ts**: plan/review 프롬프트에서 Codex 위임 제안 주입
+- **outside-voice.ts**: `buildMultiAIReviewPlan()`에 codexTier 필드 추가
+
 ## [2.8.97] - 2026-04-01 — Codebase Intelligence Skills
 
 외부 스킬 3종(codebase-analysis, project-analyzer, lsp-code-analysis)을 분석하여 aing 에이전트 체계에 맞게 커스텀한 프로젝트 탐색 스킬 추가.

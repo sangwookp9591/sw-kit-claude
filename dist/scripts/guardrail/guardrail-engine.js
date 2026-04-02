@@ -6,6 +6,7 @@
  */
 import { getConfig } from '../core/config.js';
 import { createLogger } from '../core/logger.js';
+import { recordDenial } from './denial-tracker.js';
 const log = createLogger('guardrail');
 /**
  * Default guardrail rules (active even without config)
@@ -95,6 +96,15 @@ export function checkBashCommand(command, projectDir) {
         if (match) {
             violations.push({ rule, match: match[0] });
             log.warn(`Guardrail triggered: ${rule.id}`, { command: command.slice(0, 100), severity: rule.severity });
+            recordDenial({
+                timestamp: new Date().toISOString(),
+                toolName: 'Bash',
+                ruleId: rule.id,
+                action: rule.action,
+                severity: rule.severity,
+                message: rule.message,
+                input: command.slice(0, 200),
+            }, projectDir);
         }
     }
     const blocked = violations.some(v => v.rule.action === 'block');
@@ -110,6 +120,15 @@ export function checkFilePath(filePath, projectDir) {
         if (rule.pattern.test(filePath)) {
             violations.push({ rule, match: filePath });
             log.warn(`Guardrail triggered: ${rule.id}`, { file: filePath, severity: rule.severity });
+            recordDenial({
+                timestamp: new Date().toISOString(),
+                toolName: 'Write/Edit',
+                ruleId: rule.id,
+                action: rule.action,
+                severity: rule.severity,
+                message: rule.message,
+                input: filePath,
+            }, projectDir);
         }
     }
     const blocked = violations.some(v => v.rule.action === 'block');

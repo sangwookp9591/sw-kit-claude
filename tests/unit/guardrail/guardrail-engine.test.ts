@@ -26,6 +26,10 @@ vi.mock('../../../scripts/core/logger.js', () => ({
   })),
 }));
 
+vi.mock('../../../scripts/guardrail/denial-tracker.js', () => ({
+  recordDenial: vi.fn(),
+}));
+
 import {
   checkBashCommand,
   checkFilePath,
