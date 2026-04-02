@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.9.13] - 2026-04-02 — 전 기술 스택 버전 감지 + 캐싱
+
+### Added
+
+- **version-detect v2.0**: 9개 에코시스템 전면 감지 (Node/Python/Java/Go/Rust/Ruby/Flutter/PHP/.NET)
+- **`.aing/state/tech-stack.json` 캐싱**: git commit 날짜 기반 invalidation — dep 파일이 변경되면 자동 재감지
+- **30+ 버전별 경고**: Spring Boot 3+, Django 5+, FastAPI/Pydantic v2, Java 21+, Go 1.22+, Dart 3+, Rails 7+, Laravel 11+, .NET 8+ 등
+- **context7 MCP + WebSearch fallback**: 불확실한 API는 공식 문서 확인 강제
+
+### Changed
+
+- **version-detect**: execSync → execFileSync (shell injection 방지)
+- **감지 대상 확대**: NODE_PKGS 10→60+, PY_PKGS 5→24, Java/Go/Rust/Ruby/Flutter/PHP/.NET 신규
+
 ## [2.9.12] - 2026-04-02 — 에이전트 활동 모니터링 + 범용 가드레일
 
 ### Added
