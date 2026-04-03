@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.9.15] - 2026-04-03 — Subtask auto-check 수정 + Spring Boot DDD + Clean Code 스킬
+
+### Fixed
+
+- **subagent-stop auto-check**: `Agent: Jay` vs `agent: jay` 대소문자 불일치로 subtask 완료 매칭 실패하던 버그 수정 — `toLowerCase()` 통일
+- **스킬 호출 형식 통일**: 스킬 내부 문서의 `/aing team` (space) → `/aing:team` (colon) 형식으로 전수 교체 — Claude Code 라우팅 오류 방지
+- **OMC 플러그인 스킬 충돌 해소**: omc의 `team`, `tdd` 스킬을 비활성화하여 aing 스킬과의 이름 충돌 제거
+
+### Added
+
+- **`/aing:spring-boot` 스킬** (신규): Spring Boot + DDD 아키텍처 가이드. `pom.xml`/`build.gradle` 감지 시 자동 적용. DDD 패키지 구조(application/domain/infrastructure/interfaces/support) + Code Generation Template + Best Practices 체크리스트
+- **`/aing:clean-code` 스킬** (신규): Robert C. Martin Clean Code 원칙 기반 코드 품질 감사 + 자동 수정. `/aing:refactor` 실행 시 자동 연동 (Step 5: Clean Code Pass)
+- **auto Step 0.5 Tech Stack Detection**: 프로젝트 루트 파일 기반 기술 스택 자동 감지 → 에이전트 프롬프트에 해당 스킬 주입
+
+### Changed
+
+- **refactor 스킬**: Step 5에 Clean Code Pass 삽입 — 리팩토링 실행 후 Klay가 clean code 감사, score 80 미만 시 자동 수정
+- **Jay 에이전트**: Spring Boot Auto-Detection 섹션 추가 — `pom.xml` 감지 시 DDD 규칙 자동 적용
+
 ## [2.9.14] - 2026-04-03 — Agent Trace 정확도 + 자동 체크리스트 + 워커 병렬 하네스
 
 ### Fixed

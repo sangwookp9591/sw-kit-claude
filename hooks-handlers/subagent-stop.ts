@@ -127,8 +127,7 @@ try {
         return -1;
       }, -1);
     }
-    // Last resort: only for unknown agents, match oldest active (FIFO)
-    if (idx === -1 && subagentType === 'unknown') {
+    if (idx === -1) {
       idx = store.agents.findIndex(entry => entry.status === 'active');
     }
 
@@ -177,14 +176,14 @@ try {
         if (!taskResult.ok) continue;
         const task = taskResult.data as any;
         if (task.status === 'completed') continue;
-        const nameCap = agentName.charAt(0).toUpperCase() + agentName.slice(1);
-        const sub = task.subtasks?.find((s: any) =>
-          s.status === 'pending' &&
-          (s.title.includes(`agent: ${nameCap}`) ||
-           s.title.includes(`agent: ${agentName}`) ||
-           s.title.toLowerCase().includes(`[${agentName}]`) ||
-           s.title.toLowerCase().includes(`${agentName}:`))
-        );
+        const lowerName = agentName.toLowerCase();
+        const sub = task.subtasks?.find((s: any) => {
+          if (s.status !== 'pending') return false;
+          const lower = s.title.toLowerCase();
+          return lower.includes(`agent: ${lowerName}`) ||
+                 lower.includes(`[${lowerName}]`) ||
+                 lower.includes(`${lowerName}:`);
+        });
         if (sub) {
           sub.status = 'done';
           sub.checkedAt = completedAt;

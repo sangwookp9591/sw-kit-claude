@@ -4,11 +4,11 @@ description: "Full pipeline auto-run. Named agents spawn as CC native team with 
 triggers: ["auto", "pipeline", "full team"]
 ---
 
-# /aing auto -- Full Pipeline with Native Team Colors
+# /aing:auto -- Full Pipeline with Native Team Colors
 
-When the user runs `/aing auto <feature> <task>`, execute this EXACT sequence using Claude Code native team tools. Each agent gets a unique color automatically.
+When the user runs `/aing:auto <feature> <task>`, execute this EXACT sequence using Claude Code native team tools. Each agent gets a unique color automatically.
 
-If a plan file path is provided (e.g., from `/aing plan` → auto transition), read the plan file and skip to Step 2. Use the plan's task decomposition directly for Step 3 instead of re-analyzing.
+If a plan file path is provided (e.g., from `/aing:plan` → auto transition), read the plan file and skip to Step 2. Use the plan's task decomposition directly for Step 3 instead of re-analyzing.
 
 ## Step 0: Context Reuse Detection
 
@@ -42,6 +42,23 @@ If a plan file path is provided (e.g., from `/aing plan` → auto transition), r
 Track validation loops via session state: `validationLoopCount >= 2` → proceed to Phase 5 with warning.
 
 ---
+
+## Step 0.5: Tech Stack Detection
+
+프로젝트 루트에서 기술 스택을 감지하고 해당 스킬을 에이전트 프롬프트에 주입:
+
+| Detect File | Stack | Skill Applied |
+|-------------|-------|---------------|
+| `pom.xml`, `build.gradle`, `build.gradle.kts` | Spring Boot | `/aing:spring-boot` — DDD 패키지 구조 + Best Practices |
+| `package.json` + next/react | Next.js/React | 기존 frontend 컨벤션 |
+| `Cargo.toml` | Rust | 기존 Rust 컨벤션 |
+
+Spring Boot 감지 시, Jay 에이전트 프롬프트에 다음을 추가:
+```
+[SPRING BOOT PROJECT DETECTED]
+/aing:spring-boot 스킬의 DDD Package Structure와 Best Practices를 따르세요.
+새 도메인 기능은 Code Generation Template 순서로 파일을 생성하세요.
+```
 
 ## Step 1: Analyze and Select Team
 

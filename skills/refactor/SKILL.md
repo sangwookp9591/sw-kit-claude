@@ -4,13 +4,13 @@ description: "구조적 리팩토링. Klay(영향 분석) → Derek/Jay(실행) 
 triggers: ["refactor", "리팩토링", "리팩터", "구조 정리", "구조 개선", "clean up"]
 ---
 
-# /aing refactor — Structural Refactoring
+# /aing:refactor — Structural Refactoring
 
 ## Usage
 ```
-/aing refactor <target>
-/aing refactor "auth 모듈을 서비스 패턴으로 분리"
-/aing refactor src/utils/ "중복 제거"
+/aing:refactor <target>
+/aing:refactor "auth 모듈을 서비스 패턴으로 분리"
+/aing:refactor src/utils/ "중복 제거"
 ```
 
 ## Step 1: Impact Analysis (Klay)
@@ -112,7 +112,47 @@ Backend(Jay)와 Frontend(Derek)를 **순차 실행** (의존성 때문에 병렬
 2. UI/consumer 변경 후 (Derek)
 3. 각 단계 후 테스트 실행
 
-## Step 5: Verification (Milla)
+## Step 5: Clean Code Pass
+
+리팩토링 실행 후, clean-code 원칙을 자동 적용한다.
+변경된 파일 목록을 대상으로 Klay가 clean code 감사를 수행하고,
+위반 항목이 있으면 실행 에이전트(Jay/Derek)가 즉시 수정한다.
+
+```
+Agent({
+  subagent_type: "aing:klay",
+  description: "Klay: Clean Code 감사 — {changed files}",
+  model: "sonnet",
+  prompt: "[CLEAN CODE AUDIT — REFACTOR POST-PASS]
+리팩토링으로 변경된 파일들에 Clean Code 원칙을 적용하여 감사하세요: {changed files}
+
+체크리스트:
+- [ ] 이름이 의도를 드러내는가?
+- [ ] 함수가 20줄 이하이고 하나의 일만 하는가?
+- [ ] 추상화 수준이 혼합되지 않았는가?
+- [ ] 함수 인자가 3개 이하인가?
+- [ ] 불필요한 주석이 있는가?
+- [ ] Null 반환/전달이 없는가?
+- [ ] Law of Demeter 위반이 없는가?
+- [ ] 클래스가 SRP를 준수하는가?
+
+출력 포맷:
+## Clean Code Audit
+| File:Line | Principle | Violation | Suggestion |
+|-----------|-----------|-----------|------------|
+
+## Score: {0-100}/100
+
+Score 80 이상이면 PASS, 미만이면 수정 필요 항목 반환."
+})
+```
+
+Score 80 미만 시, 실행 에이전트에게 top-3 위반 항목만 수정 위임 후 재검증.
+80 이상이면 다음 단계로 진행.
+
+## Step 6: Verification (Milla)
+
+Clean Code pass 완료 후 최종 검증.
 
 ```
 Agent({
@@ -148,7 +188,7 @@ Agent({
 })
 ```
 
-## Step 6: Report
+## Step 7: Report
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -160,7 +200,7 @@ Agent({
   Checkpoint: {git hash}
 
   Verification: {PASS/FAIL}
-  Rollback: /aing rollback (if needed)
+  Rollback: /aing:rollback (if needed)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
