@@ -1,14 +1,20 @@
 /**
- * aing SubagentStop Hook Handler v1.0.0
+ * aing SubagentStop Hook Handler v2.0.0
  * Updates agent-trace.json: marks agent completed/failed with duration.
+ * Auto-checks matching subtask in .aing/tasks/ on success.
  * Outputs additionalContext with agent run summary.
+ *
+ * Claude Code SubagentStop hook input:
+ *   { agent_id, agent_type, session_id, cwd, permission_mode,
+ *     last_assistant_message, agent_transcript_path, hook_event_name }
  */
 
 import { readStdinJSON } from '../scripts/core/stdin.js';
-import { updateState, readStateOrDefault } from '../scripts/core/state.js';
+import { updateState, readStateOrDefault, readState } from '../scripts/core/state.js';
 import { createLogger } from '../scripts/core/logger.js';
 import { markWorkerDone } from '../scripts/pipeline/team-heartbeat.js';
 import { join } from 'node:path';
+import { readdirSync } from 'node:fs';
 
 const log = createLogger('subagent-stop');
 
@@ -22,12 +28,17 @@ interface SubagentStopInput {
     [key: string]: unknown;
   };
   tool_response?: string;
+  // Claude Code native fields
+  agent_id?: string;
+  agent_type?: string;
+  last_assistant_message?: string;
   session_id?: string;
   [key: string]: unknown;
 }
 
 interface AgentSpawnEntry {
   id: string;
+  ccAgentId?: string;
   name: string;
   subagentType: string;
   model: string;
@@ -66,9 +77,22 @@ const projectDir: string = process.env.PROJECT_DIR || process.cwd();
 
 try {
   const toolInput = parsed.tool_input || {};
-  const toolResponse: string = parsed.tool_response || '';
-  const subagentType: string = toolInput.subagent_type || 'unknown';
-  const agentName: string = toolInput.name || subagentType.replace(/^aing:/, '');
+  const toolResponse: string = parsed.tool_response || parsed.last_assistant_message || '';
+  // Claude Code provides agent_type at top level
+  const subagentType: string = parsed.agent_type || toolInput.subagent_type || 'unknown';
+  const description: string = toolInput.description || '';
+  const ccAgentId: string = parsed.agent_id || '';
+
+  let agentName: string = toolInput.name || '';
+  if (!agentName && subagentType !== 'unknown') {
+    agentName = subagentType.replace(/^aing:/, '');
+  }
+  if (!agentName || agentName === 'unknown') {
+    const descMatch = description.match(/^(\w+)\s*[:\-—]/);
+    if (descMatch) agentName = descMatch[1].toLowerCase();
+    else agentName = 'unknown';
+  }
+
   const completedAt: string = new Date().toISOString();
   const isSuccess: boolean = detectSuccess(toolResponse);
   const finalStatus: 'completed' | 'failed' = isSuccess ? 'completed' : 'failed';
@@ -84,12 +108,28 @@ try {
   updateState(tracePath, defaultStore, (data: unknown) => {
     const store = data as AgentTraceStore;
 
-    // Find the most recent active entry matching this subagentType
-    const idx = store.agents.reduceRight((found: number, entry, i) => {
-      if (found !== -1) return found;
-      if (entry.subagentType === subagentType && entry.status === 'active') return i;
-      return -1;
-    }, -1);
+    // Match: ccAgentId (exact) → name+type → type-only → FIFO
+    let idx = -1;
+    if (ccAgentId) {
+      idx = store.agents.findIndex(entry => (entry as any).ccAgentId === ccAgentId && entry.status === 'active');
+    }
+    if (idx === -1 && agentName && agentName !== 'unknown') {
+      idx = store.agents.reduceRight((found: number, entry, i) => {
+        if (found !== -1) return found;
+        if (entry.name === agentName && entry.subagentType === subagentType && entry.status === 'active') return i;
+        return -1;
+      }, -1);
+    }
+    if (idx === -1) {
+      idx = store.agents.reduceRight((found: number, entry, i) => {
+        if (found !== -1) return found;
+        if (entry.subagentType === subagentType && entry.status === 'active') return i;
+        return -1;
+      }, -1);
+    }
+    if (idx === -1) {
+      idx = store.agents.findIndex(entry => entry.status === 'active');
+    }
 
     if (idx !== -1) {
       const entry = store.agents[idx];
@@ -124,6 +164,51 @@ try {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: { additionalContext: context }
   }));
+
+  // Auto-check subtask: find matching subtask by agent name and mark done
+  if (isSuccess && agentName && agentName !== 'unknown') {
+    try {
+      const taskDir = join(projectDir, '.aing', 'tasks');
+      const files = readdirSync(taskDir).filter((f: string) => f.startsWith('task-') && f.endsWith('.json') && f !== '_index.json');
+      for (const file of files) {
+        const taskPath = join(taskDir, file);
+        const taskResult = readState(taskPath);
+        if (!taskResult.ok) continue;
+        const task = taskResult.data as any;
+        if (task.status === 'completed') continue;
+        const nameCap = agentName.charAt(0).toUpperCase() + agentName.slice(1);
+        const sub = task.subtasks?.find((s: any) =>
+          s.status === 'pending' &&
+          (s.title.includes(`agent: ${nameCap}`) ||
+           s.title.includes(`agent: ${agentName}`) ||
+           s.title.toLowerCase().includes(`[${agentName}]`) ||
+           s.title.toLowerCase().includes(`${agentName}:`))
+        );
+        if (sub) {
+          sub.status = 'done';
+          sub.checkedAt = completedAt;
+          task.updatedAt = completedAt;
+          const allDone = task.subtasks.every((s: any) => s.status === 'done');
+          if (allDone) {
+            task.status = 'completed';
+            task.completedAt = completedAt;
+          }
+          const { writeState: ws } = await import('../scripts/core/state.js');
+          ws(taskPath, task);
+          const indexPath = join(taskDir, '_index.json');
+          const idx = readStateOrDefault(indexPath, []) as any[];
+          const ei = idx.findIndex((t: any) => t.id === task.id);
+          const entry = { id: task.id, title: task.title, status: task.status, updatedAt: completedAt };
+          if (ei >= 0) idx[ei] = entry; else idx.push(entry);
+          ws(indexPath, idx);
+          log.info('Auto-checked subtask', { taskId: task.id, subtask: sub.title, agentName, allDone });
+          break;
+        }
+      }
+    } catch (autoCheckErr: unknown) {
+      log.error('Auto-check subtask failed (non-fatal)', { error: (autoCheckErr as Error).message });
+    }
+  }
 
   log.info('SubagentStop tracked', { agentName, subagentType, finalStatus, durationMs, activeCount });
 

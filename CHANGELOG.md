@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.9.14] - 2026-04-03 — Agent Trace 정확도 + 자동 체크리스트 + 워커 병렬 하네스
+
+### Fixed
+
+- **subagent-start/stop**: Claude Code 훅 입력 구조 수정 — `tool_input.subagent_type` 대신 `parsed.agent_type` 사용. 모든 에이전트가 "unknown"으로 기록되던 근본 원인 해결
+- **subagent-stop 매칭**: `ccAgentId` 기반 정확 매칭 도입 — 병렬 에이전트 5개 동시 실행 시 완료 이벤트가 잘못된 에이전트에 연결되던 문제 해결
+- **Task Checklist 미체크**: subagent-stop 훅에 auto-checkSubtask 로직 추가 — 에이전트 완료 시 `.aing/tasks/`에서 에이전트명 매칭하여 subtask 자동 done 처리
+
+### Changed
+
+- **Worker Prompt**: "Do NOT spawn sub-agents" → "CAN spawn sub-agents for parallel work" — 대량 작업 시 하위 에이전트 병렬 처리 허용 (3개+ 독립 단위 조건)
+- **AgentSpawnEntry**: `ccAgentId` 필드 추가 — Claude Code의 고유 agent_id를 저장하여 start↔stop 정확 매칭
+
 ## [2.9.13] - 2026-04-02 — 전 기술 스택 버전 감지 + 캐싱
 
 ### Added

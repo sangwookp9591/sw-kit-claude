@@ -1,7 +1,12 @@
 /**
- * aing SubagentStart Hook Handler v1.0.0
+ * aing SubagentStart Hook Handler v2.0.0
  * Tracks agent spawn events: name, subagent_type, model, timestamp.
  * Appends to .aing/state/agent-trace.json and reports active agent count.
+ *
+ * Claude Code SubagentStart hook input:
+ *   { agent_id, agent_type, session_id, cwd, hook_event_name }
+ *   - agent_type = subagent_type passed to Agent() (e.g. "aing:jay")
+ *   - agent_id = unique Claude Code agent identifier
  */
 
 import { readStdinJSON } from '../scripts/core/stdin.js';
@@ -21,12 +26,16 @@ interface SubagentStartInput {
     description?: string;
     [key: string]: unknown;
   };
+  // Claude Code native fields
+  agent_id?: string;
+  agent_type?: string;
   session_id?: string;
   [key: string]: unknown;
 }
 
 interface AgentSpawnEntry {
   id: string;
+  ccAgentId: string;
   name: string;
   subagentType: string;
   model: string;
@@ -56,10 +65,23 @@ const projectDir: string = process.env.PROJECT_DIR || process.cwd();
 
 try {
   const toolInput = parsed.tool_input || {};
-  const subagentType: string = toolInput.subagent_type || 'unknown';
+  // Claude Code provides agent_type at top level (e.g. "aing:jay")
+  const subagentType: string = parsed.agent_type || toolInput.subagent_type || 'unknown';
   const model: string = toolInput.model || 'sonnet';
-  const agentName: string = toolInput.name || subagentType.replace(/^aing:/, '');
   const description: string = toolInput.description || '';
+  const ccAgentId: string = parsed.agent_id || '';
+
+  // Extract agent name from agent_type prefix
+  let agentName: string = toolInput.name || '';
+  if (!agentName && subagentType !== 'unknown') {
+    agentName = subagentType.replace(/^aing:/, '');
+  }
+  if (!agentName || agentName === 'unknown') {
+    const descMatch = description.match(/^(\w+)\s*[:\-—]/);
+    if (descMatch) agentName = descMatch[1].toLowerCase();
+    else agentName = 'unknown';
+  }
+
   const spawnedAt: string = new Date().toISOString();
   const agentId: string = makeAgentId(subagentType, spawnedAt);
 
@@ -75,6 +97,7 @@ try {
 
     const entry: AgentSpawnEntry = {
       id: agentId,
+      ccAgentId,
       name: agentName,
       subagentType,
       model,
@@ -111,7 +134,7 @@ try {
     hookSpecificOutput: { additionalContext: context }
   }));
 
-  log.info('SubagentStart tracked', { agentId, agentName, subagentType, model, activeCount });
+  log.info('SubagentStart tracked', { agentId, ccAgentId, agentName, subagentType, model, activeCount });
 
 } catch (err: unknown) {
   log.error('SubagentStart handler failed', { error: (err as Error).message });

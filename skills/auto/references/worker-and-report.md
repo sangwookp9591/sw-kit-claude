@@ -52,9 +52,20 @@ action: read | write | edit | bash | test | status | done | error
   node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "jay" "test" "tests/auth.test.ts" "3/3 pass" --dir "$(pwd)"
   node "${CLAUDE_PLUGIN_ROOT}/dist/scripts/monitor/live-monitor.js" --write "jay" "done" "Task #1" "완료" --dir "$(pwd)"
 
+PARALLEL SUB-AGENT (대량 작업 시):
+- 태스크가 3개 이상의 독립적 파일/모듈을 다루거나, 반복 작업이 많을 때 Agent()로 하위 에이전트를 생성하여 병렬 처리할 수 있습니다
+- 사용 조건: (1) 독립적으로 분리 가능한 작업 (2) 3개 이상의 병렬 단위 (3) 각 단위가 서로 의존하지 않음
+- 하위 에이전트는 반드시 subagent_type과 name을 지정하세요
+- 하위 에이전트 완료 후 결과를 취합하여 team-lead에 보고하세요
+- 예시:
+  Agent({ subagent_type: "aing:{name}", name: "{name}-worker-1", model: "haiku",
+    prompt: "파일 A, B, C에 대해 {작업} 수행" })
+  Agent({ subagent_type: "aing:{name}", name: "{name}-worker-2", model: "haiku",
+    prompt: "파일 D, E, F에 대해 {작업} 수행" })
+
 RULES:
-- Do NOT spawn sub-agents
-- Do NOT run team commands
+- Do NOT run team commands (TeamCreate/TeamDelete는 오케스트레이터 전용)
+- CAN spawn sub-agents for parallel work (위 PARALLEL SUB-AGENT 참조)
 - MUST follow TDD
 - MUST report evidence
 - MUST use "@{Name}❯" prefix on ALL messages
