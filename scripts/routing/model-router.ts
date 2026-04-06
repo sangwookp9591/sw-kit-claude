@@ -83,25 +83,59 @@ const TIERS: ModelTier[] = ['haiku', 'sonnet', 'opus'];
 
 /**
  * Default model assignments per agent role.
- * These can be overridden by routing decisions.
+ * Implementation agents default to opus — sonnet only for non-logical simple tasks.
+ * Verified 2026-04-06: sonnet produces race conditions, silent failures, missing edge cases.
  */
 const AGENT_DEFAULTS: Record<string, ModelTier> = {
-  able: 'sonnet',
-  jay: 'sonnet',
-  derek: 'sonnet',
-  jerry: 'sonnet',
+  // Leadership — opus (deep reasoning)
+  able: 'opus',
   klay: 'opus',
   sam: 'opus',
-  milla: 'sonnet',
+
+  // Implementation — opus (code quality requires logical judgment)
+  jay: 'opus',
+  derek: 'opus',
+  jerry: 'opus',
+  milla: 'opus',
+
+  // Frontend senior — opus (logical judgment needed)
+  iron: 'opus',
+
+  // Lightweight — sonnet (simple tasks, no deep logic needed)
   willji: 'sonnet',
   rowan: 'sonnet',
   wizard: 'sonnet',
 };
 
 /**
+ * Core/safety module paths — touching these forces opus tier.
+ * Sonnet implementations have proven quality gaps: race conditions, silent failures,
+ * missing atomicity, insufficient edge case coverage (verified 2026-04-06).
+ */
+const CORE_MODULE_PATTERNS: RegExp[] = [
+  /scripts\/guardrail\//,
+  /scripts\/hooks\//,
+  /scripts\/recovery\//,
+  /scripts\/evidence\//,
+  /scripts\/security\//,
+  /scripts\/core\/state/,
+  /scripts\/pdca\//,
+  /hooks-handlers\//,
+];
+
+/**
+ * Detect whether file paths include core/safety modules.
+ * Used by orchestrators to auto-set hasCoreModule signal.
+ */
+export function detectCoreModule(filePaths: string[]): boolean {
+  return filePaths.some(fp => CORE_MODULE_PATTERNS.some(p => p.test(fp)));
+}
+
+/**
  * Risk signals that force model escalation.
  */
 const RISK_ESCALATION_RULES: RiskEscalationRule[] = [
+  { signal: 'hasCoreModule', minTier: 'opus', reason: 'core/safety module — sonnet quality insufficient' },
   { signal: 'hasSecurity', minTier: 'opus', reason: 'security-sensitive change' },
   { signal: 'hasArchChange', minTier: 'opus', reason: 'architecture-level change' },
   { signal: (s: ComplexitySignals) => (s.fileCount ?? 0) > 20, minTier: 'opus', reason: '>20 files changed' },

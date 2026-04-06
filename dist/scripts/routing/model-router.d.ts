@@ -49,6 +49,11 @@ interface RouteOptions {
     context?: string;
 }
 /**
+ * Detect whether file paths include core/safety modules.
+ * Used by orchestrators to auto-set hasCoreModule signal.
+ */
+export declare function detectCoreModule(filePaths: string[]): boolean;
+/**
  * Route an agent to the optimal model tier.
  */
 export declare function routeModel(agentName: string, signals?: ComplexitySignals, options?: RouteOptions): RoutingResult;

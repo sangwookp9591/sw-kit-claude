@@ -14,22 +14,26 @@ describe('Model Router', () => {
     assert.equal(result.model, 'sonnet');
   });
 
-  it('should escalate to opus for high complexity', () => {
+  it('should stay opus for high complexity (jay defaults opus)', () => {
     const result = routeModel('jay', { fileCount: 25, domainCount: 4 });
     assert.equal(result.model, 'opus');
-    assert.equal(result.escalated, true);
   });
 
-  it('should escalate for security signals', () => {
+  it('should stay opus for security signals (jay defaults opus)', () => {
     const result = routeModel('jay', { hasSecurity: true });
     assert.equal(result.model, 'opus');
-    assert.match(result.reason, /security/);
   });
 
-  it('should escalate for architecture changes', () => {
+  it('should stay opus for architecture changes (derek defaults opus)', () => {
     const result = routeModel('derek', { hasArchChange: true });
     assert.equal(result.model, 'opus');
-    assert.match(result.reason, /architecture/);
+  });
+
+  it('should escalate sonnet agents to opus for security signals', () => {
+    const result = routeModel('willji', { hasSecurity: true });
+    assert.equal(result.model, 'opus');
+    assert.equal(result.escalated, true);
+    assert.match(result.reason, /security/);
   });
 
   it('should honor user forceModel override', () => {

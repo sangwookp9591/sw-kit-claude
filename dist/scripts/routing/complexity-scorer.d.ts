@@ -10,6 +10,8 @@ export interface ComplexitySignals {
     hasTests?: boolean;
     hasArchChange?: boolean;
     hasSecurity?: boolean;
+    /** True when task touches core/safety modules (guardrail, hooks, recovery, evidence, security). Forces opus. */
+    hasCoreModule?: boolean;
 }
 export type ComplexityLevel = 'low' | 'mid' | 'high';
 export interface ComplexityResult {
