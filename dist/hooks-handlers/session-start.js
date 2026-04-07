@@ -314,6 +314,28 @@ try {
         }
     }
     catch (_e) { /* GC failure does not block session start */ }
+    // === Memory Decay (automatic confidence decay for observed entries) ===
+    try {
+        const { applyConfidenceDecay } = await import(join(pluginRoot, 'scripts/memory/project-memory.js'));
+        const decayResult = applyConfidenceDecay(projectDir);
+        if (decayResult.decayed > 0 || decayResult.removed > 0) {
+            ctx.push('');
+            ctx.push(`[Memory Decay] ${decayResult.decayed} entries decayed, ${decayResult.removed} removed (observed data only)`);
+        }
+    }
+    catch (_e) { /* Decay failure does not block session start */ }
+    // === Denial Learning (auto-escalate repeated violations) ===
+    try {
+        const { analyzeDenials } = await import(join(pluginRoot, 'scripts/guardrail/denial-learner.js'));
+        const learnResult = analyzeDenials(projectDir);
+        if (learnResult.contextInjection.length > 0) {
+            ctx.push('');
+            for (const line of learnResult.contextInjection) {
+                ctx.push(line);
+            }
+        }
+    }
+    catch (_e) { /* Learning failure does not block session start */ }
     // === STATUS.md update ===
     try {
         const { generateStatusView } = await import(join(pluginRoot, 'scripts/pdca/status-view.mjs'));

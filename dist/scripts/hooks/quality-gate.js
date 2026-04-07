@@ -90,7 +90,7 @@ export function countFragileUnaddressed(criticOutput) {
     return count;
 }
 /**
- * Count IGNORED steelman points from Noa's output.
+ * Count IGNORED steelman points from Noah's output.
  */
 export function countIgnoredSteelman(noaOutput) {
     const matches = noaOutput.match(/IGNORED/g);

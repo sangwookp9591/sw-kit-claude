@@ -8,6 +8,7 @@ import { checkStepLimit, checkFileChangeLimit, checkForbiddenPath } from '../scr
 import { isDryRunActive, queueChange, formatPreview } from '../scripts/guardrail/dry-run.js';
 import { checkAgentAllowed, getExpectedAgent, isIterationTimedOut, trackAgentCall } from '../scripts/hooks/plan-state.js';
 import { trackAgentSpawn } from '../scripts/guardrail/agent-budget.js';
+import { hasMinimumEvidence } from '../scripts/guardrail/evidence-gate.js';
 
 interface ParsedInput {
   tool_name?: string;
@@ -29,7 +30,28 @@ try {
   const projectDir: string = process.env.PROJECT_DIR || process.cwd();
   const ctx: string[] = [];
 
-  // Agent/Task spawn — AING-DR phase enforcement
+  // Agent/Task spawn — Hard Limit 2: description 필수 (hook-enforced, not prompt-based)
+  if (toolName === 'Agent' || toolName === 'Task') {
+    const desc = (toolInput.description as string) || '';
+    if (desc.length < 10) {
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: { decision: 'block', reason: `[aing:hard-limit] Agent/Task 호출 시 description 필수 (최소 10자). 현재: ${desc.length}자. 형식: "{Name}: {task summary}"` }
+      }));
+      process.exit(0);
+    }
+  }
+
+  // TaskUpdate — Hard Limit 1: 증거 없이 완료 처리 불가 (hook-enforced)
+  if (toolName === 'TaskUpdate' && toolInput.status === 'completed') {
+    const gate = hasMinimumEvidence(projectDir);
+    if (!gate.ok) {
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: { decision: 'block', reason: `[aing:hard-limit] 증거 없이 완료 처리 불가. 먼저 npm test, tsc --noEmit 등을 실행하세요. (${gate.reason})` }
+      }));
+      process.exit(0);
+    }
+  }
+
   if ((toolName === 'Agent' || toolName === 'Task') && toolInput.subagent_type) {
     const agentKey = (toolInput.name as string) || (toolInput.subagent_type as string).replace('aing:', '');
     norchAgentSpawn('session', agentKey, toolInput.description as string);

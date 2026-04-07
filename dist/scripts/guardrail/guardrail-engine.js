@@ -7,6 +7,7 @@
 import { getConfig } from '../core/config.js';
 import { createLogger } from '../core/logger.js';
 import { recordDenial } from './denial-tracker.js';
+import { getEscalatedRules } from './denial-learner.js';
 const log = createLogger('guardrail');
 /**
  * Default guardrail rules (active even without config)
@@ -79,7 +80,7 @@ const DEFAULT_RULES = [
  * Supports severity-level action overrides via `guardrail.severityOverrides`.
  * Example config: { "guardrail": { "severityOverrides": { "medium": "warn" } } }
  */
-export function loadRules(_projectDir) {
+export function loadRules(projectDir) {
     const configRules = getConfig('guardrail.rules', []);
     // Parse user-defined pattern strings into RegExp
     const userRules = configRules.map(rule => ({
@@ -91,9 +92,18 @@ export function loadRules(_projectDir) {
     // Severity-level action overrides: { "high": "warn", "medium": "block" }
     const severityOverrides = getConfig('guardrail.severityOverrides', {});
     const allRules = [...DEFAULT_RULES, ...userRules].filter(r => !disabledIds.has(r.id));
-    if (Object.keys(severityOverrides).length === 0)
-        return allRules;
+    // Denial-learning escalations (warn → block for repeated violations)
+    let escalatedOverrides = new Map();
+    try {
+        escalatedOverrides = getEscalatedRules(projectDir);
+    }
+    catch (_) { /* learning unavailable — proceed without escalation */ }
     return allRules.map(r => {
+        // Denial-learning escalation takes precedence (only warn → block)
+        const escalated = escalatedOverrides.get(r.id);
+        if (escalated && r.action === 'warn')
+            return { ...r, action: escalated };
+        // Config severity overrides
         const override = severityOverrides[r.severity];
         return override ? { ...r, action: override } : r;
     });

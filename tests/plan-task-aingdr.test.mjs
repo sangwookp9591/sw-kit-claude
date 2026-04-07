@@ -113,8 +113,8 @@ describe('plan-manager: AING-DR 필드 지원', () => {
     const { createPlan } = await import('../dist/scripts/task/plan-manager.js');
 
     const result = createPlan({
-      feature: 'dr-noa',
-      goal: 'Test Noa verification persistence',
+      feature: 'dr-noah',
+      goal: 'Test Noah verification persistence',
       steps: ['Step 1'],
       noaVerdict: {
         verdict: 'PASS',
@@ -130,7 +130,7 @@ describe('plan-manager: AING-DR 필드 지원', () => {
 
     assert.equal(result.ok, true);
     const content = readFileSync(result.planPath, 'utf-8');
-    assert.ok(content.includes('## Synthesis Verification') || content.includes('## Noa'),
+    assert.ok(content.includes('## Synthesis Verification') || content.includes('## Noah'),
       'Should contain synthesis verification section');
     assert.ok(content.includes('PASS') || content.includes('pass'), 'Should contain verdict');
     assert.ok(content.includes('ABSORBED') || content.includes('absorbed') || content.includes('3'),
@@ -268,14 +268,14 @@ describe('에이전트 정의: AING-DR 필수 프롬프트 검증', () => {
       'Klay should mention antithesis');
   });
 
-  it('noa.md should define SYNTHESIS_CHECK with ABSORBED/IGNORED classification', () => {
-    const content = readFileSync(join(AGENTS_DIR, 'noa.md'), 'utf-8');
-    assert.ok(content.includes('ABSORBED'), 'Noa should classify ABSORBED');
-    assert.ok(content.includes('IGNORED'), 'Noa should classify IGNORED');
+  it('noah.md should define SYNTHESIS_CHECK with ABSORBED/IGNORED classification', () => {
+    const content = readFileSync(join(AGENTS_DIR, 'noah.md'), 'utf-8');
+    assert.ok(content.includes('ABSORBED'), 'Noah should classify ABSORBED');
+    assert.ok(content.includes('IGNORED'), 'Noah should classify IGNORED');
     assert.ok(content.includes('Delta') || content.includes('delta'),
-      'Noa should measure Delta Score');
+      'Noah should measure Delta Score');
     assert.ok(content.includes('PASS') || content.includes('REVISE'),
-      'Noa should have PASS/REVISE verdict');
+      'Noah should have PASS/REVISE verdict');
   });
 
   it('critic.md should define 5-Phase protocol with Hard Gates', () => {
@@ -314,7 +314,7 @@ describe('State Lifecycle: Phase 전환 스펙 검증', () => {
     'option-design',    // Phase 2: Able
     'steelman',         // Phase 3: Klay
     'synthesis',        // Phase 4: Able
-    'synthesis-check',  // Phase 5: Noa
+    'synthesis-check',  // Phase 5: Noah
     'critique',         // Phase 6: Critic
     'adr',              // Phase 7: Able (Living ADR)
   ];
@@ -327,7 +327,7 @@ describe('State Lifecycle: Phase 전환 스펙 검증', () => {
     assert.equal(VALID_PHASE_SEQUENCE[2], 'option-design', 'Phase 2 = Able option design');
     assert.equal(VALID_PHASE_SEQUENCE[3], 'steelman', 'Phase 3 = Klay steelman');
     assert.equal(VALID_PHASE_SEQUENCE[4], 'synthesis', 'Phase 4 = Able synthesis');
-    assert.equal(VALID_PHASE_SEQUENCE[5], 'synthesis-check', 'Phase 5 = Noa verification');
+    assert.equal(VALID_PHASE_SEQUENCE[5], 'synthesis-check', 'Phase 5 = Noah verification');
     assert.equal(VALID_PHASE_SEQUENCE[6], 'critique', 'Phase 6 = Critic assessment');
     assert.equal(VALID_PHASE_SEQUENCE[7], 'adr', 'Phase 7 = Living ADR');
 
@@ -490,8 +490,8 @@ describe('Hook Enforcement: Phase-Agent 매핑', () => {
     initPlanState(VRD_DIR, 'verdict-test', { complexity: 'mid' });
     advancePhase(VRD_DIR, 'synthesis-check');
 
-    // Noa completes in synthesis-check → should NOT auto-advance (needs verdict)
-    const result = autoAdvancePhase(VRD_DIR, 'aing:noa');
+    // Noah completes in synthesis-check → should NOT auto-advance (needs verdict)
+    const result = autoAdvancePhase(VRD_DIR, 'aing:noah');
     assert.equal(result, null, 'Should NOT auto-advance from synthesis-check (verdict-based)');
 
     rmSync(VRD_DIR, { recursive: true, force: true });
@@ -519,8 +519,8 @@ describe('Hook Enforcement: Phase-Agent 매핑', () => {
       ['option-design', 'able', 'ryan'],     // able allowed, ryan blocked
       ['steelman', 'klay', 'able'],          // klay allowed, able blocked
       ['synthesis', 'able', 'klay'],
-      ['synthesis-check', 'noa', 'able'],
-      ['critique', 'critic', 'noa'],
+      ['synthesis-check', 'noah', 'able'],
+      ['critique', 'critic', 'noah'],
       ['adr', 'able', 'critic'],
     ];
 

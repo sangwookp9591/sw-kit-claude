@@ -13,6 +13,7 @@ const DEFAULT_STATE = {
     sessionDenials: 0,
     topRules: [],
     lastDenialAt: '',
+    recentDenials: [],
 };
 /**
  * Record a guardrail denial to both JSONL log and session state.
@@ -42,6 +43,16 @@ export function recordDenial(entry, projectDir) {
             state.topRules.push({ ruleId: entry.ruleId, count: 1 });
         }
         state.topRules.sort((a, b) => b.count - a.count);
+        // Update recent denials (FIFO, max 3)
+        const truncatedMessage = entry.message.length > 80
+            ? entry.message.slice(0, 80) + '...'
+            : entry.message;
+        if (!state.recentDenials)
+            state.recentDenials = [];
+        state.recentDenials.push({ ruleId: entry.ruleId, message: truncatedMessage });
+        if (state.recentDenials.length > 3) {
+            state.recentDenials = state.recentDenials.slice(-3);
+        }
         writeState(statePath, state);
     }
     catch (_) { /* best-effort */ }
@@ -66,6 +77,12 @@ export function getDenialSummary(projectDir) {
     ];
     for (const rule of state.topRules.slice(0, 5)) {
         lines.push(`  - ${rule.ruleId}: ${rule.count}x`);
+    }
+    if (state.recentDenials && state.recentDenials.length > 0) {
+        lines.push(`  Recent:`);
+        for (const denial of state.recentDenials) {
+            lines.push(`  - [${denial.ruleId}] ${denial.message}`);
+        }
     }
     lines.push(`  Log: .aing/logs/denials.jsonl`);
     return lines.join('\n');

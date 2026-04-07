@@ -25,7 +25,7 @@ interface CheckResult {
  * Supports severity-level action overrides via `guardrail.severityOverrides`.
  * Example config: { "guardrail": { "severityOverrides": { "medium": "warn" } } }
  */
-export declare function loadRules(_projectDir?: string): GuardrailRule[];
+export declare function loadRules(projectDir?: string): GuardrailRule[];
 /**
  * Check a bash command against guardrail rules.
  */

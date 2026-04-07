@@ -148,6 +148,20 @@ try {
     if (parts.length > 0) {
         parts.push(''); // blank separator before team table
     }
+    // Hard Limit 3: 팀 사이즈 분석 필수 — 실행 의도 감지 시 plan 세션 없으면 warn (hook-enforced)
+    const isExecutionIntent = /implement|build|execute|실행|구현|만들|개발|추가|수정|fix|refactor/i.test(prompt);
+    const hasPlanSession = (() => {
+        try {
+            const planPath = join(projectDir, '.aing', 'state', 'plan-state.json');
+            return existsSync(planPath);
+        }
+        catch {
+            return false;
+        }
+    })();
+    if (isExecutionIntent && !hasPlanSession && !lower.includes('force:')) {
+        parts.push(`[aing:hard-limit] 팀 사이즈 미분석. 구현 전 /aing plan 또는 /aing auto로 팀 구성을 먼저 결정하세요. (Solo/Duo/Squad/Full)`);
+    }
     // Estimate task complexity from prompt signals
     const signals = {
         fileCount: Math.max((prompt.match(/\.(tsx?|jsx?|py|java|go|rs|vue|svelte)/gi) || []).length, 1),

@@ -268,11 +268,11 @@ describe('checkAgentAllowed: phase별 agent 허용/차단', () => {
   });
 
   it('should allow noa in synthesis-check phase', () => {
-    const dir = makeDir('agent-noa');
+    const dir = makeDir('agent-noah');
     try {
       initPlanState(dir, 'synthcheck-feature');
       advanceTo(dir, 'synthesis-check');
-      const result = checkAgentAllowed(dir, 'noa');
+      const result = checkAgentAllowed(dir, 'noah');
       assert.equal(result.allowed, true);
     } finally { cleanup(dir); }
   });
@@ -363,11 +363,11 @@ describe('autoAdvancePhase: agent 완료 후 자동 전이', () => {
   });
 
   it('should NOT auto-advance from synthesis-check (verdict required)', () => {
-    const dir = makeDir('auto-noa');
+    const dir = makeDir('auto-noah');
     try {
       initPlanState(dir, 'auto-synthcheck');
       advanceTo(dir, 'synthesis-check');
-      const next = autoAdvancePhase(dir, 'noa');
+      const next = autoAdvancePhase(dir, 'noah');
       assert.equal(next, null);
       assert.equal(readPlanState(dir).phase, 'synthesis-check');
     } finally { cleanup(dir); }

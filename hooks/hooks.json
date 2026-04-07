@@ -27,7 +27,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|Bash|Agent|Task|SendMessage",
+        "matcher": "Write|Edit|Bash|Agent|Task|TaskUpdate|SendMessage",
         "hooks": [
           {
             "type": "command",
@@ -39,7 +39,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|Bash|Agent|Task|SendMessage",
+        "matcher": "Write|Edit|Bash|Agent|Task|TaskUpdate|SendMessage",
         "hooks": [
           {
             "type": "command",

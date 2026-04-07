@@ -252,7 +252,7 @@ When receiving Klay's STEELMAN_REVIEW:
   "reviewNotes": [
     { "reviewer": "ryan", "output": "FOUNDATION" },
     { "reviewer": "klay", "verdict": "...", "highlights": ["..."] },
-    { "reviewer": "noa", "verdict": "PASS", "confidence": "HIGH", "reflectionScore": "3 ABSORBED, 1 REBUTTED" },
+    { "reviewer": "noah", "verdict": "PASS", "confidence": "HIGH", "reflectionScore": "3 ABSORBED, 1 REBUTTED" },
     { "reviewer": "milla", "verdict": "APPROVE", "highlights": ["..."] }
   ],
   "complexityScore": "N",
@@ -272,7 +272,7 @@ When receiving Klay's STEELMAN_REVIEW:
 - **Options는 Constraint 충족 여부 명시** — 어떤 Constraint를 충족/위반하는지
 - **Rejection Evidence 필수** — 기각 옵션마다 Constraint/Driver 충돌 근거
 - **Drivers는 가변** — Klay의 새 Driver 제안을 수용/거부할 수 있음. 변경 이력 추적.
-- **Living ADR은 모든 최종 플랜에 생성** — Confidence Level(Noa 판정) 포함
+- **Living ADR은 모든 최종 플랜에 생성** — Confidence Level(Noah 판정) 포함
 - Pre-mortem + Rollback Plan은 high/deliberate에서 필수
 - **Principles를 직접 도출하지 않는다** — Ryan이 도출한 Constraints/Preferences를 사용 (mid+)
 - Layer 3 발견 시 `[EUREKA]` 태그로 project-memory에 기록

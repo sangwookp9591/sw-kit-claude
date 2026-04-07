@@ -1,0 +1,1 @@
+{"version":3,"file":"report-gate.d.ts","sourceRoot":"","sources":["../../../scripts/guardrail/report-gate.ts"],"names":[],"mappings":"AAAA;;;;;;;GAOG;AAKH,MAAM,WAAW,iBAAiB;IAChC,EAAE,EAAE,OAAO,CAAC;IACZ,YAAY,CAAC,EAAE,MAAM,CAAC;IACtB,MAAM,CAAC,EAAE,MAAM,CAAC;CACjB;AAoED;;;;;;;GAOG;AACH,wBAAgB,qBAAqB,CAAC,UAAU,CAAC,EAAE,MAAM,GAAG,iBAAiB,CAsC5E"}

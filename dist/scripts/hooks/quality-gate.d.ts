@@ -33,7 +33,7 @@ export declare function measureConstraintCompliance(planJson: Record<string, unk
  */
 export declare function countFragileUnaddressed(criticOutput: string): number;
 /**
- * Count IGNORED steelman points from Noa's output.
+ * Count IGNORED steelman points from Noah's output.
  */
 export declare function countIgnoredSteelman(noaOutput: string): number;
 /**

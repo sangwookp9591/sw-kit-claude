@@ -21,7 +21,7 @@ const PRIORITY = {
     AGENT_STATE: 95, // Active agent spawns and team pipeline
     PROGRESS: 90, // Session continuity
     SAFETY_INVARIANTS: 85, // Guardrail state
-    DENIAL_SUMMARY: 82, // Guardrail denial audit trail
+    DENIAL_SUMMARY: 85, // Guardrail denial audit trail
     EVIDENCE_CHAIN: 80, // Verification evidence
     PROJECT_MEMORY: 70, // Learned patterns
     ROUTING_HISTORY: 40, // Nice to have

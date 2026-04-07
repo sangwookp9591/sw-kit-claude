@@ -54,7 +54,7 @@
 | <img src="images/jerry.svg" width="18"> | **Jerry** | DB / Infrastructure | `sonnet` |
 | <img src="images/milla.svg" width="18"> | **Milla** | Security / Auth | `sonnet` |
 | | **Critic** | Deliberation Critic | `opus` |
-| | **Noa** | Synthesis Verifier | `sonnet` |
+| | **Noah** | Synthesis Verifier | `sonnet` |
 | | **Jun** | Performance / Optimization | `sonnet` |
 | <img src="images/kain.svg" width="18"> | **Kain** | Code Intelligence | `sonnet` |
 

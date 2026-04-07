@@ -141,10 +141,8 @@ Sam Verdict (ACHIEVED / INCOMPLETE / FAILED)
 
 Three independent AI voices (Claude, Codex, Gemini) vote on non-trivial decisions through a structured consensus protocol.
 
-- **cli-bridge.mjs** — `createBridge(provider)` factory returns a uniform `.ask()` / `.review()` / `.challenge()` interface per AI backend.
-- **decision-classifier.mjs** — Classifies every decision into one of four types: `MECHANICAL` (auto-pass, 1 voice), `TASTE` (majority, 3 voices), `USER_CHALLENGE` (unanimous + user confirm), `SECURITY_WARNING` (unanimous + user block).
-- **consensus-voter.mjs** — Collects votes, applies quorum rules (unanimous / majority / split / reject), and routes results to the User Sovereignty gate.
-- Integration with `outside-voice.mjs`: external voices now provide genuine cross-model adversarial review instead of single-model devil's advocate.
+- **cli-bridge.ts** — `createBridge(provider)` factory returns a uniform `.ask()` / `.review()` / `.challenge()` interface per AI backend. **Active**: used by session-start and user-prompt-submit hooks for Codex tier detection.
+- **consensus-engine.ts** — Collects votes, classifies decisions (`MECHANICAL`/`TASTE`/`USER_CHALLENGE`/`SECURITY_WARNING`), applies quorum rules. **[NOT INTEGRATED]**: implemented and tested but not imported by any production code path. Available for future PDCA review-stage integration when complexityScore >= 10.
 
 See `docs/MULTI-AI.md` for the full architecture document.
 
@@ -179,11 +177,14 @@ Project memory entries now carry `confidence` (0-1), `source` (inferred / user-s
 
 This prevents stale assumptions from silently influencing agent behavior over time.
 
-## Security (`scripts/guardrail/prompt-injection-guard.mjs`)
+## Security (`scripts/security/prompt-injection-guard.ts`)
 
 A dedicated prompt injection guard provides defense-in-depth against injection attacks:
 
-- **7 regex patterns** detect common injection vectors: role-override attempts, system prompt leaks, ignore-previous-instructions, base64-encoded payloads, markdown/HTML injection, Unicode homoglyph attacks, and indirect prompt injection via tool output.
+- **7 regex patterns** detect common injection vectors: role-override attempts (`ignore previous instructions`, `disregard system prompt`, `you are now a different`, `SYSTEM: override`, `forget everything`, `new instructions:`, `do not follow previous`).
+- **base64-encoded payload detection**: Detect long base64 strings (80+ chars) that may hide injection commands.
+- **Unicode homoglyph attack detection**: Detect Cyrillic/Greek characters mixed with Latin text to bypass keyword filters.
+- **HTML/Markdown injection detection**: Detect `<script>`, `<iframe>`, `<object>` tags that could alter agent rendering context.
 - **XML trust boundary wrapping**: All external content (tool output, user-provided files, API responses) is wrapped in `<untrusted>` XML tags before being included in agent context. Agents are instructed to treat content within these tags as data, never as instructions.
 - **Fail-closed**: If the guard detects a pattern, the request is blocked and logged. No fallback execution occurs.
 

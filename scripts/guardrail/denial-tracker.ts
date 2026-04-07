@@ -26,12 +26,14 @@ interface DenialAuditState {
   sessionDenials: number;
   topRules: Array<{ ruleId: string; count: number }>;
   lastDenialAt: string;
+  recentDenials: Array<{ ruleId: string; message: string }>;
 }
 
 const DEFAULT_STATE: DenialAuditState = {
   sessionDenials: 0,
   topRules: [],
   lastDenialAt: '',
+  recentDenials: [],
 };
 
 /**
@@ -65,6 +67,16 @@ export function recordDenial(entry: DenialEntry, projectDir?: string): void {
     }
     state.topRules.sort((a, b) => b.count - a.count);
 
+    // Update recent denials (FIFO, max 3)
+    const truncatedMessage = entry.message.length > 80
+      ? entry.message.slice(0, 80) + '...'
+      : entry.message;
+    if (!state.recentDenials) state.recentDenials = [];
+    state.recentDenials.push({ ruleId: entry.ruleId, message: truncatedMessage });
+    if (state.recentDenials.length > 3) {
+      state.recentDenials = state.recentDenials.slice(-3);
+    }
+
     writeState(statePath, state);
   } catch (_) { /* best-effort */ }
 
@@ -92,6 +104,13 @@ export function getDenialSummary(projectDir?: string): string | null {
 
   for (const rule of state.topRules.slice(0, 5)) {
     lines.push(`  - ${rule.ruleId}: ${rule.count}x`);
+  }
+
+  if (state.recentDenials && state.recentDenials.length > 0) {
+    lines.push(`  Recent:`);
+    for (const denial of state.recentDenials) {
+      lines.push(`  - [${denial.ruleId}] ${denial.message}`);
+    }
   }
 
   lines.push(`  Log: .aing/logs/denials.jsonl`);

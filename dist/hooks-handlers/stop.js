@@ -15,6 +15,7 @@ import { readPlanState } from '../scripts/hooks/plan-state.js';
 import { getPRDStatus } from '../scripts/pipeline/story-tracker.js';
 import { getVerifyState, generateArchitectPrompt } from '../scripts/hooks/architect-verify.js';
 import { getDenialSummary } from '../scripts/guardrail/denial-tracker.js';
+import { checkCompletionReport } from '../scripts/guardrail/report-gate.js';
 import { capturePassive } from '../scripts/memory/learning-capture.js';
 import { clearRealityCheckFlag } from '../scripts/hooks/reality-check.js';
 import { join, dirname } from 'node:path';
@@ -80,7 +81,7 @@ try {
             'option-design': 'Able — Option Design',
             'steelman': 'Klay — Steelman Deliberation',
             'synthesis': 'Able — Synthesis',
-            'synthesis-check': 'Noa — Verification',
+            'synthesis-check': 'Noah — Verification',
             'critique': 'Critic — Assessment',
             'adr': 'Able — Living ADR',
         };
@@ -178,6 +179,27 @@ try {
         }
     }
     catch { /* CLAUDE.md update is best-effort */ }
+    // HOOK-4 / HL5: Completion report gate (best-effort — warns only, never blocks)
+    try {
+        const reportCheck = checkCompletionReport(projectDir);
+        if (!reportCheck.ok) {
+            const templateMsg = reportCheck.templatePath
+                ? `[aing:hard-limit] 완료 보고서 누락. ${reportCheck.templatePath}에 템플릿을 생성했습니다.`
+                : `[aing:hard-limit] 완료 보고서 누락. .aing/reports/에 보고서(Team/Agents/Completeness/Evidence/Verdict)를 작성하세요.`;
+            ctx.push(templateMsg);
+            log.info('Report gate: completion report missing', { templatePath: reportCheck.templatePath });
+        }
+    }
+    catch { /* report gate is best-effort */ }
+    // Evidence gate warning: check if tasks completed without sufficient evidence
+    try {
+        const { hasMinimumEvidence } = await import('../scripts/guardrail/evidence-gate.js');
+        const gate = hasMinimumEvidence(projectDir);
+        if (!gate.ok) {
+            ctx.push(`[aing:evidence-warning] 세션 종료 시 미검증 태스크 감지. ${gate.reason}`);
+        }
+    }
+    catch { /* evidence check is best-effort */ }
     // Append denial audit summary
     const denialLine = getDenialSummary(projectDir);
     if (denialLine)

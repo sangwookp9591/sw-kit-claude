@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.9.19] - 2026-04-07 — 하네스 엔지니어링 전면 점검 + Hard Limits 훅 강제 전환
+
+### Added
+- **Hard Limit 훅 강제 (4/5)**: 프롬프트(부탁) → 훅(강제) 전환
+  - HL1: evidence-gate — TaskUpdate(completed) 시 증거 없으면 block
+  - HL2: Agent/Task description 10자 미만 block
+  - HL3: 팀 사이즈 미분석 시 warn
+  - HL5: Stop 훅에서 완료 보고서 누락 시 warn + 템플릿 자동 생성
+- **evidence-gate.ts**: 증거 존재 여부 검증 모듈 (거짓 완료 원천 봉쇄)
+- **report-gate.ts**: 완료 보고서 5섹션 검증 + 템플릿 생성
+- **denial-learner.ts**: Denial 로그 분석 → 반복 위반(5회+) 자동 severity 상향 (warn→block)
+- **check-agent-consistency.ts**: 에이전트 프롬프트-CLAUDE.md 규칙 일관성 CI gate
+- **harness-integration.test.ts**: 하네스 메커니즘 통합 테스트 20개 (5 시나리오 + negative tests)
+- **단위 테스트 15개**: evidence-gate, report-gate, denial-learner 각 모듈
+- **Memory Decay 자동 실행**: session-start에서 applyConfidenceDecay() 호출 (observed 데이터 30일 decay)
+- **Prompt Injection Guard 확장**: base64 payload, Unicode homoglyph, HTML injection 3개 패턴 추가 (7→13개)
+- **Compaction Denial 보존 강화**: 최근 3건 ruleId+message 보존, priority 82→85
+
+### Fixed
+- **ARCHITECTURE.md 문서-코드 불일치**: injection guard 미구현 기능 [PLANNED] 태그 → 구현 후 태그 제거
+- **consensus-engine dead code 명시**: [NOT INTEGRATED] 상태 문서화
+- **session-start.ts .mjs import 경로**: denial-learner.mjs → .js, project-memory.mjs → .js
+- **guardrail-engine.ts**: denial-learner escalation 통합, loadRules 파라미터 수정
+
+### Changed
+- **hooks.json**: PreToolUse/PostToolUse matcher에 TaskUpdate 추가
+- **CI**: harness-integration + agent-consistency 스테이지 추가 (agent-consistency는 continue-on-error)
+- **context-compaction.ts**: DENIAL_SUMMARY priority 82→85
+- **denial-tracker.ts**: recentDenials(FIFO 3건, 80자 truncate) 추가
+
 ## [2.9.18] - 2026-04-06 — 에이전트 루프 방지 + 검증 명령 exit code 표준화
 
 ### Fixed

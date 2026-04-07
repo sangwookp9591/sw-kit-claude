@@ -24,7 +24,7 @@ const PRIORITY: Record<string, number> = {
   AGENT_STATE: 95,       // Active agent spawns and team pipeline
   PROGRESS: 90,          // Session continuity
   SAFETY_INVARIANTS: 85, // Guardrail state
-  DENIAL_SUMMARY: 82,    // Guardrail denial audit trail
+  DENIAL_SUMMARY: 85,    // Guardrail denial audit trail
   EVIDENCE_CHAIN: 80,    // Verification evidence
   PROJECT_MEMORY: 70,    // Learned patterns
   ROUTING_HISTORY: 40,   // Nice to have
@@ -109,6 +109,7 @@ export function buildCompactionContext(projectDir?: string): CompactionResult {
   const denialState = readStateOrDefault(join(dir, '.aing', 'state', 'denial-audit.json'), null) as {
     sessionDenials?: number;
     topRules?: Array<{ ruleId: string; count: number }>;
+    recentDenials?: Array<{ ruleId: string; message: string }>;
   } | null;
   if (denialState?.sessionDenials && denialState.sessionDenials > 0) {
     const topRules = denialState.topRules?.slice(0, 3).map(r => `${r.ruleId}(${r.count})`).join(', ') || 'n/a';
