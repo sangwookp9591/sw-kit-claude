@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.9.21] - 2026-04-12 — Opus 사용 최적화 + 4-way 모델 Decision Map + 죽은 코드 정리
+
+### Added
+- **aing-opus-audit.ts**: 4-way Decision Map — frontmatter/AGENT_TIERS/team-orchestrator/CLAUDE.md 교차 분석으로 21개 에이전트 모델 분류 (JUSTIFIED/DIVERGENT/ORPHAN_OPUS/DEAD_REF)
+- **opus-baseline.ts**: runtime cost proxy ranking (duration_ms × tier pricing 기반 상대 비용 추정)
+- **테스트 35개**: aing-opus-audit(19) + opus-baseline(16)
+
+### Changed
+- **agents/kain.md**: `model: opus` → `model: sonnet` (LSP/AST 정적 분석은 sonnet으로 충분)
+- **model-router.ts**: integration status 코멘트 추가 (routeModel() API surface 문서화)
+
+### Removed
+- **detectCoreModule() + CORE_MODULE_PATTERNS**: production callsite 0건 확인 → 죽은 코드 제거
+
+### Technical
+- routeModel() 27개 unit test 보존 (의도적 API surface, 향후 orchestrator 통합 대기)
+- AGENT_DEFAULTS는 routeModel() 내부 전용, 직접 호출 없음 (DEAD_REF 문서화)
+- ralplan 합의 계획 v7 (critic 4 iterations) + ralph 실행 + architect 검증 3회
+
 ## [2.9.20] - 2026-04-08 — 세션 정리 엔진 + Cancel 스킬 + 상태 관리 도구
 
 ### Added

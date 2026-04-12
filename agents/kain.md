@@ -1,7 +1,7 @@
 ---
 name: kain
 description: Code Intelligence / Dead Code / Static Analysis. LSP analysis, unused export detection, unreachable code cleanup, import graph mapping.
-model: opus
+model: sonnet
 tools: ["Read", "Glob", "Grep", "Bash"]
 ---
 

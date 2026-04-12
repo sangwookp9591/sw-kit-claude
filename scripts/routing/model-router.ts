@@ -2,6 +2,17 @@
  * aing Model Router — Adaptive model selection based on task complexity and risk.
  * Routes agents to optimal model tier (haiku/sonnet/opus) based on signals.
  * @module scripts/routing/model-router
+ *
+ * Integration status: `routeModel()` is an API surface awaiting orchestrator
+ * integration. It has 27 unit tests documenting intended behavior but no
+ * production callsites yet. The active model decision points are currently
+ * `agents/*.md` frontmatter, `scripts/pipeline/agent-tiers.ts`, and
+ * `scripts/pipeline/team-orchestrator.ts`. See
+ * `.omc/plans/opus-usage-reduction-v7.md` Phase C for the audit and
+ * future-integration plan.
+ *
+ * `getCostMode()` and the `MODEL_REGISTRY` family ARE active —
+ * used by `scripts/routing/reranker.ts` and `scripts/research/*` audit tools.
  */
 
 import { scoreComplexity, ComplexitySignals, ComplexityLevel } from './complexity-scorer.js';
@@ -107,29 +118,6 @@ const AGENT_DEFAULTS: Record<string, ModelTier> = {
   wizard: 'sonnet',
 };
 
-/**
- * Core/safety module paths — touching these forces opus tier.
- * Sonnet implementations have proven quality gaps: race conditions, silent failures,
- * missing atomicity, insufficient edge case coverage (verified 2026-04-06).
- */
-const CORE_MODULE_PATTERNS: RegExp[] = [
-  /scripts\/guardrail\//,
-  /scripts\/hooks\//,
-  /scripts\/recovery\//,
-  /scripts\/evidence\//,
-  /scripts\/security\//,
-  /scripts\/core\/state/,
-  /scripts\/pdca\//,
-  /hooks-handlers\//,
-];
-
-/**
- * Detect whether file paths include core/safety modules.
- * Used by orchestrators to auto-set hasCoreModule signal.
- */
-export function detectCoreModule(filePaths: string[]): boolean {
-  return filePaths.some(fp => CORE_MODULE_PATTERNS.some(p => p.test(fp)));
-}
 
 /**
  * Risk signals that force model escalation.
